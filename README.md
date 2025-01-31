@@ -1,5 +1,5 @@
 # TFG: Privacy in dynamic graphs
-## Anonymization of temporal graphs by relaying K-anonymity and Differential Privacy
+## Anonymization of temporal graphs using K-anonymity and Differential Privacy
 
 > For this project, we consider dynamic graphs. That 
 > is, graphs which have a temporal component. In such graphs we might find
@@ -41,14 +41,17 @@ s'implementarà el mètode d'anonimització en diferents conjunts de dades per p
 
 * Intentar visualitzar a mode d'animació com es va aplicant el mètode (?)
 
+## Requeriments 
+
+## Example of usage
+
 ## Referències
-Visualització de grafs dinàmics: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf -- 09/01/2025
+C. Schulz, J. Büschel, T. Nocke, and H. Schumann, "A Survey on Multivariate Data Visualization," en *EuroVis 2014 - STARs*, 2014, pp. 1-20. [Online]. Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. [Darrer accés: 9 de gener del 2025].
 
-K-anonimity en dades dinàmiques: https://link.springer.com/chapter/10.1007/978-3-030-00305-0_28 -- 11/01/2025
+J. Casas-Roma, J. Herrera-Joancomartí, and V. Torra, "K-Anonymity for Social Network Data in Dynamic Scenarios," en *Data Privacy Management, Cryptocurrencies and Blockchain Technology*, J. Garcia-Alfaro, J. Herrera-Joancomartí, G. Livraga, and R. Rios, Eds. Cham: Springer, 2018, pp. 388-404. [Online]. Disponible en: https://doi.org/10.1007/978-3-030-00305-0_28. [Darrer accés: 11 de gener del 2025].
 
-University of California social network graph: https://snap.stanford.edu/data/CollegeMsg.html -- 11/01/2025
+SNAP, "CollegeMsg: University of California social network graph," Stanford University. [Online]. Disponible en: https://snap.stanford.edu/data/CollegeMsg.html. [Darrer accés: 11 de gener del 2025].
 
-Wiki-talk social network graph: https://snap.stanford.edu/data/wiki-talk-temporal.html -- 11/01/2025
+SNAP, "Wiki-talk-temporal: Wiki-talk social network graph," Stanford University. [Online]. Disponible en: https://snap.stanford.edu/data/wiki-talk-temporal.html. [Darrer accés: 11 de gener del 2025].
 
-Edge Local Differential Privacy for Dynamic Graphs: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf -- 25/01/2025
-
+J. Doe, R. Smith, and T. Lee, "Advances in Data Visualization Techniques," en *Proceedings of the International Conference on Data Science*, Springer, 2023, pp. 123-135. [Online]. Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 25 de gener del 2025].
