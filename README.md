@@ -1,13 +1,13 @@
 # TFG: Privacy in dynamic graphs
+## Anonymization of temporal graphs by relaying K-anonymity and Differential Privacy
 
-## Proposta 
-For this project, we consider dynamic graphs. That
-is, graphs which have a temporal component. In such graphs we might find
-vertices or even nodes which appear or disappear in a temporal basis.
-Anonymizing these graphs introduces important challenges not found in
-more classical static graphs. In this project, we aim to explore
-possible solutions for the anonymization of temporal graphs by relaying
-in well known privacy models such as k-anonymity and differential privacy.
+> For this project, we consider dynamic graphs. That 
+> is, graphs which have a temporal component. In such graphs we might find
+> vertices or even nodes which appear or disappear in a temporal basis.
+> Anonymizing these graphs introduces important challenges not found in
+> more classical static graphs. In this project, we aim to explore
+> possible solutions for the anonymization of temporal graphs by relaying
+> in well known privacy models such as k-anonymity and differential privacy.
 
 La idea d'aquest projecte seria mirar d'aplicar conceptes coneguts de
 privacitat a graphs estàtics en aquest tipus de graphs temporals. Un
