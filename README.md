@@ -1,5 +1,5 @@
 # TFG: Privacy in dynamic graphs
-## Anonymization of temporal graphs using K-anonymity and Differential Privacy
+## Anonymization of temporal graphs using privacy methods
 
 > For this project, we consider dynamic graphs. That 
 > is, graphs which have a temporal component. In such graphs we might find
