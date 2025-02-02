@@ -41,17 +41,20 @@ s'implementarà el mètode d'anonimització en diferents conjunts de dades per p
 
 * Intentar visualitzar a mode d'animació com es va aplicant el mètode (?)
 
+* Veure com canvia el problema si els nodes van canviant, o si contenim un conjunt estàtic d'aquests (?)
+
 ## Requeriments 
 
 ## Example of usage
 
 ## Referències
-C. Schulz, J. Büschel, T. Nocke, and H. Schumann, "A Survey on Multivariate Data Visualization," en *EuroVis 2014 - STARs*, 2014, pp. 1-20. [Online]. Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. [Darrer accés: 9 de gener del 2025].
-
-J. Casas-Roma, J. Herrera-Joancomartí, and V. Torra, "K-Anonymity for Social Network Data in Dynamic Scenarios," en *Data Privacy Management, Cryptocurrencies and Blockchain Technology*, J. Garcia-Alfaro, J. Herrera-Joancomartí, G. Livraga, and R. Rios, Eds. Cham: Springer, 2018, pp. 388-404. [Online]. Disponible en: https://doi.org/10.1007/978-3-030-00305-0_28. [Darrer accés: 11 de gener del 2025].
 
 SNAP, "CollegeMsg: University of California social network graph," Stanford University. [Online]. Disponible en: https://snap.stanford.edu/data/CollegeMsg.html. [Darrer accés: 11 de gener del 2025].
 
 SNAP, "Wiki-talk-temporal: Wiki-talk social network graph," Stanford University. [Online]. Disponible en: https://snap.stanford.edu/data/wiki-talk-temporal.html. [Darrer accés: 11 de gener del 2025].
 
-J. Doe, R. Smith, and T. Lee, "Advances in Data Visualization Techniques," en *Proceedings of the International Conference on Data Science*, Springer, 2023, pp. 123-135. [Online]. Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 25 de gener del 2025].
+J. Salas i V. Torra, "A General Algorithm for k-anonymity on Dynamic Databases," Data Privacy Management, Cryptocurrencies and Blockchain Technology, Barcelona, Espanya, 2018. [Online]. Disponible en: https://link.springer.com/chapter/10.1007/978-3-030-00305-0_28. [Darrer accés: 9 de gener del 2025].
+
+S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs," en Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. [Online]. Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2 de febrer del 2025]. 
+
+F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs," Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. [Online]. Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. [Darrer accés: 9 de gener del 2025].
