@@ -7,12 +7,13 @@ class Reader:
     """Mòdul lector de dades
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('df')
+    __slots__ = ('filename', 'df')
     def __init__(self):
         """Inicialització de la classe
         """
         self.df = self.create_dataset()
-        
+        self.filename = ''
+
     @staticmethod
     def import_file():
         """Obrir l'explorador de fitxers perquè l'usuari importi el graf 
@@ -53,6 +54,13 @@ class Reader:
         except:
             raise Exception("Format no vàlid!")
     
+    def extract_filename(self, file_path):
+        """Extraure el nom del fitxer de la ruta del fitxer
+        """
+        print(file_path)
+        splitted_list = file_path.split("/")
+        return splitted_list[-1]
+    
     def create_dataset(self):
         """Importació d'un graf del teu repositori local
 
@@ -66,7 +74,7 @@ class Reader:
 
         # L'usuari importa el graf des de el seu repositori local
         file_path = self.import_file()
-
+        self.filename = self.extract_filename(file_path)
         # Comprovar si s'ha seleccionat un fitxer
         while (not file_path):
             print("No és vàlid el fitxer seleccionat.") 
