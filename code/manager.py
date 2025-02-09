@@ -13,4 +13,4 @@ class MainManager:
         self.reader.retrieve_df_information()
         self.graph = Graph(self.reader.filename, self.reader.df)
         #self.graph.visualize_per_timestamp()
-        self.graph.visualize_per_day()
+        self.graph.animate_graph()
