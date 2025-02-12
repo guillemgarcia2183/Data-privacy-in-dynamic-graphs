@@ -1,4 +1,4 @@
-from reader import Reader
+from rif import Reader
 from graph import Graph
 
 class MainManager:

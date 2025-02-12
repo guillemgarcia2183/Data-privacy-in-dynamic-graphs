@@ -3,6 +3,31 @@ import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
 
+def read_file(file_path):
+    """Llegir un fitxer d'entrada i passar a un DataFrame de pandas
+
+    Args:
+        file_path (str): Directori on es troba el fitxer
+
+    Raises:
+        Exception: En cas de no tenir el format específic (node1, node2, timestamp) es retornarà un error 
+
+    Returns:
+        DataFrame: Taula amb el contingut del fitxer
+    """
+    try:
+        data = list()
+        # Llegir el fitxer i carregar la informació en una taula pandas
+        with open(file_path, 'r') as file:
+            for line in file:
+                from_node, to_node, timestamp = map(int, line.split())  
+                data.append({'From': from_node, 'To': to_node, 'Timestamp': timestamp})
+                #print(f"From {from_node} to {to_node} in timestamp: {timestamp}")
+        df = pd.DataFrame(data)
+        return df
+    except:
+        raise Exception("Format no vàlid!")
+    
 class Reader:
     """Mòdul lector de dades
     """
@@ -27,32 +52,6 @@ class Reader:
             filetypes=[("All Files", "*.*")]
         )
         return file_path
-    
-    @staticmethod
-    def read_file(file_path):
-        """Llegir un fitxer d'entrada i passar a un DataFrame de pandas
-
-        Args:
-            file_path (str): Directori on es troba el fitxer
-
-        Raises:
-            Exception: En cas de no tenir el format específic (node1, node2, timestamp) es retornarà un error 
-
-        Returns:
-            DataFrame: Taula amb el contingut del fitxer
-        """
-        try:
-            data = list()
-            # Llegir el fitxer i carregar la informació en una taula pandas
-            with open(file_path, 'r') as file:
-                for line in file:
-                    from_node, to_node, timestamp = map(int, line.split())  
-                    data.append({'From': from_node, 'To': to_node, 'Timestamp': timestamp})
-                    #print(f"From {from_node} to {to_node} in timestamp: {timestamp}")
-            df = pd.DataFrame(data)
-            return df
-        except:
-            raise Exception("Format no vàlid!")
     
     def extract_filename(self, file_path):
         """Extraure el nom del fitxer de la ruta del fitxer
@@ -81,7 +80,7 @@ class Reader:
             file_path = self.import_file()
 
         # Llegeix el contingut del fitxer i el posem en format de taula
-        df = self.read_file(file_path)
+        df = read_file(file_path)
         df = df.sort_values(by="Timestamp") # Ordenem de forma ascendent els timestamps 
         return df
 
