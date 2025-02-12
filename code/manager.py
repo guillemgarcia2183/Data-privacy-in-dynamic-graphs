@@ -7,10 +7,10 @@ class MainManager:
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
     __slots__ = ('reader', 'graph')
     def __init__(self):
-        """Inicialització dels paràmetres de la classe
+        """Gestió del procés del programa
         """
         self.reader = Reader()
-        self.reader.retrieve_df_information()
+        #self.reader.retrieve_df_information()
         self.graph = Graph(self.reader.filename, self.reader.df)
         #self.graph.visualize_per_timestamp()
-        self.graph.animate_graph()
+        #self.graph.animate_graph()
