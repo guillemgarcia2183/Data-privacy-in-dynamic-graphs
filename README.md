@@ -1,4 +1,4 @@
-# TFG: Privacy and community detection in dynamic graphs
+# Privacy and community detection in dynamic graphs
 ## Anonymization of temporal graphs using privacy methods
 
 > For this project, we consider dynamic graphs. That 
