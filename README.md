@@ -27,7 +27,7 @@
 
 ## Objectius secundaris 
 
-* Fer un mètode per predir el graf que conformarà el següent instant de temps 
+* Fer un mètode per predir el graf que conformarà el següent instant de temps (les arestes que es connecten en t+1).
 
 * Intentar visualitzar a mode d'animació com es protegeixen les dades, o bé la comparació de detecció de comunitats durant el temps.
 
