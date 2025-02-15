@@ -1,4 +1,4 @@
-# TFG: Privacy in dynamic graphs
+# TFG: Privacy and community detection in dynamic graphs
 ## Anonymization of temporal graphs using privacy methods
 
 > For this project, we consider dynamic graphs. That 
@@ -9,7 +9,7 @@
 > possible solutions for the anonymization of temporal graphs by relaying
 > in well known privacy models such as k-anonymity and differential privacy.
 
-## Objectius (no definitius*)
+## Objectius principals
 
 * Estudiar de manera teòrica què és un graf dinàmic, i quina aplicació té en l'actualitat.
 
@@ -17,15 +17,19 @@
 
 * Pels mètodes que s'utilitzen, explicar tot el seu funcionament i què aporta en termes de privacitat.
 
-* Implementar el mètode d'anonimització en diferents datasets de dades (orientat en grafs), des de casos senzills fins a problemes més complexos.
+* Implementar el mètode d'anonimització en diferents datasets de dades, des de casos senzills fins a problemes més complexos.
 
-* Estudiar el cost que té aplicar el mètode d'anonimització, tant en temps, com també la pèrdua de dades que pot comportar. Analitzar en quins casos pot anar millor els algoritmes desenvolupats.
+* Estudiar el cost que té aplicar el mètode d'anonimització, tant en temps, la pèrdua de dades que pot comportar, o bé la seva utilitat. 
 
-* Intentar visualitzar a mode d'animació com es va aplicant el mètode (?)
+* Analitzar en quins casos pot anar millor els algoritmes desenvolupats segons els resultats que ens dona.
 
-## Requeriments 
+* Comparar diferents algoritmes de detecció de comunitats en grafs dinàmics, tant si se li aplica un mètode de protecció o no.
 
-## Example of usage
+## Objectius secundaris 
+
+* Fer un mètode per predir el graf que conformarà el següent instant de temps 
+
+* Intentar visualitzar a mode d'animació com es protegeixen les dades, o bé la comparació de detecció de comunitats durant el temps.
 
 ## Referències
 
@@ -44,3 +48,17 @@ response for collaborative filtering", In: Proceedings of the 17th International
 Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
 2: SECRYPT, Lieusaint, Paris, France, 8–10 July 2020, pp. 415–422. ScitePress
 (2020). [Online]. Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6 de febrer del 2025].
+
+https://github.com/GiulioRossetti/awesome-network-analysis
+
+https://github.com/benedekrozemberczki/awesome-community-detection
+
+https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/spectral.md#spectral-methods
+
+https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/deep_learning.md
+
+https://networkrepository.com/dynamic.php
+
+https://projects.csail.mit.edu/dnd/DBLP/
+
+https://catalog.caida.org/dataset/as_rank
