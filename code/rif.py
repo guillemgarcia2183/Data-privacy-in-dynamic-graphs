@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
 
+#! TODO: Alguns grafs són weighted i altres de unweighted. Alguns grafs són dirigits, i d'altres que són undirected.
+
 def read_file(file_path):
     """Llegir un fitxer d'entrada i passar a un DataFrame de pandas
 
@@ -61,28 +63,28 @@ class Reader:
         return splitted_list[-1]
     
     def create_dataset(self):
-        """Importació d'un graf del teu repositori local
+            """Importació d'un graf del teu repositori local
 
-        Returns:
-            DataFrame: Taula amb el contingut del fitxer
-        """
-        # Crear una finestra oculta 
-        root = tk.Tk()
-        root.withdraw()
-        root.title("Selecciona un graf amb format (n1,n2,timestamp)")
+            Returns:
+                DataFrame: Taula amb el contingut del fitxer
+            """
+            # Crear una finestra oculta 
+            root = tk.Tk()
+            root.withdraw()
+            root.title("Selecciona un graf amb format (n1,n2,timestamp)")
 
-        # L'usuari importa el graf des de el seu repositori local
-        file_path = self.import_file()
-        self.filename = self.extract_filename(file_path)
-        # Comprovar si s'ha seleccionat un fitxer
-        while (not file_path):
-            print("No és vàlid el fitxer seleccionat.") 
+            # L'usuari importa el graf des de el seu repositori local
             file_path = self.import_file()
+            self.filename = self.extract_filename(file_path)
+            # Comprovar si s'ha seleccionat un fitxer
+            while (not file_path):
+                print("No és vàlid el fitxer seleccionat.") 
+                file_path = self.import_file()
 
-        # Llegeix el contingut del fitxer i el posem en format de taula
-        df = read_file(file_path)
-        df = df.sort_values(by="Timestamp") # Ordenem de forma ascendent els timestamps 
-        return df
+            # Llegeix el contingut del fitxer i el posem en format de taula
+            df = read_file(file_path)
+            df = df.sort_values(by="Timestamp") # Ordenem de forma ascendent els timestamps 
+            return df
 
     def retrieve_df_information(self):
         """Mostrar informació del fitxer llegit.

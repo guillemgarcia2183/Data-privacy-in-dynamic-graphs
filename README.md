@@ -67,7 +67,7 @@ aves-sparrow-social: Easy (52, 516) -- https://networkrepository.com/aves-sparro
 
 insecta-ant-colony5: Medium (152, 194K) -- https://networkrepository.com/insecta-ant-colony5.php -- 18/02
 
-soc-wiki-elec: Hard (7.1K, 107K) -- https://networkrepository.com/soc-wiki-elec.php -- 18/02
+ia-facebook-wall-wosn-dir: Hard (42.4K, 877K) -- https://networkrepository.com/ia-facebook-wall-wosn-dir.php -- 18/02
 
 https://github.com/GiulioRossetti/awesome-network-analysis
 
