@@ -10,7 +10,7 @@ class MainManager:
         """Gestió del procés del programa
         """
         self.reader = Reader()
-        #self.reader.retrieve_df_information()
+        self.reader.retrieve_df_information()
         self.graph = Graph(self.reader.filename, self.reader.df)
         #self.graph.visualize_per_timestamp()
         #self.graph.animate_graph()
