@@ -1,9 +1,9 @@
 ### Classe per llegir el fitxer d'entrada. 
-import tkinter as tk
-from tkinter import filedialog
 import pandas as pd
+import easygui
 
 #! TODO: Alguns grafs són weighted i altres de unweighted. Alguns grafs són dirigits, i d'altres que són undirected.
+#! Eliminar obrir directori d'arxius, millor fer un menú si les opcions són reduïdes. En cas de voler afegir-ne un de nou fora de la llista, implementar-ho! 
 
 def read_file(file_path):
     """Llegir un fitxer d'entrada i passar a un DataFrame de pandas
@@ -41,19 +41,19 @@ class Reader:
         self.df = self.create_dataset()
         self.filename = ''
 
-    @staticmethod
-    def import_file():
-        """Obrir l'explorador de fitxers perquè l'usuari importi el graf 
+    # @staticmethod
+    # def import_file():
+    #     """Obrir l'explorador de fitxers perquè l'usuari importi el graf 
 
-        Returns:
-            str: Path del fitxer seleccionat
-        """
-        # Seleccionar un fitxer i retornar-lo
-        file_path = filedialog.askopenfilename(
-            title="Select a Dataset",
-            filetypes=[("All Files", "*.*")]
-        )
-        return file_path
+    #     Returns:
+    #         str: Path del fitxer seleccionat
+    #     """
+    #     # Seleccionar un fitxer i retornar-lo
+    #     file_path = filedialog.askopenfilename(
+    #         title="Select a Dataset",
+    #         filetypes=[("All Files", "*.*")]
+    #     )
+    #     return file_path
     
     def extract_filename(self, file_path):
         """Extraure el nom del fitxer de la ruta del fitxer
@@ -61,30 +61,25 @@ class Reader:
         print(file_path)
         splitted_list = file_path.split("/")
         return splitted_list[-1]
-    
+
     def create_dataset(self):
-            """Importació d'un graf del teu repositori local
+        """Importación de un grafo desde el repositorio local.
 
-            Returns:
-                DataFrame: Taula amb el contingut del fitxer
-            """
-            # Crear una finestra oculta 
-            root = tk.Tk()
-            root.withdraw()
-            root.title("Selecciona un graf amb format (n1,n2,timestamp)")
+        Returns:
+            DataFrame: Tabla con el contenido del archivo.
+        """
+        file_path = easygui.fileopenbox(title="Selecciona un graf dinàmic")
+        
+        while not file_path:
+            print("No és vàlid el fitxer seleccionat.") 
+            file_path = easygui.fileopenbox(title="Selecciona un graf dinàmic")
 
-            # L'usuari importa el graf des de el seu repositori local
-            file_path = self.import_file()
-            self.filename = self.extract_filename(file_path)
-            # Comprovar si s'ha seleccionat un fitxer
-            while (not file_path):
-                print("No és vàlid el fitxer seleccionat.") 
-                file_path = self.import_file()
+        self.filename = self.extract_filename(file_path)
+        
+        df = read_file(file_path)
+        df = df.sort_values(by="Timestamp")  
+        return df
 
-            # Llegeix el contingut del fitxer i el posem en format de taula
-            df = read_file(file_path)
-            df = df.sort_values(by="Timestamp") # Ordenem de forma ascendent els timestamps 
-            return df
 
     def retrieve_df_information(self):
         """Mostrar informació del fitxer llegit.

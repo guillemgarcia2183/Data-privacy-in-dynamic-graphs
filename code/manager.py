@@ -21,13 +21,19 @@ class MainManager:
         print("#################################################")
         print("PRIVACY AND COMMUNITY DETECTION FOR DYNAMIC GRAPHS")
         print("################################################# \n")
-        print("This program analyzes dynamic graphs to provide insights")
-        print("on privacy risks and community structures. It helps detect")
-        print("sensitive information exposure and identifies clusters of nodes")
-        print("that evolve over time. \n")
-        print("Features:")
-        print("- Privacy risk assessment")
-        print("- Community detection algorithms")
-        print("- Temporal graph analysis")
-        print("- Visualization of dynamic structures \n")
+        print("El següent programa es pot utilitzar com a eina per")
+        print("fer anàlisi de grafs dinàmics. Permet protegir un graf d'entrada")
+        print("i fer detecció de comunitats amb diferents algorismes implementats. \n")
+
+        #! TODO: Preguntar si es vol executar tots a la vegada per fer comparatives
+
+        print("Seleccioni un dels grafs de la següent llista utilitzats com exemples:")
+        print("(1): Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)")
+        print("(2): Reptilia-tortoise dataset (|V| = 45, |E| = 134, unweighted, undirected)")
+        print("(3): Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)")
+        print("(4): CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)")
+        print("(5): IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed)")
         print("################################################# \n")
+
+        #! TODO: FER LA SELECCIÓ, ADAPTAR EL READER A LA SELECCIÓ!
+        
