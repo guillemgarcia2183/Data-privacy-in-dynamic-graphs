@@ -84,10 +84,10 @@ class Reader:
             ngraphs = dataset['Timestamp'].nunique()
             total_nodes = pd.concat([dataset['From'], dataset['To']]).nunique()
             total_edges = len(dataset)
-            print(f"############# INFORMACIÓ DEL FITXER: {name} #############")
-            print(f"Nombre de grafs (timestamps únics): {ngraphs}")
-            print(f"Nombre de nodes totals: {total_nodes}")
-            print(f"Nombre d'arestes totals: {total_edges}")
-            print("#################################################")
+            print(f"\n ############# INFORMACIÓ DEL FITXER: {name} #############")
+            print(f"Nombre de grafs (timestamps únics) #t = {ngraphs}")
+            print(f"Nombre de nodes totals |V| = {total_nodes}")
+            print(f"Nombre d'arestes totals |E| = {total_edges}")
+            
 
 

@@ -56,11 +56,12 @@ class MainManager:
         if selection == '1':
             return list(dictionary_options.values()) 
         
+        list_option2 = list()
         option2 = input("Tria un dels datasets (1-5): ")
         while option2 not in ['1', '2', '3', '4', '5']:
             option2 = input("Tria un dels datasets (1-5): ")
-
-        return list(dictionary_options[option2]) 
+        list_option2.append(dictionary_options[option2])
+        return list_option2
 
 
 if __name__ == "__main__":
