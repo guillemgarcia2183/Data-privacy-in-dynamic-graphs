@@ -19,6 +19,8 @@
 
 * Implementar el mètode d'anonimització en diferents datasets de dades, des de casos senzills fins a problemes més complexos.
 
+* Investigar sobre la detecció de comunitats dintre de grafs dinàmics. 
+
 * Estudiar el cost que té aplicar el mètode d'anonimització, tant en temps, la pèrdua de dades que pot comportar, o bé la seva utilitat. 
 
 * Analitzar en quins casos pot anar millor els algoritmes desenvolupats segons els resultats que ens dona.
@@ -74,3 +76,5 @@ https://github.com/GiulioRossetti/awesome-network-analysis
 https://projects.csail.mit.edu/dnd/DBLP/
 
 https://catalog.caida.org/dataset/as_rank
+
+https://garciaguillemdausas-team-company.monday.com/boards/1836413048/

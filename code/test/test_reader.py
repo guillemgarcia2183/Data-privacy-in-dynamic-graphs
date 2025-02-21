@@ -12,25 +12,27 @@ import reader as reader_if
 
 # VARIABLES GLOBALS
 PATH1 = parent_dir + "/data/test/CollegeMsg.txt"
-PATH2 = parent_dir + "/data/test/Email-Enron.txt"
+PATH2 = parent_dir + "/data/test/aves-sparrow-social.edges"
+PATH3 = parent_dir + "/data/test/Email-Enron.txt"
 
-#! TODO: CANVIAR ELS TESTOS: COMPROVAR TAMBÉ COM FUNCIONA PER CASOS DE WEIGHTED GRAPHS
 class TestReader(unittest.TestCase):
-    __slots__ = ('file1', 'file2')
+    __slots__ = ('file1', 'file2', 'file3')
     def setUp(self):
         """Crea una instància de Dataset
         """
-        self.file1 = reader_if.read_file(PATH1)
+        self.file1 = reader_if.read_file((PATH1, 'unweighted'))
+        self.file2 = reader_if.read_file((PATH2, 'weighted'))
 
     def test_files(self):
         """1. Test de lectura de fitxers 
         """
         self.assertIsInstance(self.file1, pandas.core.frame.DataFrame)
+        self.assertIsInstance(self.file2, pandas.core.frame.DataFrame)
         try:
-            self.file2 = reader_if.read_file(PATH2)
+            self.file3 = reader_if.read_file((PATH3, 'unweighted'))
         except:
-            self.file2 = None
-        self.assertIsNone(self.file2)         
+            self.file3 = None
+        self.assertIsNone(self.file3)         
 
 if __name__ == '__main__':
     unittest.main()
