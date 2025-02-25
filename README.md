@@ -23,7 +23,7 @@
 
 * Estudiar el cost que té aplicar el mètode d'anonimització, tant en temps, la pèrdua de dades que pot comportar, o bé la seva utilitat. 
 
-* Analitzar en quins casos pot anar millor els algoritmes desenvolupats segons els resultats que ens dona.
+* Analitzar en quins casos pot anar millor els algoritmes desenvolupats segons els resultats que ens dona (comparar algoritmes, els propis paràmetres (k), etc.).
 
 * Comparar diferents algoritmes de detecció de comunitats en grafs dinàmics, tant si se li aplica un mètode de protecció o no.
 
@@ -31,7 +31,18 @@
 
 * Fer un mètode per predir el graf que conformarà el següent instant de temps (les arestes que es connecten en t+1).
 
+* Realitzar una simulació d'un atac a la xarxa, i comparar els algoritmes protegits amb els grafs originals.
+
 * Intentar visualitzar a mode d'animació com es protegeixen les dades, o bé la comparació de detecció de comunitats durant el temps.
+
+## Metodologia
+
+La manera d'organitzar el projecte ha estat mitjançant un diagrama de Gantt. Les tasques que s'han anat realitzant estan dividides segons si forma part a la part conceptual, o bé si és a nivell pràctic. La part conceptual del treball engloba a la recerca d'informació i els dissenys dels problemes. En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de protecció i detecció de comunitats estudiats, i finalment fer una anàlisi de mètriques. 
+
+El llenguatge de programació que s'ha fet servir principalment ha estat Python v3.13.0, utilitzant les llibreries:
+    - NetworkX v3.2.1
+    - Pandas v2.1.4
+    - ...
 
 ## Referències
 
@@ -77,4 +88,8 @@ https://projects.csail.mit.edu/dnd/DBLP/
 
 https://catalog.caida.org/dataset/as_rank
 
-https://garciaguillemdausas-team-company.monday.com/boards/1836413048/
+https://arxiv.org/pdf/2409.17623
+
+https://www.researchgate.net/profile/Yitao-Duan-2/publication/220556834_Privacy_Preserving_Link_Analysis_on_Dynamic_Weighted_Graph/links/00b4952776889addee000000/Privacy-Preserving-Link-Analysis-on-Dynamic-Weighted-Graph.pdf
+
+Diagrama de Gantt: https://garciaguillemdausas-team-company.monday.com/boards/1836413048/
