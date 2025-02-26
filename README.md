@@ -38,6 +38,8 @@
 
 Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. Hi ha varietat de datasets, per tal d'observar les solucions amb diferents volumns de dades i distintes característiques. La llista de datasets que es conté per defecte és la de a continuació:
 
+<div align="center">
+  
 | Name | # Vertices | # Edges | Is directed | Has weight 
 |-----------|-----------|-----------|-----------|-----------|
 | Aves-sparrow | 52 | 516 | False | True |
@@ -45,6 +47,8 @@ Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. Hi ha variet
 | Insecta-ant | 152 | 194K | False | True |
 | CollegeMsg | 1899 | 59.8K | True | False |
 | IA-Facebook | 42.4K | 877K | True | True |
+
+</div>
 
 El llenguatge de programació que s'ha fet servir principalment ha estat Python v3.13.0, utilitzant les llibreries:
 
