@@ -56,55 +56,61 @@ El llenguatge de programació que s'ha fet servir principalment ha estat Python 
 
 * Tensorflow (v2.17.0): Per a crear una xarxa neural, en cas de voler fer un forecasting de grafs. 
 
-Com a planificació personal, s'ha realitzat un diagrama de Gantt, estimant en quin moment s'ha de tenir cada possible tasca del treball finalitzada [Annexe]. Les tasques estan dividides segons si forma part a la part conceptual del projecte, o bé si és a nivell pràctic. La part teòrica del treball engloba a la recerca d'informació i la definició dels mètodes. En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de protecció i detecció de comunitats estudiats, i finalment fer una anàlisi de mètriques. 
+Com a planificació personal, s'ha realitzat un diagrama de Gantt, estimant en quin moment s'ha de tenir cada possible tasca del treball finalitzada.
+Les tasques estan dividides segons si forma part a la part conceptual del projecte, o bé si és a nivell pràctic. 
+La part teòrica del treball engloba a la recerca d'informació i la definició dels mètodes. 
+En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de protecció i detecció de comunitats estudiats, i finalment fer una anàlisi de mètriques. 
 
 ## Estat de l'art
 
-Com a un començament, s'ha fet una recerca de quines són les tècniques que s'utilitzen per protegir grafs dinàmics i també detectar i mantenir l'estructura de les comunitats durant el temps. Per solucionar el problema de privacitat en un graf dinàmic es poden utilitzar (....)
+Les maneres de protegir grafs són diverses, com per exemple fer que els nodes siguin indistinguibles entre ells a partir dels seus atributs, afegir soroll, amb estratègies de xifratge, etc. Dintre dels grafs dinàmics ve a ser el mateix, però, s'ha de mantenir protegit tant tot el conjunt sencer com de forma individual. 
+Les estratègies que s'utilitzarà serà principalment el K-Anonymity [3] i el Edge-Local Differential Privacy [4] en grafs dinàmics. En [5] es pot observar diferents mètodes per a la detecció de comunitats dintre de grafs que canvien durant el temps. L'itenció és utilitzar-ne gran part d'aquests per fer comparativa respecte els grafs originals i protegits.
 
 ## Referències
 
 [1] J. Leskovec, Stanford Network Analysis Project (SNAP). Disponible en: https://snap.stanford.edu/index.html. [Darrer accés: 26-feb-2025].
 
-[2] Ryan A. Rossi i Nesreen K. Ahmed, The Network Data Repository with Interactive Graph Analytics and Visualization. AAAI, 2015. 
+[2] Ryan A. Rossi i Nesreen K. Ahmed, The Network Data Repository with Interactive Graph Analytics and Visualization, 2015. 
 Disponible en: https://networkrepository.com/dynamic.php. [Darrer accés: 26-feb-2025].
 
-S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", 
+[3] L. Rossi, M. Musolesi i A. Torsello, "On the k-Anonymization of Time-Varying and Multi-Layer Social Graphs", Proceedings of the International AAAI Conference on Web and Social Media, 9(1), 377-386, 2021. Disponible en: https://ojs.aaai.org/index.php/ICWSM/article/view/14605. [Darrer accés: 26-feb-2025].
+
+[4] S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", 
 In: Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. 
-Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2-feb-2025]. 
+Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2-feb-2025].
 
-F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
-Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
-Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 
-[Darrer accés: 13-gen-2025].
-
-J. Salas, V. Torra, "Differentially private graph publishing and randomized
-response for collaborative filtering", In: Proceedings of the 17th International
-Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
-2: SECRYPT, Lieusaint, Paris, France, 8–10 July 2020, pp. 415–422. ScitePress
-(2020). Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6-feb-2025].
-
-B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
+[5] B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
 Disponible en: https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md. [Darrer accés: 26-feb-2025]. 
 
-P. Agarwal, R. Verma, A. Agarwal i T. Chakraborty, "DyPerm: Maximizing Permanence for Dynamic Community Detection", 2018.
-Disponible en: https://arxiv.org/pdf/1802.04593. [Darrer accés: 26-feb-2025].
+> F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
+> Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
+> Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 
+> [Darrer accés: 13-gen-2025].
 
-S. Boudebza, R. Cazabet, O. Nouali i F. Azouaou, "Detecting Stable Communities in Link Streams at Multiple Temporal Scales", 2019. 
-Disponible en: https://arxiv.org/pdf/1907.10453. [Darrer accés: 26-feb-2025].
+> J. Salas, V. Torra, "Differentially private graph publishing and randomized
+> response for collaborative filtering", In: Proceedings of the 17th International
+> Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
+> 2: SECRYPT, Lieusaint, Paris, France, 8–10 July 2020, pp. 415–422. ScitePress
+> (2020). Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6-feb-2025].
 
-R. Clark, G. Punzo i M. Macdonald, "Network Communities of Dynamical Influence". Sci Rep 9, 17590, 2019. 
-Disponible en: https://www.nature.com/articles/s41598-019-53942-4. [Darrer accés: 26-feb-2025]. 
+> P. Agarwal, R. Verma, A. Agarwal i T. Chakraborty, "DyPerm: Maximizing Permanence for Dynamic Community Detection", 2018.
+> Disponible en: https://arxiv.org/pdf/1802.04593. [Darrer accés: 26-feb-2025].
 
-G. Rossetti, Awesome Network Analysis. GitHub. 
-Disponible en: https://github.com/GiulioRossetti/awesome-network-analysis. [Darrer accés: 26-feb-2025].
+> S. Boudebza, R. Cazabet, O. Nouali i F. Azouaou, "Detecting Stable Communities in Link Streams at Multiple Temporal Scales", 2019. 
+> Disponible en: https://arxiv.org/pdf/1907.10453. [Darrer accés: 26-feb-2025].
 
-K. Zhao, C. Guo, Y. Cheng, P. Han, M. Zhang i B. Yang,  "Multiple Time Series Forecasting with
-Dynamic Graph Modeling".  Proceedings of the VLDB Endowment, 17(4), 753-765, 2023. 
-Disponible en: https://vbn.aau.dk/ws/portalfiles/portal/698843020/3636218.3636230.pdf. [Darrer accés: 26-feb-2025].
+> R. Clark, G. Punzo i M. Macdonald, "Network Communities of Dynamical Influence". Sci Rep 9, 17590, 2019. 
+> Disponible en: https://www.nature.com/articles/s41598-019-53942-4. [Darrer accés: 26-feb-2025]. 
 
-S. Raskhodnikova i T. Steiner, "Fully Dynamic Graph Algorithms with Edge Differential Privacy", 2024. 
-Disponible en: https://arxiv.org/pdf/2409.17623. [Darrer accés: 26-feb-2025]. 
+> G. Rossetti, Awesome Network Analysis. GitHub. 
+> Disponible en: https://github.com/GiulioRossetti/awesome-network-analysis. [Darrer accés: 26-feb-2025].
+
+> K. Zhao, C. Guo, Y. Cheng, P. Han, M. Zhang i B. Yang,  "Multiple Time Series Forecasting with
+> Dynamic Graph Modeling".  Proceedings of the VLDB Endowment, 17(4), 753-765, 2023. 
+> Disponible en: https://vbn.aau.dk/ws/portalfiles/portal/698843020/3636218.3636230.pdf. [Darrer accés: 26-feb-2025].
+
+> S. Raskhodnikova i T. Steiner, "Fully Dynamic Graph Algorithms with Edge Differential Privacy", 2024. 
+> Disponible en: https://arxiv.org/pdf/2409.17623. [Darrer accés: 26-feb-2025]. 
 
 
 
