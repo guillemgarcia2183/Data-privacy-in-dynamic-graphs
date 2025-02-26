@@ -37,17 +37,26 @@
 ## Metodologia
 
 Els casos d'estudi son diversos tipus de datasets trobats en [x,y]. Hi ha varietat de datasets, per tal d'observar les solucions amb diferents volumns de dades i distintes característiques. La llista de datasets que es conté per defecte és la de a continuació:
-    * Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected) [x]
-    * Reptilia-tortoise dataset (|V| = 45, |E| = 134, unweighted, undirected) [x]
-    * Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected) [x]
-    * CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed) [x]
-    * IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed) [x]
+
+* Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected) [x]
+
+* Reptilia-tortoise dataset (|V| = 45, |E| = 134, unweighted, undirected) [x]
+
+* Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected) [x]
+
+* CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed) [x]
+
+* IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed) [x]
 
 El llenguatge de programació que s'ha fet servir principalment ha estat Python v3.13.0, utilitzant les llibreries:
-    * NetworkX (v3.2.1): Per a la creació dels grafs a partir de les dades dels datasets. 
-    * Pandas (v2.1.4): Per fer conversió de dades en DataFrames. Ús principalment per fer agregacions de dades.
-    * Matplotlib (v3.8.2): Utilitzat per visualització de gràfics. Eficient per observar mètriques.
-    * Tensorflow (v2.17.0): Per a crear una xarxa neural, en cas de voler fer un forecasting de grafs. 
+
+* NetworkX (v3.2.1): Per a la creació dels grafs a partir de les dades dels datasets. 
+
+* Pandas (v2.1.4): Per fer conversió de dades en DataFrames. Ús principalment per fer agregacions de dades.
+
+* Matplotlib (v3.8.2): Utilitzat per visualització de gràfics. Eficient per observar mètriques.
+
+* Tensorflow (v2.17.0): Per a crear una xarxa neural, en cas de voler fer un forecasting de grafs. 
 
 Com a planificació personal, s'ha realitzat un diagrama de Gantt, estimant en quin moment s'ha de tenir cada possible tasca del treball finalitzada [Annexe]. Les tasques estan dividides segons si forma part a la part conceptual del projecte, o bé si és a nivell pràctic. La part teòrica del treball engloba a la recerca d'informació i la definició dels mètodes. En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de protecció i detecció de comunitats estudiats, i finalment fer una anàlisi de mètriques. 
 
@@ -74,7 +83,9 @@ Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
 https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md **[Referència per dir quin és l'estat de l'art]**
 
 * DyPerm: Maximizing Permanence for Dynamic Community Detection: https://arxiv.org/pdf/1802.04593
+
 * Detecting Stable Communities in Link Streams at Multiple Temporal Scales: https://arxiv.org/pdf/1907.10453
+
 * Network communities of Dynamical Influence: https://www.nature.com/articles/s41598-019-53942-4
 
 Enron -- https://snap.stanford.edu/data/email-Enron.html -- 18/02
