@@ -36,17 +36,15 @@
 
 ## Metodologia
 
-Els casos d'estudi son diversos tipus de datasets trobats en [x,y]. Hi ha varietat de datasets, per tal d'observar les solucions amb diferents volumns de dades i distintes característiques. La llista de datasets que es conté per defecte és la de a continuació:
+Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. Hi ha varietat de datasets, per tal d'observar les solucions amb diferents volumns de dades i distintes característiques. La llista de datasets que es conté per defecte és la de a continuació:
 
-* Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected) [x]
-
-* Reptilia-tortoise dataset (|V| = 45, |E| = 134, unweighted, undirected) [x]
-
-* Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected) [x]
-
-* CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed) [x]
-
-* IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed) [x]
+| Name | # Vertices | # Edges | Is directed | Has weight 
+|-----------|-----------|-----------|-----------|-----------|
+| Aves-sparrow | 52 | 516 | False | True |
+| Reptilia-tortoise | 45 | 134 | False | False |
+| Insecta-ant | 152 | 194K | False | True |
+| CollegeMsg | 1899 | 59.8K | True | False |
+| IA-Facebook | 42.4K | 877K | True | True |
 
 El llenguatge de programació que s'ha fet servir principalment ha estat Python v3.13.0, utilitzant les llibreries:
 
@@ -64,52 +62,50 @@ Com a planificació personal, s'ha realitzat un diagrama de Gantt, estimant en q
 
 Com a un començament, s'ha fet una recerca de quines són les tècniques que s'utilitzen per protegir grafs dinàmics i també detectar i mantenir l'estructura de les comunitats durant el temps. Per solucionar el problema de privacitat en un graf dinàmic es poden utilitzar (....)
 
-Per la detecció de comunitats, hi ha una llista de mètodes en [x], que s'ha tingut interès principalment en el treball de Network Communities of Dynamical Influence [x], Detecting Stable Communities in Link Streams at Multiple Temporal Scales [x] i DyPerm: Maximizing Permanence for Dynamic Community Detection [x].
-
 ## Referències
 
-SNAP, "CollegeMsg: University of California social network graph", Stanford University. [Online]. Disponible en: https://snap.stanford.edu/data/CollegeMsg.html. [Darrer accés: 11 de gener del 2025].
+[1] J. Leskovec, Stanford Network Analysis Project (SNAP). Disponible en: https://snap.stanford.edu/index.html. [Darrer accés: 26-feb-2025].
 
-S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", In: Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. [Online]. Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2 de febrer del 2025]. 
+[2] Ryan A. Rossi i Nesreen K. Ahmed, The Network Data Repository with Interactive Graph Analytics and Visualization. AAAI, 2015. 
+Disponible en: https://networkrepository.com/dynamic.php. [Darrer accés: 26-feb-2025].
 
-F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. [Online]. Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. [Darrer accés: 9 de gener del 2025].
+S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", 
+In: Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. 
+Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2-feb-2025]. 
+
+F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
+Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
+Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 
+[Darrer accés: 13-gen-2025].
 
 J. Salas, V. Torra, "Differentially private graph publishing and randomized
 response for collaborative filtering", In: Proceedings of the 17th International
 Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
 2: SECRYPT, Lieusaint, Paris, France, 8–10 July 2020, pp. 415–422. ScitePress
-(2020). [Online]. Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6 de febrer del 2025].
+(2020). Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6-feb-2025].
 
-https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md **[Referència per dir quin és l'estat de l'art]**
+B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
+Disponible en: https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md. [Darrer accés: 26-feb-2025]. 
 
-* DyPerm: Maximizing Permanence for Dynamic Community Detection: https://arxiv.org/pdf/1802.04593
+P. Agarwal, R. Verma, A. Agarwal i T. Chakraborty, "DyPerm: Maximizing Permanence for Dynamic Community Detection", 2018.
+Disponible en: https://arxiv.org/pdf/1802.04593. [Darrer accés: 26-feb-2025].
 
-* Detecting Stable Communities in Link Streams at Multiple Temporal Scales: https://arxiv.org/pdf/1907.10453
+S. Boudebza, R. Cazabet, O. Nouali i F. Azouaou, "Detecting Stable Communities in Link Streams at Multiple Temporal Scales", 2019. 
+Disponible en: https://arxiv.org/pdf/1907.10453. [Darrer accés: 26-feb-2025].
 
-* Network communities of Dynamical Influence: https://www.nature.com/articles/s41598-019-53942-4
+R. Clark, G. Punzo i M. Macdonald, "Network Communities of Dynamical Influence". Sci Rep 9, 17590, 2019. 
+Disponible en: https://www.nature.com/articles/s41598-019-53942-4. [Darrer accés: 26-feb-2025]. 
 
-Enron -- https://snap.stanford.edu/data/email-Enron.html -- 18/02
+G. Rossetti, Awesome Network Analysis. GitHub. 
+Disponible en: https://github.com/GiulioRossetti/awesome-network-analysis. [Darrer accés: 26-feb-2025].
 
-reptilia-tortoise-network-lm: -- https://networkrepository.com/reptilia-tortoise-network-lm.php -- 18/02
+K. Zhao, C. Guo, Y. Cheng, P. Han, M. Zhang i B. Yang,  "Multiple Time Series Forecasting with
+Dynamic Graph Modeling".  Proceedings of the VLDB Endowment, 17(4), 753-765, 2023. 
+Disponible en: https://vbn.aau.dk/ws/portalfiles/portal/698843020/3636218.3636230.pdf. [Darrer accés: 26-feb-2025].
 
-aves-sparrow-social: -- https://networkrepository.com/aves-sparrow-social.php -- 18/02
+S. Raskhodnikova i T. Steiner, "Fully Dynamic Graph Algorithms with Edge Differential Privacy", 2024. 
+Disponible en: https://arxiv.org/pdf/2409.17623. [Darrer accés: 26-feb-2025]. 
 
-insecta-ant-colony5: -- https://networkrepository.com/insecta-ant-colony5.php -- 18/02
 
-ia-facebook-wall-wosn-dir: -- https://networkrepository.com/ia-facebook-wall-wosn-dir.php -- 18/02
-
-https://github.com/GiulioRossetti/awesome-network-analysis
-
-https://projects.csail.mit.edu/dnd/DBLP/
-
-https://vbn.aau.dk/ws/portalfiles/portal/698843020/3636218.3636230.pdf
-
-https://catalog.caida.org/dataset/as_rank
-
-https://arxiv.org/pdf/2409.17623
-
-https://www.researchgate.net/profile/Yitao-Duan-2/publication/220556834_Privacy_Preserving_Link_Analysis_on_Dynamic_Weighted_Graph/links/00b4952776889addee000000/Privacy-Preserving-Link-Analysis-on-Dynamic-Weighted-Graph.pdf
-
-Diagrama de Gantt: https://garciaguillemdausas-team-company.monday.com/boards/1836413048/
 
 
