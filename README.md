@@ -1,5 +1,5 @@
 # Privacy in dynamic graphs
-## Anonymization and community detection
+## Anonymization and community detection in temporal-varying graphs
 > For this project, we consider dynamic graphs. That 
 > is, graphs which have a temporal component. In such graphs we might find
 > vertices or even nodes which appear or disappear in a temporal basis.
