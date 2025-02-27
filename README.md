@@ -8,35 +8,37 @@
 > possible solutions for the anonymization of temporal graphs by relaying
 > in well known privacy models such as k-anonymity and differential privacy.
 
-## Objectius principals
+El problema de protecció de dades està a l'ordre del dia, on és crític dintre de molts sectors, com pot ser el de salut, tecnològic, finances, etc.
+Un tema preocupant són les xarxes socials o altres tipus de xarxes que generen un gran volum de dades i interaccions en cada instant,
+on està la necessitat de mantenir-les protegides en tot moment. Aquestes dades es poden interpretar
+com a grafs, on els nodes representen objectes o usuaris, i les arestes són les relacions entre dos nodes dintre de la xarxa.
+Des del punt de vista d'una xarxa, els nodes i arestes poden anar canviant durant el temps, i és necessari tractar aquests grafs
+per tal d'evitar atacs que poden portar a identificar l'identitat o informació personal dels usuaris. 
 
-* Estudiar de manera teòrica què és un graf dinàmic, i quina aplicació té en l'actualitat.
+## 1. Objectius
+Per tant, l'objectiu és investigar sobre els grafs que varien durant el temps, on es volen assolir els següents punts:
 
-* Quins són els mètodes que es poden fer servir per aplicar privacitat en un graf dinàmic (estat de l'art), i quins són els que s'estudiaràn. En principi, es té com a objectiu utilitzar els conceptes de K-Anonimity i Differential Privacy. 
+* Establir les definicions bàsiques d'un graf temporal i quines propietats addicionals té en comparació dels grafs estàtics.
 
-* Pels mètodes que s'utilitzen, explicar tot el seu funcionament i què aporta en termes de privacitat.
+* Aplicar diversos mètodes de privacitat a diferents conjunts de datasets, des de volums de dades fàcils de tractar, 
+fins a una quantitat massiva de dades. Pels mètodes de privacitat, esquematitzar quins són i com funcionen. L'intenció 
+és que els mètodes siguin els més consistents i òptims possibles, on es vol fer un estudi de quin són els millors paràmetres per cada conjunt de dades. 
 
-* Implementar el mètode d'anonimització en diferents datasets de dades, des de casos senzills fins a problemes més complexos.
+* Realitzar simulacions d'atacs a la xarxa per cada mètode de protecció, i analitzar des del punt de vista del atacant 
+què ha de passar per retreure informació d'un individu, tant en un instant de temps, com durant tota l'evolució temporal.
 
-* Investigar sobre la detecció de comunitats dintre de grafs dinàmics. 
+* Fer una comparativa a nivell de privacitat i utilitat dels grafs protegits i original. Una mètrica que es vol estudiar i donar importància és com es fa la detecció
+de comunitats, i com aquestes evolucionen durant el temps. Per tant també es vol analitzar quines formes hi ha per detectar comunitats i fer comparacions entre elles.
 
-* Estudiar el cost que té aplicar el mètode d'anonimització, tant en temps, la pèrdua de dades que pot comportar, o bé la seva utilitat. 
+* Intentar implementar una xarxa neuronal que permet predir quina serà l'evolució d'un graf en el següent instant de temps, i que compleixi els termes de privacitat dels mètodes.
+ 
+* Provar a visualitzar a mode d'animació com es protegeixen les dades, o bé la comparació de detecció de comunitats durant el temps.
 
-* Analitzar en quins casos pot anar millor els algoritmes desenvolupats segons els resultats que ens dona (comparar algoritmes, els propis paràmetres (k), etc.).
+## 2. Metodologia
 
-* Comparar diferents algoritmes de detecció de comunitats en grafs dinàmics, tant si se li aplica un mètode de protecció o no.
-
-## Objectius secundaris 
-
-* Fer un mètode per predir el graf que conformarà el següent instant de temps. En intentar fer aquesta predicció, l'objectiu principal és que aquest graf generat també compleixi les mateixes propietats.
-
-* Realitzar una simulació d'un atac a la xarxa, i comparar els algoritmes protegits amb els grafs originals.
-
-* Intentar visualitzar a mode d'animació com es protegeixen les dades, o bé la comparació de detecció de comunitats durant el temps.
-
-## Metodologia
-
-Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. Hi ha varietat de datasets, per tal d'observar les solucions amb diferents volumns de dades i distintes característiques. La llista de datasets que es conté per defecte és la de a continuació:
+Com hem esmentat en l'apartat 1, es volen aplicar diferents mètodes de privacitat. 
+Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. 
+La llista de datasets que es conté per defecte és la de a continuació:
 
 <div align="center">
   
@@ -65,12 +67,14 @@ Les tasques estan dividides segons si forma part a la part conceptual del projec
 La part teòrica del treball engloba a la recerca d'informació i la definició dels mètodes. 
 En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de protecció i detecció de comunitats estudiats, i finalment fer una anàlisi de mètriques. 
 
-## Estat de l'art
+## 3. Estat de l'art
 
-Les maneres de protegir grafs són diverses, com per exemple fer que els nodes siguin indistinguibles entre ells a partir dels seus atributs, afegir soroll, amb estratègies de xifratge, etc. Dintre dels grafs dinàmics ve a ser el mateix, però, s'ha de mantenir protegit tant tot el conjunt sencer com de forma individual. 
-Les estratègies que s'utilitzarà serà principalment el K-Anonymity [3] i el Edge-Local Differential Privacy [4] en grafs dinàmics. En [5] es pot observar diferents mètodes per a la detecció de comunitats dintre de grafs que canvien durant el temps. L'itenció és utilitzar-ne gran part d'aquests per fer comparativa respecte els grafs originals i protegits.
+Les maneres de protegir grafs són diverses, com per exemple fer que els nodes siguin indistinguibles entre ells a partir dels seus atributs, afegir soroll, 
+amb estratègies de xifratge, etc. Dintre dels grafs dinàmics ve a ser el mateix, però, s'ha de mantenir protegit tant tot el conjunt sencer com de forma individual. 
+Les estratègies que s'utilitzarà serà principalment el K-Anonymity [3] i el Edge-Local Differential Privacy [4] en grafs dinàmics, [Estat de l'art d'atacs(?)]. 
+En [5] es pot observar diferents mètodes per a la detecció de comunitats dintre de grafs que canvien durant el temps. L'itenció és utilitzar-ne gran part d'aquests per fer comparativa respecte els grafs originals i protegits.
 
-## Referències
+## 4. Referències
 
 [1] J. Leskovec, Stanford Network Analysis Project (SNAP). Disponible en: https://snap.stanford.edu/index.html. [Darrer accés: 26-feb-2025].
 
