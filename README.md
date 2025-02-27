@@ -36,7 +36,7 @@ de comunitats, i com aquestes evolucionen durant el temps. Per tant també es vo
 
 ## 2. Metodologia
 
-Com hem esmentat en l'apartat 1, es volen aplicar diferents mètodes de privacitat. 
+Com s'ha esmentat en l'apartat 1, es volen aplicar diferents mètodes de privacitat. 
 Els casos d'estudi son diversos tipus de datasets trobats en [1,2]. 
 La llista de datasets que es conté per defecte és la de a continuació:
 
