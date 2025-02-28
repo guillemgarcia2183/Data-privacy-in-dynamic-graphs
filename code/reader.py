@@ -29,6 +29,7 @@ def read_file(tp):
             # Llegir el fitxer i carregar la informació en una taula pandas
             for line in file:
                 from_node, to_node, weight, timestamp = map(float, line.split())  
+                #print(from_node, to_node, weight, timestamp)
                 data.append({'From': int(from_node), 'To': int(to_node), 'Weight': weight, 'Timestamp': int(timestamp)})
         df = pd.DataFrame(data)
         return df

@@ -36,14 +36,14 @@ class MainManager:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
         dictionary_options = {'1': (DATASET1, 'weighted', 'undirected'), 
-                               '2': (DATASET2, 'unweighted', 'undirected'),
+                               '2': (DATASET2, 'weighted', 'undirected'),
                                '3': (DATASET3, 'weighted', 'undirected'),
                                '4': (DATASET4, 'unweighted', 'directed'),
                                '5': (DATASET5, 'weighted', 'directed')}
 
         print("La llista de datasets que utilitzem per defecte són els següents:")
         print("(1): Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)")
-        print("(2): Reptilia-tortoise dataset (|V| = 45, |E| = 134, unweighted, undirected)")
+        print("(2): Mammalia-voles dataset (|V| = 1480, |E| = 4569, weighted, undirected)")
         print("(3): Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)")
         print("(4): CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)")
         print("(5): IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed) \n" )

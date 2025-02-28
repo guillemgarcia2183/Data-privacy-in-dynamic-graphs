@@ -45,7 +45,7 @@ La llista de datasets que es conté per defecte és la de a continuació:
 | Name | # Vertices | # Edges | Is directed | Has weight | # Snapshots | 
 |-----------|-----------|-----------|-----------|-----------|-----------|
 | Aves-sparrow | 52 | 516 | False | True | 2 | 
-| Reptilia-tortoise | 45 | 134 | False | False | 2 | 
+| Mammalia-voles | 1480 | 4569 | False | False | 61 | 
 | Insecta-ant | 152 | 194K | False | True | 41 | 
 | CollegeMsg | 1899 | 59.8K | True | False | 58911 |
 | IA-Facebook | 42.4K | 877K | True | True | 867939 |
