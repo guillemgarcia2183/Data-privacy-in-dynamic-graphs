@@ -69,10 +69,13 @@ En canvi, l'altre part s'enfoca en la recerca de dades, aplicar els mètodes de 
 
 ## 3. Estat de l'art
 
-Les maneres de protegir grafs són diverses, com per exemple fer que els nodes siguin indistinguibles entre ells a partir dels seus atributs, afegir soroll, 
-amb estratègies de xifratge, etc. Dintre dels grafs dinàmics ve a ser el mateix, però, s'ha de mantenir protegit tant tot el conjunt sencer com de forma individual. 
-Les estratègies que s'utilitzarà serà principalment el K-Anonymity [3] i el Edge-Local Differential Privacy [4] en grafs dinàmics, [Estat de l'art d'atacs(?)]. 
-En [5] es pot observar diferents mètodes per a la detecció de comunitats dintre de grafs que canvien durant el temps. L'itenció és utilitzar-ne gran part d'aquests per fer comparativa respecte els grafs originals i protegits.
+Les maneres de protegir grafs estàtics són diverses, 
+com per exemple fer que els nodes siguin indistinguibles entre ells a partir dels seus atributs, 
+afegir soroll, estratègies de xifratge, etc. En els grafs dinàmics es troben certes semblances amb les maneres de protegir les dades,
+però tenen una major complexitat ja que es conté un factor temporal. Principalment es volen implementar el K-Anonimity [3]
+i el Edge-Local Differential Privacy [4] aplicats en grafs temporals. 
+
+Similarment, en el moment de calcular la privacitat i utilitat, si volem saber la similitud entre grafs, es poden usar altres versions del \textit{Coeficient de Jaccard} o la \textit{Cosine Similarity} \textit{[5,6]}. Si es necessita implementar algorismes de detecció de comunitats com a informació d'utilitat, es té \textit{[7]}.
 
 ## 4. Referències
 
@@ -81,14 +84,28 @@ En [5] es pot observar diferents mètodes per a la detecció de comunitats dintr
 [2] Ryan A. Rossi i Nesreen K. Ahmed, The Network Data Repository with Interactive Graph Analytics and Visualization, 2015. 
 Disponible en: https://networkrepository.com/dynamic.php. [Darrer accés: 26-feb-2025].
 
-[3] L. Rossi, M. Musolesi i A. Torsello, "On the k-Anonymization of Time-Varying and Multi-Layer Social Graphs", Proceedings of the International AAAI Conference on Web and Social Media, 9(1), 377-386, 2021. Disponible en: https://ojs.aaai.org/index.php/ICWSM/article/view/14605. [Darrer accés: 26-feb-2025].
+[3] L. Rossi, M. Musolesi i A. Torsello, "On the k-Anonymization of Time-Varying and Multi-Layer Social Graphs", 
+Proceedings of the International AAAI Conference on Web and Social Media, 9(1), 377-386, 2021. Disponible en: https://ojs.aaai.org/index.php/ICWSM/article/view/14605. [Darrer accés: 26-feb-2025].
 
 [4] S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", 
 In: Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. 
 Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2-feb-2025].
 
-[5] B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
+[5] B. Ruan, J. Gan, H. Wu, i A. Wirth, "Dynamic Structural Clustering on Graphs", 
+arXiv preprint arXiv:2108.11549, 2021. Disponible en: https://arxiv.org/abs/2108.11549. [Darrer accés: 1-mar-2025].
+
+[6] E. Castrillo, E. León, i J. Gómez, "Dynamic Structural Similarity on Graphs", 
+arXiv preprint arXiv:1805.01419, 2018. Disponible en: https://arxiv.org/abs/1805.01419. [Darrer accés: 1-mar-2025].
+
+[7] B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
 Disponible en: https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md. [Darrer accés: 26-feb-2025]. 
+
+[8] P. Sarkar, D. Chakrabarti i M. Jordan, "Nonparametric Link Prediction in Dynamic Networks", arXiv preprint arXiv:1206.6394, 2012.
+Disponible en: https://arxiv.org/pdf/1206.6394. [Darrer accés: 2-mar-2025].
+
+[9] X. Li, N. Du, H. Li, K. Li, J. Gao i A. Zhang, "Deep Learning Approach to Link Prediction in Dynamic Networks", SIAM, 2014.
+Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darrer accés: 2-mar-2025].
+
 
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
@@ -119,7 +136,4 @@ Disponible en: https://github.com/benedekrozemberczki/awesome-community-detectio
 
 > S. Raskhodnikova i T. Steiner, "Fully Dynamic Graph Algorithms with Edge Differential Privacy", 2024. 
 > Disponible en: https://arxiv.org/pdf/2409.17623. [Darrer accés: 26-feb-2025]. 
-
-
-
 
