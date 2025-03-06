@@ -106,6 +106,8 @@ Disponible en: https://arxiv.org/pdf/1206.6394. [Darrer accés: 2-mar-2025].
 [9] X. Li, N. Du, H. Li, K. Li, J. Gao i A. Zhang, "Deep Learning Approach to Link Prediction in Dynamic Networks", SIAM, 2014.
 Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darrer accés: 2-mar-2025].
 
+[10] J. You, T. Du, J. Leskovec "ROLAND: Graph Learning Framework for Dynamic Graphs", Conference on Knowledge Discovery and Data Mining, 2022. 
+Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025] 
 
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
