@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
-import reader as reader_if
+import reader as rd
 
 # VARIABLES GLOBALS
 PATH1 = parent_dir + "/data/test/CollegeMsg.txt"
@@ -20,8 +20,8 @@ class TestReader(unittest.TestCase):
     def setUp(self):
         """Crea una instància de Dataset
         """
-        self.file1 = reader_if.read_file((PATH1, 'unweighted'))
-        self.file2 = reader_if.read_file((PATH2, 'weighted'))
+        self.file1 = rd.read_file((PATH1, 'unweighted'))
+        self.file2 = rd.read_file((PATH2, 'weighted'))
 
     def test_files(self):
         """1. Test de lectura de fitxers 
@@ -29,7 +29,7 @@ class TestReader(unittest.TestCase):
         self.assertIsInstance(self.file1, pandas.core.frame.DataFrame)
         self.assertIsInstance(self.file2, pandas.core.frame.DataFrame)
         try:
-            self.file3 = reader_if.read_file((PATH3, 'unweighted'))
+            self.file3 = rd.read_file((PATH3, 'unweighted'))
         except:
             self.file3 = None
         self.assertIsNone(self.file3)         

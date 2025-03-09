@@ -41,12 +41,12 @@ class Reader:
     """Mòdul lector de dades
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('filenames', 'df')
-    def __init__(self, selected_files):
+    __slots__ = ('filename', 'df')
+    def __init__(self, file):
         """Inicialització de la classe
         """
-        self.filenames = list()
-        self.df = self.create_dataset(selected_files)
+        self.filename = str()
+        self.df = self.create_dataset(file)
 
     def extract_filename(self, file_path):
         """Extraure el nom del fitxer de la ruta del fitxer
@@ -60,35 +60,30 @@ class Reader:
         splitted_list = file_path.split("/")
         return splitted_list[-1]
 
-    def create_dataset(self, selected_files):
+    def create_dataset(self, file):
         """Conversió dels fitxers passats com a entrada a datasets de pandas
         
         Args:
-            selected_files (List): Llista d'arxius seleccionats a passar-los a dataset 
+            file (List): Llista d'arxius seleccionats a passar-los a dataset 
 
         Returns:
             List[DataFrame]: Taules dels continguts de cada arxiu. 
         """
-        list_df = list()
-        for tp in selected_files:
-            self.filenames.append(self.extract_filename(tp[0]))
-            df = read_file(tp)
-            df = df.sort_values(by="Timestamp")
-            list_df.append(df)  
-        
-        return list_df
+        self.filename = self.extract_filename(file[0])
+        df = read_file(file)
+        df = df.sort_values(by="Timestamp")
+        return df
 
     def retrieve_df_information(self):
         """Mostrar informació del fitxer llegit.
         """
-        for dataset, name in zip(self.df, self.filenames):
-            ngraphs = dataset['Timestamp'].nunique()
-            total_nodes = pd.concat([dataset['From'], dataset['To']]).nunique()
-            total_edges = len(dataset)
-            print(f"\n ############# INFORMACIÓ DEL FITXER: {name} #############")
-            print(f"Nombre de nodes totals |V| = {total_nodes}")
-            print(f"Nombre d'arestes totals |E| = {total_edges}")
-            print(f"Nombre de snapshots |t| = {ngraphs}")
+        ngraphs = self.df['Timestamp'].nunique()
+        total_nodes = pd.concat([self.df['From'], self.df['To']]).nunique()
+        total_edges = len(self.df)
+        print(f"\n ############# INFORMACIÓ DEL FITXER: {self.filename} #############")
+        print(f"Nombre de nodes totals |V| = {total_nodes}")
+        print(f"Nombre d'arestes totals |E| = {total_edges}")
+        print(f"Nombre de snapshots |t| = {ngraphs}")
             
 
-
+    

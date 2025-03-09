@@ -1,21 +1,26 @@
 from reader import Reader
 #from graph import Graph
-from datasets import DATASET1,DATASET2,DATASET3,DATASET4,DATASET5
+import data_paths as dp
 
-
-class MainManager:
+class ModuleManager:
     """Classe que connecta tots els mòduls de l'aplicació
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('reader', 'graph')
+    __slots__ = ('datasets', 'graph')
     def __init__(self):
         """Gestió del procés del programa
         """
         self.introduce_program()
+        self.datasets = list()
         selected_datasets = self.select_dataset()
-        self.reader = Reader(selected_datasets)
-        self.reader.retrieve_df_information()
-        # self.graph = Graph(self.reader.filename, self.reader.df)
+        for df in selected_datasets:
+            self.datasets.append(Reader(df))
+        
+        # for df in self.datasets:
+        #     df.retrieve_df_information()
+        #print(self.datasets)
+
+        # self.graph = Graph(self.datasets.filename, self.datasets.df)
         #self.graph.visualize_per_timestamp()
         #self.graph.animate_graph()
 
@@ -35,11 +40,11 @@ class MainManager:
         Returns:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
-        dictionary_options = {'1': (DATASET1, 'weighted', 'undirected'), 
-                               '2': (DATASET2, 'weighted', 'undirected'),
-                               '3': (DATASET3, 'weighted', 'undirected'),
-                               '4': (DATASET4, 'unweighted', 'directed'),
-                               '5': (DATASET5, 'weighted', 'directed')}
+        dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
+                               '2': (dp.DATASET2, 'weighted', 'undirected'),
+                               '3': (dp.DATASET3, 'weighted', 'undirected'),
+                               '4': (dp.DATASET4, 'unweighted', 'directed'),
+                               '5': (dp.DATASET5, 'weighted', 'directed')}
 
         print("La llista de datasets que utilitzem per defecte són els següents:")
         print("(1): Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)")
@@ -65,4 +70,4 @@ class MainManager:
 
 
 if __name__ == "__main__":
-    class1 = MainManager()
+    class1 = ModuleManager()
