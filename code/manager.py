@@ -35,10 +35,21 @@ class ModuleManager:
 
     
     def select_option(self, pretext, options):
+        """Seleccionador d'opcions dels menús
+
+        Args:
+            pretext (str): Text anterior a introduïr les opcions
+            options (Dict): Diccionari on les claus determinen el número d'opció, i el valor quina opció es tracta
+
+        Returns:
+            _type_: _description_
+        """
         print(pretext)
         for key,value in options.items():
             print(f"({key}): {value}")
-        
+        selection = input("Selecciona l'opció que vols triar (1-" + str(len(options)) + "): ")
+        print()
+        return self.check_valid_input(selection, list(options.keys()))
 
     def check_valid_input(self, prompt, valid_options):
         """Comprova que els inputs de l'usuari són correctes, i els torna a demanar en cas d'error
@@ -67,27 +78,23 @@ class ModuleManager:
                                '4': (dp.DATASET4, 'unweighted', 'directed'),
                                '5': (dp.DATASET5, 'weighted', 'directed')}
 
-        print("La llista de datasets que utilitzem per defecte són els següents:")
-        print("(1): Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)")
-        print("(2): Mammalia-voles dataset (|V| = 1480, |E| = 4569, weighted, undirected)")
-        print("(3): Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)")
-        print("(4): CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)")
-        print("(5): IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed) \n" )
-                
-        print("Explorar tots els datasets (1) // Seleccionar un dataset individualment (2): ")
-        selection = input("Selecciona l'opció que vols triar (1-2): ")
-        while selection not in ['1', '2']:
-            selection = input("Opció incorrecte. Torna a seleccionar una de les opcions possibles (1-2): ")
-        print("")
-        if selection == '1':
-            return list(dictionary_options.values()) 
         
-        list_option2 = list()
-        option2 = input("Tria un dels datasets (1-5): ")
-        while option2 not in ['1', '2', '3', '4', '5']:
-            option2 = input("Tria un dels datasets (1-5): ")
-        list_option2.append(dictionary_options[option2])
-        return list_option2
+        print_options = {'1': "Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)", 
+                               '2': "Mammalia-voles dataset (|V| = 1480, |E| = 4569, weighted, undirected)",
+                               '3': "Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)",
+                               '4': "CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)",
+                               '5': "IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed)",
+                               "6": "TOTS ELS DATASETS"}
+
+        pretext = "Les opcions de datasets que es tenen són les següents:"
+        selection = self.select_option(pretext, print_options)
+
+        if selection == '6':
+            return list(dictionary_options.values())
+        final_list = list()
+        final_list.append(dictionary_options[selection])         
+        return final_list
+
 
     def select_mode(self):
         """Menú d'opcions que pot fer el programa
@@ -95,30 +102,22 @@ class ModuleManager:
         Returns:
             str: Opció triada: ['1', '2']
         """
-        print("Menú d'opcions disponibles:")
-        print("(1): Graph protection")
-        print("(2): Graph prediction")
-        selection = input("Selecciona un mode (1-2): ")
-        while selection not in ['1', '2']:
-            selection = input("Opció incorrecte. Torna a seleccionar una de les opcions possibles (1-2): ")
-        print("")
-        return selection
+        pretext = "Menú d'opcions disponibles:"
+        options = {"1": "Graph protection",
+                   "2": "Graph prediction"}
+        return self.select_option(pretext, options)
 
     def select_protection(self):
-        """Menú d'opcions que pot fer el programa
+        """Menú d'opcions que pot fer com a protecció
 
         Returns:
             str: Opció triada: ['1', '2']
         """
-        print("Modes de proteccions:")
-        print("(1): K-Anonimity")
-        print("(2): Local-Edge Differential Privacy")
-        selection = input("Selecciona un mode (1-2): ")
-        while selection not in ['1', '2']:
-            selection = input("Opció incorrecte. Torna a seleccionar una de les opcions possibles (1-2): ")
-        print("")
-        return selection
-                
+        pretext = "Menú d'opcions disponibles:"
+        options = {"1": "K-Anonimity",
+                   "2": "Local-Edge Differential Privacy"}
+        return self.select_option(pretext, options)
 
+                
 if __name__ == "__main__":
     ModuleManager()
