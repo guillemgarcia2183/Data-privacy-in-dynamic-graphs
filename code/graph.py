@@ -4,16 +4,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
-import tkinter as tk
+# import tkinter as tk
 
 # VARIABLES GLOBALS
 DAY = 86400 # Un dia equival a 86400 segons
 
 # Obtenir resolució de la pantalla
-root = tk.Tk()
-WIDTH = root.winfo_screenwidth()
-HEIGHT = root.winfo_screenheight()
-root.destroy()
+# root = tk.Tk()
+# WIDTH = root.winfo_screenwidth()
+# HEIGHT = root.winfo_screenheight()
+# root.destroy()
 
 class GraphProtection:
     """Mòdul creador de grafs
@@ -59,53 +59,52 @@ class GraphProtection:
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
 
-    def create_animation(self, grouped_df):
-        #! TO DOCUMENTATION
-        output = "CollegeMsg.mp4"
-        frame_rate = 2  # Adjust speed
+    # def create_animation(self, grouped_df):
+    #     output = "CollegeMsg.mp4"
+    #     frame_rate = 2  # Adjust speed
 
-        # Set high DPI and figure size
-        dpi = 200  # High DPI for better quality
-        fig_width = WIDTH / dpi
-        fig_height = HEIGHT / dpi
+    #     # Set high DPI and figure size
+    #     dpi = 200  # High DPI for better quality
+    #     fig_width = WIDTH / dpi
+    #     fig_height = HEIGHT / dpi
 
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
-        plt.subplots_adjust(left=0.05, right=0.95, top=0.90, bottom=0.05)  # Avoid title cutoff
+    #     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
+    #     plt.subplots_adjust(left=0.05, right=0.95, top=0.90, bottom=0.05)  # Avoid title cutoff
 
-        # Get figure size in pixels
-        fig.canvas.draw()
-        width, height = fig.canvas.get_width_height()
+    #     # Get figure size in pixels
+    #     fig.canvas.draw()
+    #     width, height = fig.canvas.get_width_height()
 
-        # Define OpenCV video writer
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        video = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
+    #     # Define OpenCV video writer
+    #     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    #     video = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
 
-        for time, group in grouped_df:
-            print(f"Actual date time: {time}")
-            self.graph.clear_edges()
-            self.graph.add_edges_from(zip(group["From"], group["To"]))
+    #     for time, group in grouped_df:
+    #         print(f"Actual date time: {time}")
+    #         self.graph.clear_edges()
+    #         self.graph.add_edges_from(zip(group["From"], group["To"]))
 
-            ax.clear()
-            ax.set_title(f"Missatges enviats en la data: {time}", fontsize=12.5, fontweight='bold', pad=20)
+    #         ax.clear()
+    #         ax.set_title(f"Missatges enviats en la data: {time}", fontsize=12.5, fontweight='bold', pad=20)
 
-            # Draw graph with better sizing
-            nx.draw(self.graph, self.node_positions, with_labels=True, node_color='lightblue', edge_color='red', node_size=40, font_size=2, arrows=True, width=0.5)
+    #         # Draw graph with better sizing
+    #         nx.draw(self.graph, self.node_positions, with_labels=True, node_color='lightblue', edge_color='red', node_size=40, font_size=2, arrows=True, width=0.5)
 
-            # Convert Matplotlib figure to OpenCV frame
-            fig.canvas.draw()
-            frame = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-            frame = frame.reshape(height, width, 3)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    #         # Convert Matplotlib figure to OpenCV frame
+    #         fig.canvas.draw()
+    #         frame = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    #         frame = frame.reshape(height, width, 3)
+    #         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-            video.write(frame)
+    #         video.write(frame)
             
-        video.release()
-        print("Video saved successfully!")
+    #     video.release()
+    #     print("Video saved successfully!")
 
-    def animate_graph(self):
-        self.df["Date"] = pd.to_datetime(self.df["Timestamp"], unit="s").dt.date
-        grouped_df = self.df.groupby("Date")
-        self.create_animation(grouped_df)
+    # def animate_graph(self):
+    #     self.df["Date"] = pd.to_datetime(self.df["Timestamp"], unit="s").dt.date
+    #     grouped_df = self.df.groupby("Date")
+    #     self.create_animation(grouped_df)
 
     # def visualize_per_day(self):
     #     """Visualitzar el graf temporal agrupat per dies 
