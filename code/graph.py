@@ -19,27 +19,28 @@ class GraphProtection:
     """Mòdul creador de grafs
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('filename', 'df', 'graph', 'node_positions')
-    def __init__(self, filename, df):
+    __slots__ = ('path', 'weighted', 'directed', 'df', 'graph', 'node_positions')
+    def __init__(self, input_tuple, df):
         """Inicialització de la classe
 
         Args:
             df (DataFrame): Dades d'un fitxer en format dataset (From, To, Timestamp)
         """
-        self.filename = filename
+        self.path, self.weighted, self.directed = input_tuple
         self.df = df
+        print(self.filename, self.weighted, self.directed, self.df)
         self.graph = self.create_graph()
         self.node_positions = nx.spectral_layout(self.graph) # Posicions fixes dels nodes del graf
 
     def create_graph(self):
-        #! CHANGE THIS - ADAPT TO HAVE WEIGHTS/ UNWEIGHTED - DIRECTED/UNDIRECTED
         """Creació de tots els nodes del graf.  
 
         Returns:
             nx.graph: Graf generat sense cap relació entre nodes
         """
         nodes = set(self.df["From"]).union(set(self.df["To"])) # Fem l'unió de tots els nodes únics del dataset
-        graph = nx.DiGraph() # Creem un graf dirigit amb networkx 
+        graph = nx.DiGraph()  if self.directed else nx.Graph() # Creem un graf amb networkx, dirigit o no segons el paràmetre directed 
+        
         graph.add_nodes_from(nodes) # Afegim els nodes en el graf 
         return graph
         
@@ -50,7 +51,11 @@ class GraphProtection:
         plt.figure(figsize=(30, 30)) # Tamany de la figura 
         for time, group in grouped_df:
             self.graph.clear_edges() # Netejem les arestes del anterior plot
-            self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
+            if not self.weighted:
+                self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
+            else:
+                edges = zip(self.df["From"], self.df["To"], self.df["Weight"])
+                self.graph.add_weighted_edges_from(edges)
             plt.clf()  # Netejem l'anterior plot
             plt.title(f"Plotting {self.filename} temporal graph") # Afegim el títol del gràfic
             plt.text(0.51, 0.88, f"Exchanges of messages at time: {time}", ha = "center", va="top", transform=plt.gcf().transFigure) # Afegim un subtítol 
@@ -58,6 +63,15 @@ class GraphProtection:
             nx.draw(self.graph, self.node_positions, with_labels=True, node_color='lightblue', edge_color='red', node_size=50, font_size=3, arrows=True, width=0.5)
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
+
+class LEDP(GraphProtection):
+    def __init__(self, input_tuple, df):
+
+        super().__init__(input_tuple, df)
+
+    def compute_density(self):
+        pass
+
 
     # def create_animation(self, grouped_df):
     #     output = "CollegeMsg.mp4"

@@ -20,6 +20,9 @@ class ModuleManager:
         mode = self.select_mode() # Es selecciona el mode que volem executar
         if mode == '1':
             protection = self.select_protection()
+            for index, reader in enumerate(self.datasets):
+              graf = GraphProtection(selected_datasets[index], reader.df)
+              break
             #! Crear segons protection K-Anonimity Class // LEDP Class
             #! Les classes de forma __init__ ja es desenvolupen la resta
         
@@ -65,7 +68,6 @@ class ModuleManager:
             prompt = input("Opció incorrecte. Torna a seleccionar una de les opcions possibles: ")
         return prompt
 
-#! OPTIMITZAR - FER NOMÉS UNA FUNCIÓ QUE NOMÉS HAGI D'ITERAR
     def select_dataset(self):
         """L'usuari selecciona algun/tots els datasets que es tenen per defecte
 
