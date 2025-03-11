@@ -1,14 +1,14 @@
 ### Classe per llegir el fitxer d'entrada. 
 import networkx as nx
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
-import cv2
-import numpy as np
+# import cv2
+# import numpy as np
 import math
 # import tkinter as tk
 
 # VARIABLES GLOBALS
-DAY = 86400 # Un dia equival a 86400 segons
+# DAY = 86400 # Un dia equival a 86400 segons
 
 # Obtenir resolució de la pantalla
 # root = tk.Tk()
@@ -89,18 +89,25 @@ class LEDP(GraphProtection):
         """
         density = 0
         n = 0
-        for time, group in self.grouped_df:
+        for _, group in self.grouped_df:
             self.iterate_graph(group)
             density += nx.density(self.graph)
             n += 1
         return density/n
     
     def compute_probabilities(self, epsilon):
-        p00 = 1 - 1 / (math.exp(epsilon) - 1 + (1 / self.density))
-        p11 = math.exp(epsilon) / (math.exp(epsilon) - 1 + (1 / self.density))
-        return p00, p11
+        #! TO UNITTEST IT
+        """Calcular les probabilitats que s'usaràn per fer els noise-graphs
 
+        Args:
+            epsilon (float): Paràmetre Epsilon Local Edge Differential Privacy. Segons el seu valor, els grafs tindràn més o menys soroll.
 
+        Returns:
+            p0, p1: Probabilitats d'afegir o treure arestes pels noise-graphs
+        """
+        p0 = 1 - 1 / (math.exp(epsilon) - 1 + (1 / self.density))
+        p1 = math.exp(epsilon) / (math.exp(epsilon) - 1 + (1 / self.density))
+        return p0, p1
 
     # def create_animation(self, grouped_df):
     #     output = "CollegeMsg.mp4"
