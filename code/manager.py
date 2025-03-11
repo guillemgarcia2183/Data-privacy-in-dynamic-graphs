@@ -21,7 +21,7 @@ class ModuleManager:
         if mode == '1':
             protection = self.select_protection()
             for index, reader in enumerate(self.datasets):
-              graf = GraphProtection(selected_datasets[index], reader.df)
+              graf = GraphProtection(reader.filename, selected_datasets[index], reader.df)
               break
             #! Crear segons protection K-Anonimity Class // LEDP Class
             #! Les classes de forma __init__ ja es desenvolupen la resta

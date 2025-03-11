@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+import math
 # import tkinter as tk
 
 # VARIABLES GLOBALS
@@ -19,8 +20,9 @@ class GraphProtection:
     """Mòdul creador de grafs
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('path', 'weighted', 'directed', 'df', 'graph', 'node_positions')
-    def __init__(self, input_tuple, df):
+    __slots__ = ('path', 'weighted', 'directed', 'df',
+                 'grouped_df', 'graph', 'node_positions', 'filename')
+    def __init__(self, filename, input_tuple, df):
         """Inicialització de la classe
 
         Args:
@@ -28,11 +30,13 @@ class GraphProtection:
         """
         self.path, self.weighted, self.directed = input_tuple
         self.df = df
-        print(self.filename, self.weighted, self.directed, self.df)
+        self.grouped_df = self.group_timestamps()
         self.graph = self.create_graph()
         self.node_positions = nx.spectral_layout(self.graph) # Posicions fixes dels nodes del graf
+        self.filename = filename
 
     def create_graph(self):
+        #! TO UNITTEST IT 
         """Creació de tots els nodes del graf.  
 
         Returns:
@@ -43,19 +47,25 @@ class GraphProtection:
         
         graph.add_nodes_from(nodes) # Afegim els nodes en el graf 
         return graph
-        
+
+    def group_timestamps(self):
+        return self.df.groupby("Timestamp")
+
+    def iterate_graph(self, group):
+        #! TO UNITTEST IT 
+        self.graph.clear_edges() # Netejem les arestes del anterior plot
+        if not self.weighted:
+            self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
+        else:
+            edges = zip(self.df["From"], self.df["To"], self.df["Weight"])
+            self.graph.add_weighted_edges_from(edges)
+
     def visualize_graph(self):
         """Visualitzar cada timestamp del graf temporal
         """
-        grouped_df = self.df.groupby("Timestamp")
         plt.figure(figsize=(30, 30)) # Tamany de la figura 
-        for time, group in grouped_df:
-            self.graph.clear_edges() # Netejem les arestes del anterior plot
-            if not self.weighted:
-                self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
-            else:
-                edges = zip(self.df["From"], self.df["To"], self.df["Weight"])
-                self.graph.add_weighted_edges_from(edges)
+        for time, group in self.grouped_df:
+            self.iterate_graph(group)
             plt.clf()  # Netejem l'anterior plot
             plt.title(f"Plotting {self.filename} temporal graph") # Afegim el títol del gràfic
             plt.text(0.51, 0.88, f"Exchanges of messages at time: {time}", ha = "center", va="top", transform=plt.gcf().transFigure) # Afegim un subtítol 
@@ -65,12 +75,31 @@ class GraphProtection:
         plt.show() # Mostrar el graf
 
 class LEDP(GraphProtection):
-    def __init__(self, input_tuple, df):
-
-        super().__init__(input_tuple, df)
+    __slots__ = ('density')
+    def __init__(self, filename, input_tuple, df):
+        self.density = self.compute_density()
+        super().__init__(filename, input_tuple, df)
 
     def compute_density(self):
-        pass
+        #! TO UNITTEST IT
+        """Calcular la densitat mitjana de tots els grafs que conforma un dataset
+
+        Returns:
+            float: Densitat mitjana
+        """
+        density = 0
+        n = 0
+        for time, group in self.grouped_df:
+            self.iterate_graph(group)
+            density += nx.density(self.graph)
+            n += 1
+        return density/n
+    
+    def compute_probabilities(self, epsilon):
+        p00 = 1 - 1 / (math.exp(epsilon) - 1 + (1 / self.density))
+        p11 = math.exp(epsilon) / (math.exp(epsilon) - 1 + (1 / self.density))
+        return p00, p11
+
 
 
     # def create_animation(self, grouped_df):
