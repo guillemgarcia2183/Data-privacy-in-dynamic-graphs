@@ -18,10 +18,12 @@ class TestLEDP(unittest.TestCase):
     def setUp(self):
         """Crea una instància de Dataset
         """
-        TUPLE = (dp.DATASET1, 'weighted', 'undirected')
-        reader = rd.Reader(TUPLE)
-        self.L_EDP = LEDP(reader.filename, TUPLE, reader.df)
-        self.L_EDP_DF = LEDP(reader.filename, TUPLE, reader.df)
+        TUPLE1 = (dp.DATASET1, 'weighted', 'undirected')        
+        TUPLE2 = (dp.DATASET3, 'weighted', 'undirected')
+        reader1 = rd.Reader(TUPLE1)
+        reader2 = rd.Reader(TUPLE2)
+        self.L_EDP = LEDP(reader1.filename, TUPLE1, reader1.df)
+        self.L_EDP_DF = LEDP(reader2.filename, TUPLE2, reader2.df)
         # nx.draw(self.L_EDP.graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
 
@@ -44,7 +46,15 @@ class TestLEDP(unittest.TestCase):
 
         # 3. Comprovació densitat global <= 0.5 -- Necessari per poder assegurar de preservar densitat i complir epsilon LEDP
         self.assertLessEqual(self.L_EDP_DF.density, 0.5)
-    
+        
+        # 4. Veure individualment les densitats
+        list_densities = []
+        for _, group in self.L_EDP_DF.grouped_df:
+            self.L_EDP_DF.iterate_graph(group)
+            list_densities.append(nx.density(self.L_EDP_DF.graph))
+        for d in list_densities:
+            self.assertGreater(d,0)
+            self.assertLessEqual(d,1)
 
 if __name__ == '__main__':
     unittest.main()

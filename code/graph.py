@@ -60,7 +60,7 @@ class GraphProtection:
         if self.weighted == "unweighted":
             self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
         else:
-            edges = zip(self.df["From"], self.df["To"], self.df["Weight"])
+            edges = zip(group["From"], group["To"], group["Weight"])
             self.graph.add_weighted_edges_from(edges)
 
     def visualize_graph(self):
