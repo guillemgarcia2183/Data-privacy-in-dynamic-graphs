@@ -30,13 +30,12 @@ class GraphProtection:
         """
         self.path, self.weighted, self.directed = input_tuple
         self.df = df
-        self.grouped_df = self.group_timestamps()
+        self.grouped_df = self.get_grouped_df()
         self.graph = self.create_graph()
         self.node_positions = nx.spectral_layout(self.graph) # Posicions fixes dels nodes del graf
         self.filename = filename
 
     def create_graph(self):
-        #! TO UNITTEST IT 
         """Creació de tots els nodes del graf.  
 
         Returns:
@@ -51,7 +50,7 @@ class GraphProtection:
         graph.add_nodes_from(nodes) # Afegim els nodes en el graf 
         return graph
 
-    def group_timestamps(self):
+    def get_grouped_df(self):
         grouped_df = self.df.groupby("Timestamp")
         return grouped_df
 

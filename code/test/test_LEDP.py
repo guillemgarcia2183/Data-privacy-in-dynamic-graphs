@@ -1,7 +1,6 @@
 import unittest
 import sys
 import os
-import pandas
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -14,13 +13,8 @@ import reader as rd
 import data_paths as dp
 from graph import LEDP
 
-# VARIABLES GLOBALS
-# PATH1 = parent_dir + "/data/test/CollegeMsg.txt"
-# PATH2 = parent_dir + "/data/test/aves-sparrow-social.edges"
-# PATH3 = parent_dir + "/data/test/Email-Enron.txt"
-
 class TestLEDP(unittest.TestCase):
-    __slots__ = ('file1', 'file2', 'file3')
+    __slots__ = ('L_EDP', 'L_EDP_DF')
     def setUp(self):
         """Crea una instància de Dataset
         """
