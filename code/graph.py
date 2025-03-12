@@ -43,18 +43,22 @@ class GraphProtection:
             nx.graph: Graf generat sense cap relació entre nodes
         """
         nodes = set(self.df["From"]).union(set(self.df["To"])) # Fem l'unió de tots els nodes únics del dataset
-        graph = nx.DiGraph()  if self.directed else nx.Graph() # Creem un graf amb networkx, dirigit o no segons el paràmetre directed 
+        if self.directed == "directed":
+            graph = nx.DiGraph() 
+        else:
+            graph = nx.Graph() # Creem un graf amb networkx, dirigit o no segons el paràmetre directed 
         
         graph.add_nodes_from(nodes) # Afegim els nodes en el graf 
         return graph
 
     def group_timestamps(self):
-        return self.df.groupby("Timestamp")
+        grouped_df = self.df.groupby("Timestamp")
+        return grouped_df
 
     def iterate_graph(self, group):
         #! TO UNITTEST IT 
         self.graph.clear_edges() # Netejem les arestes del anterior plot
-        if not self.weighted:
+        if self.weighted == "unweighted":
             self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
         else:
             edges = zip(self.df["From"], self.df["To"], self.df["Weight"])
@@ -77,11 +81,10 @@ class GraphProtection:
 class LEDP(GraphProtection):
     __slots__ = ('density')
     def __init__(self, filename, input_tuple, df):
-        self.density = self.compute_density()
         super().__init__(filename, input_tuple, df)
-
+        self.density = self.compute_density()
+        
     def compute_density(self):
-        #! TO UNITTEST IT
         """Calcular la densitat mitjana de tots els grafs que conforma un dataset
 
         Returns:
@@ -96,7 +99,6 @@ class LEDP(GraphProtection):
         return density/n
     
     def compute_probabilities(self, epsilon):
-        #! TO UNITTEST IT
         """Calcular les probabilitats que s'usaràn per fer els noise-graphs
 
         Args:
@@ -105,8 +107,8 @@ class LEDP(GraphProtection):
         Returns:
             p0, p1: Probabilitats d'afegir o treure arestes pels noise-graphs
         """
-        p0 = 1 - 1 / (math.exp(epsilon) - 1 + (1 / self.density))
-        p1 = math.exp(epsilon) / (math.exp(epsilon) - 1 + (1 / self.density))
+        p0 = 1 - (1 / ((math.exp(epsilon) - 1 + (1 / self.density))))
+        p1 = (math.exp(epsilon)) / ((math.exp(epsilon) - 1 + (1 / self.density)))
         return p0, p1
 
     # def create_animation(self, grouped_df):
