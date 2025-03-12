@@ -47,7 +47,7 @@ class TestLEDP(unittest.TestCase):
         # 3. Comprovació densitat global <= 0.5 -- Necessari per poder assegurar de preservar densitat i complir epsilon LEDP
         self.assertLessEqual(self.L_EDP_DF.density, 0.5)
         
-        # 4. Veure individualment les densitats
+        # 4. Còmput de les densitats individualment
         list_densities = []
         for _, group in self.L_EDP_DF.grouped_df:
             self.L_EDP_DF.iterate_graph(group)

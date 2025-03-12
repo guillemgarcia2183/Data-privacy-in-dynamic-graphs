@@ -55,7 +55,6 @@ class GraphProtection:
         return grouped_df
 
     def iterate_graph(self, group):
-        #! TO UNITTEST IT 
         self.graph.clear_edges() # Netejem les arestes del anterior plot
         if self.weighted == "unweighted":
             self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual

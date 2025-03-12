@@ -50,6 +50,15 @@ class TestGP(unittest.TestCase):
         self.assertEqual(e1, 0)
         self.assertEqual(e2, 0)
     
+    def test_iterations(self):
+        """2. Test comprovar iteracions de grafs
+        """
+        list_edges = list()
+        for _, group in self.graph1.grouped_df:
+            self.graph1.iterate_graph(group)
+            actual_edges = len(list(self.graph1.graph.edges()))
+            list_edges.append(actual_edges)
+        self.assertEqual(sum(list_edges), len(self.graph1.df))
 
     # def test_visualize_graph(self):
     #     self.graph2.visualize_graph()
