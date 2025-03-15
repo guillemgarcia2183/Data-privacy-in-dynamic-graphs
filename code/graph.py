@@ -1,14 +1,11 @@
-### Classe per llegir el fitxer d'entrada. 
 import networkx as nx
-# import pandas as pd
 import matplotlib.pyplot as plt
+import math
+import pickle
+# import pandas as pd
 # import cv2
 # import numpy as np
-import math
 # import tkinter as tk
-
-# VARIABLES GLOBALS
-# DAY = 86400 # Un dia equival a 86400 segons
 
 # Obtenir resolució de la pantalla
 # root = tk.Tk()
@@ -47,7 +44,12 @@ class GraphProtection:
         else:
             graph = nx.Graph() # Creem un graf amb networkx, dirigit o no segons el paràmetre directed 
         
-        graph.add_nodes_from(nodes) # Afegim els nodes en el graf 
+        graph.add_nodes_from(nodes) # Afegim els nodes en el graf
+        
+        # Re-numerar els nodes, per tal de coincidir amb els noise-graphs
+        mapping = {i: i - 1 for i in graph.nodes()}
+        graph = nx.relabel_nodes(graph, mapping) 
+
         return graph
 
     def get_grouped_df(self):
@@ -76,11 +78,15 @@ class GraphProtection:
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
 
-class LEDP(GraphProtection):
-    __slots__ = ('density')
+class ELDP(GraphProtection):
+    __slots__ = ('density', 'nodes', 'p0', 'p1')
     def __init__(self, filename, input_tuple, df):
         super().__init__(filename, input_tuple, df)
         self.density = self.compute_density()
+        self.nodes = self.graph.number_of_nodes()
+        epsilon = 0.5
+        self.p0, self.p1 = self.compute_probabilities(epsilon)
+        #self.original_g, self.protected_g = self.apply_protection(p0, p1)
         
     def compute_density(self):
         """Calcular la densitat mitjana de tots els grafs que conforma un dataset
@@ -108,6 +114,88 @@ class LEDP(GraphProtection):
         p0 = 1 - (1 / ((math.exp(epsilon) - 1 + (1 / self.density))))
         p1 = (math.exp(epsilon)) / ((math.exp(epsilon) - 1 + (1 / self.density)))
         return p0, p1
+
+    def complement_graph(self):
+        """Crear el complementari d'un graf 
+
+        Returns:
+            nx.graph: Graf complementari
+        """
+        graph = nx.complement(self.graph)
+        return graph
+
+    def gilbert_graph(self, p):
+        """Crear un graf de soroll 
+
+        Args:
+            p (float): Probabilitat d'afegir una aresta 
+
+        Returns:
+            nx.graph: Noise graph 
+        """
+        if self.directed == "directed":
+            return nx.erdos_renyi_graph(self.nodes, p, directed=True) 
+        return nx.erdos_renyi_graph(self.nodes, p, directed=False) 
+
+    def intersection_graph(self, g1, g2):
+        """Realitzar l'intersecció d'arestes entre grafs
+
+        Args:
+            g1, g2 (nx.graph): Graf a comparar arestes
+
+        Returns:
+            nx.graph: Intersecció de grafs
+        """
+        graf = nx.intersection(g1, g2)
+        return graf
+    
+    def xor_graph(self, g1, g2):
+        """Suma de grafs (operació XOR)
+
+        Args:
+            g1, g2 (nx.graph): Grafs a sumar
+
+        Returns:
+            nx.graph: Graf sumat
+        """
+        graf = nx.symmetric_difference(g1, g2)
+        return graf
+        
+    def apply_protection(self):
+        """Aplicar protecció l-EDP en el dataset
+
+        Args:
+            p0, p1 (float): Probabilitats pels noise-graphs
+
+        Returns:
+            List[nx.graph], List[nx.graph]: Llista de datasets originals i datasets protegits
+        """
+        original_graphs = list()
+        protected_graphs = list()
+
+        for _, group in self.grouped_df:
+            self.iterate_graph(group)
+            original_graphs.append(self.graph.copy())
+            complement_g0 = self.complement_graph()
+            noise_g0 = self.gilbert_graph(1-self.p0)
+            noise_g1 = self.gilbert_graph(1-self.p1)
+            g0 = self.intersection_graph(noise_g0, complement_g0) 
+            g1 = self.intersection_graph(noise_g1, self.graph)
+            sum1 = self.xor_graph(self.graph, g0)
+            protected_g = self.xor_graph(sum1, g1)
+            protected_graphs.append(protected_g)
+
+        return original_graphs, protected_graphs
+        
+    def save_graphs(self, original_graphs, protected_graphs):
+        og = "code/output/ELDP/original_graphs_" + str(self.filename) + ".pkl"
+        pg = "code/output/ELDP/protected_graphs_" + str(self.filename) + ".pkl"
+
+        with open(og, "wb") as f:
+            pickle.dump(original_graphs, f)
+
+        with open(pg, "wb") as f:
+            pickle.dump(protected_graphs, f)
 
     # def create_animation(self, grouped_df):
     #     output = "CollegeMsg.mp4"
