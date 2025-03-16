@@ -77,7 +77,17 @@ class GraphProtection:
             nx.draw(self.graph, self.node_positions, with_labels=True, node_color='lightblue', edge_color='red', node_size=50, font_size=3, arrows=True, width=0.5)
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
+        
+    def save_graphs(self, original_graphs, protected_graphs):
+        og = "code/output/ELDP/original_graphs_" + str(self.filename) + ".pkl"
+        pg = "code/output/ELDP/protected_graphs_" + str(self.filename) + ".pkl"
 
+        with open(og, "wb") as f:
+            pickle.dump(original_graphs, f)
+
+        with open(pg, "wb") as f:
+            pickle.dump(protected_graphs, f)
+            
 class ELDP(GraphProtection):
     __slots__ = ('density', 'nodes', 'p0', 'p1')
     def __init__(self, filename, input_tuple, df):
@@ -187,15 +197,6 @@ class ELDP(GraphProtection):
 
         return original_graphs, protected_graphs
         
-    def save_graphs(self, original_graphs, protected_graphs):
-        og = "code/output/ELDP/original_graphs_" + str(self.filename) + ".pkl"
-        pg = "code/output/ELDP/protected_graphs_" + str(self.filename) + ".pkl"
-
-        with open(og, "wb") as f:
-            pickle.dump(original_graphs, f)
-
-        with open(pg, "wb") as f:
-            pickle.dump(protected_graphs, f)
 
     # def create_animation(self, grouped_df):
     #     output = "CollegeMsg.mp4"

@@ -77,7 +77,14 @@ i el Edge-Local Differential Privacy [4] aplicats en grafs temporals.
 
 Similarment, en el moment de calcular la privacitat i utilitat, si volem saber la similitud entre grafs, es poden usar altres versions del \textit{Coeficient de Jaccard} o la \textit{Cosine Similarity} \textit{[5,6]}. Si es necessita implementar algorismes de detecció de comunitats com a informació d'utilitat, es té \textit{[7]}.
 
-## 4. Referències
+## 4. Definicions bàsiques
+
+* Graf dinàmic: (Definition problem - K-An) 
+
+* Per LEDP: Def 1. Def 2. Def 3. Proposition 1 (DP in dynamic graphs - Julián)
+
+
+## 5. Referències
 
 [1] J. Leskovec, Stanford Network Analysis Project (SNAP). Disponible en: https://snap.stanford.edu/index.html. [Darrer accés: 26-feb-2025].
 
