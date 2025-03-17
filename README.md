@@ -77,11 +77,13 @@ i el Edge-Local Differential Privacy [4] aplicats en grafs temporals.
 
 Similarment, en el moment de calcular la privacitat i utilitat, si volem saber la similitud entre grafs, es poden usar altres versions del \textit{Coeficient de Jaccard} o la \textit{Cosine Similarity} \textit{[5,6]}. Si es necessita implementar algorismes de detecció de comunitats com a informació d'utilitat, es té \textit{[7]}.
 
-## 4. Definicions bàsiques
+## 4. Definicions bàsiques - Mètodes de privacitat
 
 * Graf dinàmic: (Definition problem - K-An) 
 
 * Per LEDP: Def 1. Def 2. Def 3. Proposition 1 (DP in dynamic graphs - Julián)
+    * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, ja que aquests contenen un soroll que ell no coneix. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma adequada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria
+    inferir quin soroll s'ha afegit de forma específica en cada graf. 
 
 
 ## 5. Referències

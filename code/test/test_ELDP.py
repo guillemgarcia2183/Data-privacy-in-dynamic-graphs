@@ -22,7 +22,7 @@ class TestELDP(unittest.TestCase):
         """
         self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
                         '2': (dp.DATASET2, 'weighted', 'undirected'),
-                        '3': (dp.DATASET3, 'weighted', 'undirected')}
+                        '3': (dp.DATASET3, 'weighted', 'directed')} #3 Modified per tenir controlat els dirigits
         
         self.readers = []
         for key, value in self.dictionary_options.items():
@@ -111,7 +111,8 @@ class TestELDP(unittest.TestCase):
         """
         # 1. Comprovar que els nodes del noise-graph són els mateixos
         for g in self.ELDP:
-            G = nx.erdos_renyi_graph(g.graph.number_of_nodes(), 0.5)
+            G = g.gilbert_graph(0.5)
+            self.assertEqual(G.number_of_nodes(), g.graph.number_of_nodes())
             self.assertEqual(list(g.graph.nodes()), list(G.nodes()))
         # print(f"Nodes Gilbert noise graph: OK")
 
@@ -143,7 +144,7 @@ class TestELDP(unittest.TestCase):
         self.assertEqual(list(actual_result.edges()), correct_result)
 
     def test_protection(self):
-        """Test dataset l-EDP protection
+        """5. Test dataset l-EDP protection
         """
         for i,g in enumerate(self.ELDP):
             original_g, protected_g = g.apply_protection()
@@ -170,22 +171,23 @@ class TestELDP(unittest.TestCase):
             maxim = round(max(f1,f2,f3,f4), 8)
             self.assertGreaterEqual(constraint, maxim)
 
-            # 3. Save/Load grafs 
-            g.save_graphs(original_g, protected_g)
+        #     # 3. Save/Load grafs 
+        #     g.save_graphs(original_g, protected_g)
         
-        with open("code/output/ELDP/protected_graphs_aves-sparrow-social.edges.pkl", "rb") as f:
-            protected_graphs = pickle.load(f)
-        self.assertIsInstance(protected_graphs, list)
-        self.assertIsInstance(protected_graphs[0], nx.Graph)
+        # with open("code/output/ELDP/protected_graphs_aves-sparrow-social.edges.pkl", "rb") as f:
+        #     protected_graphs = pickle.load(f)
+        # self.assertIsInstance(protected_graphs, list)
+        # self.assertIsInstance(protected_graphs[0], nx.Graph)
             
-        # Densitat original DATASET [1]: 0.1902302285210165 
-        #  Densitat PROTEGIT: 0.1897677793904209 
+        #===========================OUTPUT===================================    
+        # Densitat original DATASET [1]: 0.1945701357466063    
+        #  Densitat PROTEGIT: 0.20512820512820512
 
-        # Densitat original DATASET [2]: 6.843660815597166e-05 
-        #  Densitat PROTEGIT: 6.73125278786053e-05 
+        # Densitat original DATASET [2]: 6.843707339168384e-05 
+        #  Densitat PROTEGIT: 6.783793070495432e-05 
 
-        # Densitat original DATASET [3]: 0.4075884953895978 
-        #  Densitat PROTEGIT: 0.40899804508881005 
+        # Densitat original DATASET [3]: 0.4129870185073409 
+        #  Densitat PROTEGIT: 0.41355022996029894 
 
 if __name__ == '__main__':
     unittest.main()

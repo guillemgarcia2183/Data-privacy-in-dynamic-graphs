@@ -30,7 +30,7 @@ def read_file(tp):
             for line in file:
                 from_node, to_node, weight, timestamp = map(float, line.split())  
                 #print(from_node, to_node, weight, timestamp)
-                data.append({'From': int(from_node), 'To': int(to_node), 'Weight': weight, 'Timestamp': int(timestamp)})
+                data.append({'From': int(from_node)-1, 'To': int(to_node)-1, 'Weight': weight, 'Timestamp': int(timestamp)})
         df = pd.DataFrame(data)
         return df
     # En cas de no seguir un dels formats establerts, parar execució del programa
