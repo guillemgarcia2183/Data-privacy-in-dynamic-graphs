@@ -1,10 +1,7 @@
 import unittest
 import sys
 import os
-import networkx as nx
-import matplotlib.pyplot as plt
-import math
-import pickle
+import numpy as np
 
 # Afegir el directori pare 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +47,7 @@ class TestKDA(unittest.TestCase):
                 self.assertEqual(g.degree_matrix[0].dtype, 'int32')
                 self.assertEqual(g.indegree_matrix, None)
                 self.assertEqual(g.outdegree_matrix, None)
+
 
 
 if __name__ == '__main__':
