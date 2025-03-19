@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import math
 import pickle
+import numpy as np
 
 # Afegir el directori pare 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +31,7 @@ class TestELDP(unittest.TestCase):
         
         self.ELDP = []
         for i,reader in enumerate(self.readers):
-            self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df))
+            self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, 0.5))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
@@ -77,7 +78,7 @@ class TestELDP(unittest.TestCase):
         self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
         self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
 
-        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df)
+        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
         ELDP2.graph = nx.Graph()
         ELDP2.graph.add_nodes_from([1, 2, 3, 4])
         ELDP2.graph.add_edges_from([(4, 2), (4, 1), (3, 1)])
@@ -94,7 +95,7 @@ class TestELDP(unittest.TestCase):
         self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
         self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
 
-        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df)
+        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
         ELDP2.graph = nx.DiGraph()
         ELDP2.graph.add_nodes_from([1, 2, 3, 4])
         ELDP2.graph.add_edges_from([(1, 3), (1, 4), (2, 1), (2, 4), 
@@ -179,7 +180,7 @@ class TestELDP(unittest.TestCase):
         # self.assertIsInstance(protected_graphs, list)
         # self.assertIsInstance(protected_graphs[0], nx.Graph)
             
-        #===========================OUTPUT===================================    
+        #===========================OUTPUT epsilon = 0.5===================================    
         # Densitat original DATASET [1]: 0.1945701357466063    
         #  Densitat PROTEGIT: 0.20512820512820512
 
@@ -188,6 +189,36 @@ class TestELDP(unittest.TestCase):
 
         # Densitat original DATASET [3]: 0.4129870185073409 
         #  Densitat PROTEGIT: 0.41355022996029894 
+    
+    def test_epsilon(self):
+        """6. Test per veure com funciona l'algorisme canviant el paràmetre epsilon
+        """
+        epsilons = np.arange(0.01, 2, 0.05)  # Desde 0.1 hasta 2.0 con paso de 0.1
+        eps_grafs = [ELDP(self.readers[2].filename, self.dictionary_options['3'], self.readers[2].df, e) for e in epsilons]
+        
+        p00_values = [obj.p0 for obj in eps_grafs]
+        p01_values = [1 - obj.p0 for obj in eps_grafs]
+        p11_values = [obj.p1 for obj in eps_grafs]
+        p10_values = [1 - obj.p1 for obj in eps_grafs]
+
+
+        # Graficar p0 i p1 values
+        plt.figure(figsize=(8, 5))
+        plt.plot(epsilons, p00_values, marker='o', linestyle='-', label=r'$p00$')
+        plt.plot(epsilons, p01_values, marker='o', linestyle='-', label=r'$p01$')
+        plt.plot(epsilons, p11_values, marker='s', linestyle='-', label=r'$p11$')
+        plt.plot(epsilons, p10_values, marker='s', linestyle='-', label=r'$p10$')
+
+        # Etiquetas y título
+        plt.xlabel(r'$\epsilon$', fontsize=12)
+        plt.ylabel('Probabilitat', fontsize=12)
+        plt.title('Variació de probabilitats segons ε', fontsize=14)
+        plt.legend()
+        plt.grid(True)
+
+        # Mostrar el gráfico
+        plt.show()
+
 
 if __name__ == '__main__':
     unittest.main()

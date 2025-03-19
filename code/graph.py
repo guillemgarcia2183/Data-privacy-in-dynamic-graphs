@@ -140,11 +140,10 @@ class GraphProtection:
 
 class ELDP(GraphProtection):
     __slots__ = ('density', 'nodes', 'p0', 'p1')
-    def __init__(self, filename, input_tuple, df):
+    def __init__(self, filename, input_tuple, df, epsilon):
         super().__init__(filename, input_tuple, df)
         self.density = self.compute_density()
         self.nodes = self.graph.number_of_nodes()
-        epsilon = 0.5
         self.p0, self.p1 = self.compute_probabilities(epsilon)
         
     def compute_density(self):
