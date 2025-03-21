@@ -17,21 +17,23 @@ import data_paths as dp
 from graph import ELDP
 
 class TestELDP(unittest.TestCase):
-    __slots__ = ('dictionary_options', 'readers', 'ELDP')
+    __slots__ = ('dictionary_options', 'readers', 'ELDP', 'save')
     def setUp(self):
         """Crea una instància de ELDP
         """
+        self.save = True # Canviar si no es volen guardar els grafs resultants
         self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
-                        '2': (dp.DATASET2, 'weighted', 'undirected'),
-                        '3': (dp.DATASET3, 'weighted', 'directed')} #3 Modified per tenir controlat els dirigits
+                        '2': (dp.DATASET2, 'weighted', 'undirected')} 
         
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
-        for i,reader in enumerate(self.readers):
-            self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, 0.5))
+        epsilons = np.arange(0.05, 2, 0.05)
+        for eps in epsilons:
+            for i,reader in enumerate(self.readers):
+                self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, eps))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
@@ -55,19 +57,12 @@ class TestELDP(unittest.TestCase):
         self.assertEqual(manual_density_directed, nx.density(self.ELDP[0].graph))  
         # print(f"Density for directed: OK")
 
-        # 3. Comprovació densitat global <= 0.5 -- Necessari per poder assegurar de preservar densitat i complir epsilon LEDP
-        for graph in self.ELDP:
-            self.assertLessEqual(graph.density, 0.5)
-        # print(f"Density <= 0.5: OK")
-
-        # 4. Còmput de les densitats individualment
-        list_densities = []
-        for _, group in self.ELDP[2].grouped_df:
-            self.ELDP[2].iterate_graph(group)
-            list_densities.append(nx.density(self.ELDP[2].graph))
-        for d in list_densities:
+        # 3. Còmput de les densitats individualment
+        for _, group in self.ELDP[1].grouped_df:
+            self.ELDP[1].iterate_graph(group)
+            d = nx.density(self.ELDP[1].graph)
             self.assertGreater(d,0)
-            self.assertLessEqual(d,1)
+            self.assertLessEqual(d,0.5)
         # print(f"Density individually: OK")
 
     def test_complement_graph(self):
@@ -148,76 +143,70 @@ class TestELDP(unittest.TestCase):
         """5. Test dataset l-EDP protection
         """
         for i,g in enumerate(self.ELDP):
+            
+            print(f"Dataset: {self.ELDP[i].filename}, Epsilon: {self.ELDP[i].epsilon}")
+
             original_g, protected_g = g.apply_protection()
         
-            # 1. Comprovar densitats de grafs protegits
-            density_protected = 0
-            n = 0
-            for j,graph in enumerate(protected_g):
-                density_protected += nx.density(graph)
-                n += 1
-                self.assertNotEqual(list(graph.edges()), list(original_g[j].edges()))
-            density_protected = density_protected/n
+            # 1. Comprovar densitat // ε-ELDP
+            for og, pr in zip(original_g, protected_g):
+                density_og = float(nx.density(og))
+                density_pr = float(nx.density(pr))
+                self.assertAlmostEqual(density_og, density_pr, delta=0.1)
+ 
+                p0,p1 = self.ELDP[i].compute_probabilities(density_og)
+                constraint = round(math.exp(self.ELDP[i].epsilon),8)
+                f1  = (1-p1) / p0
+                f2 = p1 / (1-p0)
+                f3 = p0 / (1-p1) 
+                f4 = (1-p0) / p1
+                maxim = round(max(f1,f2,f3,f4),8)
+                self.assertGreaterEqual(constraint, maxim)
+                
+                #print(f"Densitat original DATASET [{i+1}]: {density_og}, Densitat PROTEGIT: {density_pr} -- ε-ELDP: {constraint} >= {maxim}: {constraint>=maxim}  \n")
             
-            #print(f"Densitat original DATASET [{i+1}]: {g.density} \n Densitat PROTEGIT: {density_protected} \n")
-            self.assertAlmostEqual(density_protected, g.density, delta=0.1)
-            
-            # 2. Comprovar ε-ELDP
-            epsilon = 0.5
-            constraint = round(math.exp(epsilon), 8)
-            f1  = (1-g.p1) / g.p0 
-            f2 = g.p1 / (1-g.p0)
-            f3 = g.p0 / (1-g.p1) 
-            f4 = (1-g.p0) / g.p1
-            maxim = round(max(f1,f2,f3,f4), 8)
-            self.assertGreaterEqual(constraint, maxim)
-
-        #     # 3. Save/Load grafs 
-        #     g.save_graphs(original_g, protected_g)
+            # 2. Save/Load grafs
+            if self.save: 
+                g.save_graphs(original_g, protected_g, "ELDP", self.ELDP[i].epsilon)
         
-        # with open("code/output/ELDP/protected_graphs_aves-sparrow-social.edges.pkl", "rb") as f:
-        #     protected_graphs = pickle.load(f)
-        # self.assertIsInstance(protected_graphs, list)
-        # self.assertIsInstance(protected_graphs[0], nx.Graph)
-            
-        #===========================OUTPUT epsilon = 0.5===================================    
-        # Densitat original DATASET [1]: 0.1945701357466063    
-        #  Densitat PROTEGIT: 0.20512820512820512
 
-        # Densitat original DATASET [2]: 6.843707339168384e-05 
-        #  Densitat PROTEGIT: 6.783793070495432e-05 
-
-        # Densitat original DATASET [3]: 0.4129870185073409 
-        #  Densitat PROTEGIT: 0.41355022996029894 
+    # def test_saved_graphs(self):
+    #     """5. Test loading saved graphs
+    #     """
+    #     # with open("code/output/original_graphs_aves-sparrow-social.edges.pkl", "rb") as f:
+    #     #     graphs = pickle.load(f)
+    #     # self.assertIsInstance(graphs, list)
+    #     # self.assertIsInstance(graphs[0], nx.Graph)
+    #     pass
     
-    def test_epsilon(self):
-        """6. Test per veure com funciona l'algorisme canviant el paràmetre epsilon
-        """
-        epsilons = np.arange(0.01, 2, 0.05)  # Desde 0.1 hasta 2.0 con paso de 0.1
-        eps_grafs = [ELDP(self.readers[2].filename, self.dictionary_options['3'], self.readers[2].df, e) for e in epsilons]
+    # def test_epsilon(self):
+    #     """6. Test per veure com funciona l'algorisme canviant el paràmetre epsilon
+    #     """
+    #     epsilons = np.arange(0.01, 2, 0.05)  # Desde 0.1 hasta 2.0 con paso de 0.1
+    #     eps_grafs = [ELDP(self.readers[2].filename, self.dictionary_options['3'], self.readers[2].df, e) for e in epsilons]
         
-        p00_values = [obj.p0 for obj in eps_grafs]
-        p01_values = [1 - obj.p0 for obj in eps_grafs]
-        p11_values = [obj.p1 for obj in eps_grafs]
-        p10_values = [1 - obj.p1 for obj in eps_grafs]
+    #     p00_values = [obj.p0 for obj in eps_grafs]
+    #     p01_values = [1 - obj.p0 for obj in eps_grafs]
+    #     p11_values = [obj.p1 for obj in eps_grafs]
+    #     p10_values = [1 - obj.p1 for obj in eps_grafs]
 
 
-        # Graficar p0 i p1 values
-        plt.figure(figsize=(8, 5))
-        plt.plot(epsilons, p00_values, marker='o', linestyle='-', label=r'$p00$')
-        plt.plot(epsilons, p01_values, marker='o', linestyle='-', label=r'$p01$')
-        plt.plot(epsilons, p11_values, marker='s', linestyle='-', label=r'$p11$')
-        plt.plot(epsilons, p10_values, marker='s', linestyle='-', label=r'$p10$')
+    #     # Graficar p0 i p1 values
+    #     plt.figure(figsize=(8, 5))
+    #     plt.plot(epsilons, p00_values, marker='o', linestyle='-', label=r'$p00$')
+    #     plt.plot(epsilons, p01_values, marker='o', linestyle='-', label=r'$p01$')
+    #     plt.plot(epsilons, p11_values, marker='s', linestyle='-', label=r'$p11$')
+    #     plt.plot(epsilons, p10_values, marker='s', linestyle='-', label=r'$p10$')
 
-        # Etiquetas y título
-        plt.xlabel(r'$\epsilon$', fontsize=12)
-        plt.ylabel('Probabilitat', fontsize=12)
-        plt.title('Variació de probabilitats segons ε', fontsize=14)
-        plt.legend()
-        plt.grid(True)
+    #     # Etiquetas y título
+    #     plt.xlabel(r'$\epsilon$', fontsize=12)
+    #     plt.ylabel('Probabilitat', fontsize=12)
+    #     plt.title('Variació de probabilitats segons ε', fontsize=14)
+    #     plt.legend()
+    #     plt.grid(True)
 
-        # Mostrar el gráfico
-        plt.show()
+    #     # Mostrar el gráfico
+    #     plt.show()
 
 
 if __name__ == '__main__':

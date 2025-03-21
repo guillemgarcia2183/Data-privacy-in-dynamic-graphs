@@ -74,9 +74,9 @@ class GraphProtection:
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
         
-    def save_graphs(self, original_graphs, protected_graphs):
-        og = "code/output/ELDP/original_graphs_" + str(self.filename) + ".pkl"
-        pg = "code/output/ELDP/protected_graphs_" + str(self.filename) + ".pkl"
+    def save_graphs(self, original_graphs, protected_graphs, algorithm, parameter):
+        og = "code/output/original_graphs/" + str(self.filename) + ".pkl"
+        pg = "code/output/" + str(algorithm) + "/" + str(self.filename) + "_" + str(parameter) + ".pkl"
 
         with open(og, "wb") as f:
             pickle.dump(original_graphs, f)
@@ -139,28 +139,22 @@ class GraphProtection:
     #     self.visualize_graph(grouped_df)
 
 class ELDP(GraphProtection):
-    __slots__ = ('density', 'nodes', 'p0', 'p1')
+    __slots__ = ('nodes', 'epsilon')
     def __init__(self, filename, input_tuple, df, epsilon):
         super().__init__(filename, input_tuple, df)
-        self.density = self.compute_density()
+        self.epsilon = epsilon
         self.nodes = self.graph.number_of_nodes()
-        self.p0, self.p1 = self.compute_probabilities(epsilon)
-        
+
     def compute_density(self):
         """Calcular la densitat mitjana de tots els grafs que conforma un dataset
 
         Returns:
             float: Densitat mitjana
         """
-        density = 0
-        n = 0
-        for _, group in self.grouped_df:
-            self.iterate_graph(group)
-            density += nx.density(self.graph)
-            n += 1
-        return density/n
+        density = nx.density(self.graph)
+        return density
     
-    def compute_probabilities(self, epsilon):
+    def compute_probabilities(self, density):
         """Calcular les probabilitats que s'usaràn per fer els noise-graphs
 
         Args:
@@ -169,8 +163,8 @@ class ELDP(GraphProtection):
         Returns:
             p0, p1: Probabilitats d'afegir o treure arestes pels noise-graphs
         """
-        p0 = 1 - (1 / ((math.exp(epsilon) - 1 + (1 / self.density))))
-        p1 = (math.exp(epsilon)) / ((math.exp(epsilon) - 1 + (1 / self.density)))
+        p0 = 1 - (1 / ((math.exp(self.epsilon) - 1 + (1 / density))))
+        p1 = (math.exp(self.epsilon)) / ((math.exp(self.epsilon) - 1 + (1 / density)))
         return p0, p1
 
     def complement_graph(self):
@@ -191,6 +185,7 @@ class ELDP(GraphProtection):
         Returns:
             nx.graph: Noise graph 
         """
+        # Depenent de si el graf original és dirigit o no, fem el graf de soroll erdos_renyi amb direccions o sense
         if self.directed == "directed":
             graph = nx.erdos_renyi_graph(self.nodes, p, directed=True)
         else: 
@@ -207,6 +202,7 @@ class ELDP(GraphProtection):
         Returns:
             nx.graph: Intersecció de grafs
         """
+        # Realitzem l'intersecció de dos grafs
         graf = nx.intersection(g1, g2)
         return graf
     
@@ -219,6 +215,7 @@ class ELDP(GraphProtection):
         Returns:
             nx.graph: Graf sumat
         """
+        # Realitzem la suma XOR, fent la diferència simètrica
         graf = nx.symmetric_difference(g1, g2)
         return graf
         
@@ -235,13 +232,26 @@ class ELDP(GraphProtection):
         protected_graphs = list()
 
         for _, group in self.grouped_df:
+            # Iterem a la següent snapshot
             self.iterate_graph(group)
+            # Calculem el seu graf complementari
             original_graphs.append(self.graph.copy())
-            complement_g0 = self.complement_graph()
-            noise_g0 = self.gilbert_graph(1-self.p0)
-            noise_g1 = self.gilbert_graph(1-self.p1)
-            g0 = self.intersection_graph(noise_g0, complement_g0) 
+            complement_graph = self.complement_graph()
+
+            # Mirem la densitat del graf. En cas de ser major a 0.5 no es pot realitzar ε-ELDP
+            density = self.compute_density()
+            assert density <= 0.5, "No es pot protegir el graf temporal, degut a que és massa dens per complir ε-ELDP"
+
+            # Calculem les probabilitats d'afegir i treure arestes, i computem els noise graphs
+            p0,p1 = self.compute_probabilities(density)
+            noise_g0 = self.gilbert_graph(1-p0)
+            noise_g1 = self.gilbert_graph(1-p1)
+
+            # Intersecció dels sorolls amb el graf original i el seu complementari
+            g0 = self.intersection_graph(noise_g0, complement_graph) 
             g1 = self.intersection_graph(noise_g1, self.graph)
+
+            # Realitzem un XOR del graf original, amb els grafs de sorolls computats
             sum1 = self.xor_graph(self.graph, g0)
             protected_g = self.xor_graph(sum1, g1)
             protected_graphs.append(protected_g)
