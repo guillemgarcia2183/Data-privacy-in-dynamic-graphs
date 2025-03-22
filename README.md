@@ -79,11 +79,14 @@ Similarment, en el moment de calcular la privacitat i utilitat, si volem saber l
 
 ## 4. Definicions bàsiques - Mètodes de privacitat
 
-* Graf dinàmic: (Definition problem - K-An) 
+* Graf dinàmic: (Definition problem -> K-An) 
+
+* Diferències entre grafs estàtics i grafs dinàmics: Un graf dinàmic resumidament conté una variable temporal afegida comparat amb els grafs estàtics.
+En què pot afectar això? Doncs s'ha de vigilar més com es protegeixen les dades, perquè un atacant pot obtenir més informació si conté actualitzacions d'una xarxa. 
+Què pot fer un atacant que no pugui en un graf estàtic protegit? Pot anar recollint grafs temporals i anar veient la relació entre les dades, fins poder re-identificar els nodes i relacions reals. 
 
 * Per LEDP: Def 1. Def 2. Def 3. Proposition 1 (DP in dynamic graphs - Julián)
-    * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, ja que aquests contenen un soroll que ell no coneix. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma adequada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria
-    inferir quin soroll s'ha afegit de forma específica en cada graf. 
+    * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, ja que aquests contenen un soroll que ell no coneix. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma anivellada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria inferir quin soroll s'ha afegit de forma específica en cada graf. 
 
 
 ## 5. Referències
