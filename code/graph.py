@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 import numpy as np
+from sklearn.cluster import KMeans
+
 # import pandas as pd
 # import cv2
 # import tkinter as tk
@@ -259,10 +261,11 @@ class ELDP(GraphProtection):
         return original_graphs, protected_graphs
              
 class KDA(GraphProtection):
-    __slots__ = ('k', 'degree_matrix', 'indegree_matrix', 'outdegree_matrix')
-    def __init__(self, filename, input_tuple, df):
+    __slots__ = ('k', 'nodes', 'degree_matrix', 'indegree_matrix', 'outdegree_matrix')
+    def __init__(self, filename, input_tuple, df, k=2):
         super().__init__(filename, input_tuple, df)
-        self.k = 2
+        self.k = k
+        self.m = self.graph.number_of_nodes() // self.k
         self.degree_matrix, self.indegree_matrix, self.outdegree_matrix = self.get_degree_matrix()
 
     def get_degree(self, type):
@@ -281,7 +284,7 @@ class KDA(GraphProtection):
         else:
             degree_dict = dict(self.graph.degree())
 
-        # Devolver los grados asegurando que cada nodo tenga un valor (0 si no existe en degree_dict)
+        # Retornar els graus assegurant que surtin tots encara que sigui 0
         return [degree_dict.get(node, 0) for node in self.graph.nodes()]
 
     def get_degree_matrix(self):
@@ -294,6 +297,7 @@ class KDA(GraphProtection):
         indegree_matrix = None
         outdegree_matrix = None
 
+        # En cas de ser un graf dirigit, obtenir les in_degree i out_degree matrices
         if self.directed == "directed":
             for _, group in self.grouped_df:
                 self.iterate_graph(group)
@@ -301,7 +305,7 @@ class KDA(GraphProtection):
                 outdegree_array = self.get_degree("outdegree")
 
                 if indegree_matrix is None:
-                    indegree_matrix = indegree_array  # Inicializa con la primera fila
+                    indegree_matrix = indegree_array 
                 else:
                     indegree_matrix = np.vstack((indegree_matrix, indegree_array))
 
@@ -312,6 +316,7 @@ class KDA(GraphProtection):
 
             return None, indegree_matrix, outdegree_matrix
 
+        # En cas de ser no dirigit, fer només una matriu de graus
         for _, group in self.grouped_df:
             self.iterate_graph(group)
             degree_array = self.get_degree("degree")
@@ -322,6 +327,14 @@ class KDA(GraphProtection):
 
         return degree_matrix, None, None
 
+    def compute_P_matrix(self):
+        kmeans = KMeans(n_clusters=self.m, random_state=42, n_init=10)
+        clusters = kmeans.fit_predict(self.degree_matrix)
+        anonymized_degrees = np.zeros_like(self.degree_matrix)
+        for cluster_id in set(clusters):
+            mask = (clusters == cluster_id)
+            anonymized_degrees[mask] = np.median(self.degree_matrix[mask], axis=0)
+        return anonymized_degrees
     
     def apply_protection(self):
         pass

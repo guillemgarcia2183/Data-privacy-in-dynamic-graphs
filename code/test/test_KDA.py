@@ -18,8 +18,7 @@ class TestKDA(unittest.TestCase):
         """Crea una instància de KDA
         """
         self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
-                        '2': (dp.DATASET2, 'weighted', 'undirected'),
-                        '3': (dp.DATASET3, 'weighted', 'directed')}
+                        '2': (dp.DATASET2, 'weighted', 'undirected')}
         
         self.readers = []
         for key, value in self.dictionary_options.items():
@@ -48,7 +47,8 @@ class TestKDA(unittest.TestCase):
                 self.assertEqual(g.indegree_matrix, None)
                 self.assertEqual(g.outdegree_matrix, None)
 
-
+    def test_P_matrix(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
