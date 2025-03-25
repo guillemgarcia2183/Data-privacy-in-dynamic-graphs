@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 import numpy as np
-from sklearn.cluster import KMeans
 
 # import pandas as pd
 # import cv2
@@ -142,7 +141,7 @@ class GraphProtection:
 
 class ELDP(GraphProtection):
     __slots__ = ('nodes', 'epsilon')
-    def __init__(self, filename, input_tuple, df, epsilon):
+    def __init__(self, filename, input_tuple, df, epsilon=0.5):
         super().__init__(filename, input_tuple, df)
         self.epsilon = epsilon
         self.nodes = self.graph.number_of_nodes()
@@ -261,11 +260,12 @@ class ELDP(GraphProtection):
         return original_graphs, protected_graphs
              
 class KDA(GraphProtection):
-    __slots__ = ('k', 'nodes', 'degree_matrix', 'indegree_matrix', 'outdegree_matrix')
+    __slots__ = ('k', 'm', 'T', 'degree_matrix', 'indegree_matrix', 'outdegree_matrix')
     def __init__(self, filename, input_tuple, df, k=2):
         super().__init__(filename, input_tuple, df)
         self.k = k
-        self.m = self.graph.number_of_nodes() // self.k
+        self.m = math.ceil(self.graph.number_of_nodes() / self.k)
+        self.T = len(self.grouped_df)
         self.degree_matrix, self.indegree_matrix, self.outdegree_matrix = self.get_degree_matrix()
 
     def get_degree(self, type):
@@ -327,15 +327,26 @@ class KDA(GraphProtection):
 
         return degree_matrix, None, None
 
-    def compute_P_matrix(self):
-        kmeans = KMeans(n_clusters=self.m, random_state=42, n_init=10)
-        clusters = kmeans.fit_predict(self.degree_matrix)
-        anonymized_degrees = np.zeros_like(self.degree_matrix)
-        for cluster_id in set(clusters):
-            mask = (clusters == cluster_id)
-            anonymized_degrees[mask] = np.median(self.degree_matrix[mask], axis=0)
-        return anonymized_degrees
-    
+    def compute_P_matrix(self, degree_matrix):
+        """Calcular matriu de medianes P 
+
+        Args:
+            degree_matrix (np.array): Matriu de graus a particionar
+
+        Returns:
+            np.array() : Matriu de medianes 
+        """
+        aux_matrix = degree_matrix.copy()
+        P_matrix = np.zeros((self.T, self.m))
+        for i, d_seq in enumerate(aux_matrix):
+            # Aleatoritzem la seqüència de graus
+            np.random.shuffle(d_seq)
+            # Particionem la seqüència en m particions
+            particions = np.array_split(d_seq, self.m)
+            # Calculem la mediana de cada partició, i l'incorporem a la matriu final
+            P_matrix[i] = np.array([np.median(p) for p in particions])
+        return P_matrix
+
     def apply_protection(self):
         pass
 

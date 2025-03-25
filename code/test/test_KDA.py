@@ -48,7 +48,11 @@ class TestKDA(unittest.TestCase):
                 self.assertEqual(g.outdegree_matrix, None)
 
     def test_P_matrix(self):
-        pass
+        """2. Test de la matriu P
+        """
+        for g in self.KDA:
+            P = g.compute_P_matrix(g.degree_matrix)
+            self.assertEqual(P.shape, (g.T, g.m))
 
 if __name__ == '__main__':
     unittest.main()
