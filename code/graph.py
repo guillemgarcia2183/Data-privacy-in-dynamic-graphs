@@ -18,7 +18,7 @@ class GraphProtection:
     """Mòdul creador de grafs
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('path', 'weighted', 'directed', 'df',
+    __slots__ = ('path', 'weighted', 'directed', 'format', 'df',
                  'grouped_df', 'graph', 'node_positions', 'filename')
     def __init__(self, filename, input_tuple, df):
         """Inicialització de la classe
@@ -26,7 +26,7 @@ class GraphProtection:
         Args:
             df (DataFrame): Dades d'un fitxer en format dataset (From, To, Timestamp)
         """
-        self.path, self.weighted, self.directed = input_tuple
+        self.path, self.weighted, self.directed, self.format = input_tuple
         self.df = df
         self.grouped_df = self.get_grouped_df()
         self.graph = self.create_graph()

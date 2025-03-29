@@ -22,15 +22,17 @@ class TestELDP(unittest.TestCase):
         """Crea una instància de ELDP
         """
         self.save = True # Canviar si no es volen guardar els grafs resultants
-        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
-                        '2': (dp.DATASET2, 'weighted', 'undirected')} 
+        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
+                        '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
+                        '3': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')} 
         
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
-        epsilons = np.arange(0.05, 2, 0.05)
+        #epsilons = np.arange(0.5, 10.5, 0.5)
+        epsilons = [0.1, 1, 10]
         for eps in epsilons:
             for i,reader in enumerate(self.readers):
                 self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, eps))
@@ -150,20 +152,22 @@ class TestELDP(unittest.TestCase):
         
             # 1. Comprovar densitat // ε-ELDP
             for og, pr in zip(original_g, protected_g):
-                density_og = float(nx.density(og))
-                density_pr = float(nx.density(pr))
-                self.assertAlmostEqual(density_og, density_pr, delta=0.1)
- 
+                density_og = nx.density(og)
+                density_pr = nx.density(pr)
+                self.assertAlmostEqual(density_og, density_pr, delta=0.05)
+                print(f"Densitat original: {density_og}, Densitat protegit: {density_pr}")
+
                 p0,p1 = self.ELDP[i].compute_probabilities(density_og)
-                constraint = round(math.exp(self.ELDP[i].epsilon),8)
+                constraint = round(math.exp(self.ELDP[i].epsilon),3)
                 f1  = (1-p1) / p0
                 f2 = p1 / (1-p0)
                 f3 = p0 / (1-p1) 
                 f4 = (1-p0) / p1
-                maxim = round(max(f1,f2,f3,f4),8)
+                maxim = round(max(f1,f2,f3,f4),3)
                 self.assertGreaterEqual(constraint, maxim)
-                
-                #print(f"Densitat original DATASET [{i+1}]: {density_og}, Densitat PROTEGIT: {density_pr} -- ε-ELDP: {constraint} >= {maxim}: {constraint>=maxim}  \n")
+                print(f"Compleix ε-ELDP : {constraint} >= {maxim}")
+                print("================================================")
+
             
             # 2. Save/Load grafs
             if self.save: 

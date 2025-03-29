@@ -74,11 +74,12 @@ class ModuleManager:
         Returns:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
-        dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected'), 
-                               '2': (dp.DATASET2, 'weighted', 'undirected'),
-                               '3': (dp.DATASET3, 'weighted', 'undirected'),
-                               '4': (dp.DATASET4, 'unweighted', 'directed'),
-                               '5': (dp.DATASET5, 'weighted', 'directed')}
+        dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
+                               '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
+                               '3': (dp.DATASET3, 'weighted', 'undirected', 'FILE'),
+                               '4': (dp.DATASET4, 'unweighted', 'directed', 'FILE'),
+                               '5': (dp.DATASET5, 'weighted', 'directed', 'FILE'),
+                               '6': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')}
 
         
         print_options = {'1': "Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)", 
@@ -86,12 +87,13 @@ class ModuleManager:
                                '3': "Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)",
                                '4': "CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)",
                                '5': "IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed)",
-                               "6": "TOTS ELS DATASETS"}
+                               '6': "Lighning network dataset (JSON FORMAT)",
+                               "7": "TOTS ELS DATASETS"}
 
         pretext = "Les opcions de datasets que es tenen són les següents:"
         selection = self.select_option(pretext, print_options)
 
-        if selection == '6':
+        if selection == '7':
             return list(dictionary_options.values())
         final_list = list()
         final_list.append(dictionary_options[selection])         

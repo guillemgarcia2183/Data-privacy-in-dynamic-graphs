@@ -17,8 +17,8 @@ class TestGP(unittest.TestCase):
     def setUp(self):
         """Crea una instància de Dataset
         """
-        TUPLE1 = (dp.DATASET1, 'weighted', 'undirected')
-        TUPLE2 = (dp.DATASET4, 'unweighted', 'directed')
+        TUPLE1 = (dp.DATASET1, 'weighted', 'undirected', 'FILE')
+        TUPLE2 = (dp.DATASET4, 'unweighted', 'directed', 'FILE')
 
         reader1 = rd.Reader(TUPLE1)
         reader2 = rd.Reader(TUPLE2)
