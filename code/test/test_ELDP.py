@@ -21,10 +21,12 @@ class TestELDP(unittest.TestCase):
     def setUp(self):
         """Crea una instància de ELDP
         """
-        self.save = True # Canviar si no es volen guardar els grafs resultants
-        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
-                        '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
-                        '3': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')} 
+        self.save = False # Canviar si no es volen guardar els grafs resultants
+        # self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
+        #                 '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
+        #                 '3': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')} 
+        
+        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE')} 
         
         self.readers = []
         for key, value in self.dictionary_options.items():
@@ -174,15 +176,24 @@ class TestELDP(unittest.TestCase):
                 g.save_graphs(original_g, protected_g, "ELDP", self.ELDP[i].epsilon)
         
 
-    # def test_saved_graphs(self):
-    #     """5. Test loading saved graphs
-    #     """
-    #     # with open("code/output/original_graphs_aves-sparrow-social.edges.pkl", "rb") as f:
-    #     #     graphs = pickle.load(f)
-    #     # self.assertIsInstance(graphs, list)
-    #     # self.assertIsInstance(graphs[0], nx.Graph)
-    #     pass
-    
+    def test_saved_graphs(self):
+        """5. Test loading saved graphs
+        """
+        with open("code/output/ELDP/LNetwork.json_1.pkl", "rb") as f:
+            graphs = pickle.load(f)
+        self.assertIsInstance(graphs, list)
+        self.assertIsInstance(graphs[0], nx.Graph)
+
+        with open("code/output/ELDP/LNetwork.json_0.1.pkl", "rb") as f:
+            graphs = pickle.load(f)
+        self.assertIsInstance(graphs, list)
+        self.assertIsInstance(graphs[0], nx.Graph)    
+
+        with open("code/output/ELDP/LNetwork.json_10.pkl", "rb") as f:
+            graphs = pickle.load(f)
+        self.assertIsInstance(graphs, list)
+        self.assertIsInstance(graphs[0], nx.Graph)
+
     # def test_epsilon(self):
     #     """6. Test per veure com funciona l'algorisme canviant el paràmetre epsilon
     #     """
