@@ -18,15 +18,18 @@ class TestKDA(unittest.TestCase):
         """Crea una instància de KDA
         """
         self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
-                        '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE')}
+                               '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
+                               '3': (dp.DATASET3, 'weighted', 'undirected', 'FILE')}
         
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
+        ks = np.arange(2, 15, 1)
         self.KDA = []
-        for i,reader in enumerate(self.readers):
-            self.KDA.append(KDA(reader.filename, self.dictionary_options[str(i+1)], reader.df))
+        for k in ks: 
+            for i,reader in enumerate(self.readers):
+                self.KDA.append(KDA(reader.filename, self.dictionary_options[str(i+1)], reader.df, k))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
@@ -36,23 +39,37 @@ class TestKDA(unittest.TestCase):
         """
         for g in self.KDA:
             if g.directed == "directed":
-                self.assertEqual(g.indegree_matrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.indegree_matrix[0].dtype, 'int32')
-                self.assertEqual(g.outdegree_matrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.outdegree_matrix[0].dtype, 'int32')
-                self.assertEqual(g.degree_matrix, None)
+                self.assertEqual(g.inDegreeMatrix[0].shape, (g.graph.number_of_nodes(),))
+                self.assertEqual(g.inDegreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.outDegreeMatrix[0].shape, (g.graph.number_of_nodes(),))
+                self.assertEqual(g.outDegreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.DegreeMatrix, None)
             else:
-                self.assertEqual(g.degree_matrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.degree_matrix[0].dtype, 'int32')
-                self.assertEqual(g.indegree_matrix, None)
-                self.assertEqual(g.outdegree_matrix, None)
+                self.assertEqual(g.DegreeMatrix[0].shape, (g.graph.number_of_nodes(),))
+                self.assertEqual(g.DegreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.inDegreeMatrix, None)
+                self.assertEqual(g.outDegreeMatrix, None)
 
-    def test_P_matrix(self):
+    def test_PMatrix(self):
         """2. Test de la matriu P
         """
         for g in self.KDA:
-            P = g.compute_P_matrix(g.degree_matrix)
+            P = g.compute_PMatrix(g.DegreeMatrix)
             self.assertEqual(P.shape, (g.T, g.m))
+    
+    def test_Anonymization(self):
+        """3. Test Anonimització de graus
+        """
+        for g in self.KDA:
+            PMatrix = g.compute_PMatrix(g.DegreeMatrix)
+            anonymizedDegrees= g.anonymizeDegrees(g.DegreeMatrix, PMatrix)
+            self.assertEqual(anonymizedDegrees.shape, (g.T, g.DegreeMatrix.shape[1]))
+            for anonymousdegrees in anonymizedDegrees:
+                unique, counts = np.unique(anonymousdegrees, return_counts=True)
+                # print(counts, sum(counts), g.k, g.m)
+                self.assertTrue(np.all(counts >= g.k))
+
+                #self.assertEqual(sum(anonymousdegrees)%2, 0)
 
 if __name__ == '__main__':
     unittest.main()

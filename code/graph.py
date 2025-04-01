@@ -260,13 +260,13 @@ class ELDP(GraphProtection):
         return original_graphs, protected_graphs
              
 class KDA(GraphProtection):
-    __slots__ = ('k', 'm', 'T', 'degree_matrix', 'indegree_matrix', 'outdegree_matrix')
+    __slots__ = ('k', 'm', 'T', 'DegreeMatrix', 'inDegreeMatrix', 'outDegreeMatrix')
     def __init__(self, filename, input_tuple, df, k=2):
         super().__init__(filename, input_tuple, df)
         self.k = k
         self.m = math.ceil(self.graph.number_of_nodes() / self.k)
         self.T = len(self.grouped_df)
-        self.degree_matrix, self.indegree_matrix, self.outdegree_matrix = self.get_degree_matrix()
+        self.DegreeMatrix, self.inDegreeMatrix, self.outDegreeMatrix = self.get_DegreeMatrix()
 
     def get_degree(self, type):
         """Obtenir els graus de tots els nodes d'un graf, incloent els de grau 0.
@@ -287,15 +287,15 @@ class KDA(GraphProtection):
         # Retornar els graus assegurant que surtin tots encara que sigui 0
         return [degree_dict.get(node, 0) for node in self.graph.nodes()]
 
-    def get_degree_matrix(self):
+    def get_DegreeMatrix(self):
         """Obtenir les matrius de graus dels grafs. Cada fila correspon els graus d'un graf
 
         Returns:
             np.array(), np.array(), np.array(): Matrius degree, in_degree i out_degree
         """
-        degree_matrix = None
-        indegree_matrix = None
-        outdegree_matrix = None
+        DegreeMatrix = None
+        inDegreeMatrix = None
+        outDegreeMatrix = None
 
         # En cas de ser un graf dirigit, obtenir les in_degree i out_degree matrices
         if self.directed == "directed":
@@ -304,48 +304,79 @@ class KDA(GraphProtection):
                 indegree_array = self.get_degree("indegree")
                 outdegree_array = self.get_degree("outdegree")
 
-                if indegree_matrix is None:
-                    indegree_matrix = indegree_array 
+                if inDegreeMatrix is None:
+                    inDegreeMatrix = indegree_array 
                 else:
-                    indegree_matrix = np.vstack((indegree_matrix, indegree_array))
+                    inDegreeMatrix = np.vstack((inDegreeMatrix, indegree_array))
 
-                if outdegree_matrix is None:
-                    outdegree_matrix = outdegree_array
+                if outDegreeMatrix is None:
+                    outDegreeMatrix = outdegree_array
                 else:
-                    outdegree_matrix = np.vstack((outdegree_matrix, outdegree_array))
+                    outDegreeMatrix = np.vstack((outDegreeMatrix, outdegree_array))
 
-            return None, indegree_matrix, outdegree_matrix
+            return None, inDegreeMatrix, outDegreeMatrix
 
         # En cas de ser no dirigit, fer només una matriu de graus
         for _, group in self.grouped_df:
             self.iterate_graph(group)
             degree_array = self.get_degree("degree")
-            if degree_matrix is None:
-                degree_matrix = degree_array
+            if DegreeMatrix is None:
+                DegreeMatrix = degree_array
             else:
-                degree_matrix = np.vstack((degree_matrix, degree_array))
+                DegreeMatrix = np.vstack((DegreeMatrix, degree_array))
 
-        return degree_matrix, None, None
+        return DegreeMatrix, None, None
 
-    def compute_P_matrix(self, degree_matrix):
+    def compute_PMatrix(self, DegreeMatrix):
         """Calcular matriu de medianes P 
 
         Args:
-            degree_matrix (np.array): Matriu de graus a particionar
+            DegreeMatrix (np.array): Matriu de graus a particionar
 
         Returns:
             np.array() : Matriu de medianes 
         """
-        aux_matrix = degree_matrix.copy()
-        P_matrix = np.zeros((self.T, self.m))
+        aux_matrix = DegreeMatrix.copy()
+        PMatrix = np.zeros((self.T, self.m))
         for i, d_seq in enumerate(aux_matrix):
             # Aleatoritzem la seqüència de graus
             np.random.shuffle(d_seq)
             # Particionem la seqüència en m particions
             particions = np.array_split(d_seq, self.m)
             # Calculem la mediana de cada partició, i l'incorporem a la matriu final
-            P_matrix[i] = np.array([np.median(p) for p in particions])
-        return P_matrix
+            PMatrix[i] = np.array([round(np.median(p)) for p in particions])
+        return PMatrix
+
+    def anonymizeDegrees(self, DegreeMatrix, PMatrix):
+        # Paràmetres necessaris 
+        T, n = DegreeMatrix.shape
+
+        anonymizedDegrees = np.zeros_like(DegreeMatrix, dtype=float)
+
+        for t in range(T):
+            # Ordenar els graus per agrupar-los correctament 
+            sortedIndices = np.argsort(DegreeMatrix[t])
+            sortedDegrees = DegreeMatrix[t][sortedIndices]
+            auxmedian = None
+
+            # Assignar la mediana a cada conjunt de particions
+            for i in range(self.m):
+                initial_idx = i*self.k # Comencem pel índex 0, en la següent iteració k*i
+                final_idx = initial_idx + self.k # Comencem per l'index inicial + k, així succesivament 
+
+                #En cas de que es trobin dintre del rang els índexos, s'assigna la mediana al conjunt de nodes
+                if final_idx <= n: 
+                    median = PMatrix[t,i]
+                    sortedDegrees[initial_idx:final_idx] = median
+                    auxmedian = median 
+                # En cas contrari, utilitzem l'anterior mediana per tal de 
+                else:
+                    sortedDegrees[initial_idx:n] = auxmedian
+
+            anonymizedDegrees[t, sortedIndices] = sortedDegrees
+        
+        return anonymizedDegrees
+
 
     def apply_protection(self):
         pass
