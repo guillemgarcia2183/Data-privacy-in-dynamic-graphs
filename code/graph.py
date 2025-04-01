@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 import numpy as np
+from collections import Counter
 
 # import pandas as pd
 # import cv2
@@ -260,13 +261,13 @@ class ELDP(GraphProtection):
         return original_graphs, protected_graphs
              
 class KDA(GraphProtection):
-    __slots__ = ('k', 'm', 'T', 'DegreeMatrix', 'inDegreeMatrix', 'outDegreeMatrix')
+    __slots__ = ('k', 'm', 'T', 'degreeMatrix', 'indegreeMatrix', 'outdegreeMatrix')
     def __init__(self, filename, input_tuple, df, k=2):
         super().__init__(filename, input_tuple, df)
         self.k = k
         self.m = math.ceil(self.graph.number_of_nodes() / self.k)
         self.T = len(self.grouped_df)
-        self.DegreeMatrix, self.inDegreeMatrix, self.outDegreeMatrix = self.get_DegreeMatrix()
+        self.degreeMatrix, self.indegreeMatrix, self.outdegreeMatrix = self.get_degreeMatrix()
 
     def get_degree(self, type):
         """Obtenir els graus de tots els nodes d'un graf, incloent els de grau 0.
@@ -287,15 +288,15 @@ class KDA(GraphProtection):
         # Retornar els graus assegurant que surtin tots encara que sigui 0
         return [degree_dict.get(node, 0) for node in self.graph.nodes()]
 
-    def get_DegreeMatrix(self):
+    def get_degreeMatrix(self):
         """Obtenir les matrius de graus dels grafs. Cada fila correspon els graus d'un graf
 
         Returns:
             np.array(), np.array(), np.array(): Matrius degree, in_degree i out_degree
         """
-        DegreeMatrix = None
-        inDegreeMatrix = None
-        outDegreeMatrix = None
+        degreeMatrix = None
+        indegreeMatrix = None
+        outdegreeMatrix = None
 
         # En cas de ser un graf dirigit, obtenir les in_degree i out_degree matrices
         if self.directed == "directed":
@@ -304,39 +305,39 @@ class KDA(GraphProtection):
                 indegree_array = self.get_degree("indegree")
                 outdegree_array = self.get_degree("outdegree")
 
-                if inDegreeMatrix is None:
-                    inDegreeMatrix = indegree_array 
+                if indegreeMatrix is None:
+                    indegreeMatrix = indegree_array 
                 else:
-                    inDegreeMatrix = np.vstack((inDegreeMatrix, indegree_array))
+                    indegreeMatrix = np.vstack((indegreeMatrix, indegree_array))
 
-                if outDegreeMatrix is None:
-                    outDegreeMatrix = outdegree_array
+                if outdegreeMatrix is None:
+                    outdegreeMatrix = outdegree_array
                 else:
-                    outDegreeMatrix = np.vstack((outDegreeMatrix, outdegree_array))
+                    outdegreeMatrix = np.vstack((outdegreeMatrix, outdegree_array))
 
-            return None, inDegreeMatrix, outDegreeMatrix
+            return None, indegreeMatrix, outdegreeMatrix
 
         # En cas de ser no dirigit, fer només una matriu de graus
         for _, group in self.grouped_df:
             self.iterate_graph(group)
             degree_array = self.get_degree("degree")
-            if DegreeMatrix is None:
-                DegreeMatrix = degree_array
+            if degreeMatrix is None:
+                degreeMatrix = degree_array
             else:
-                DegreeMatrix = np.vstack((DegreeMatrix, degree_array))
+                degreeMatrix = np.vstack((degreeMatrix, degree_array))
 
-        return DegreeMatrix, None, None
+        return degreeMatrix, None, None
 
-    def compute_PMatrix(self, DegreeMatrix):
+    def compute_PMatrix(self, degreeMatrix):
         """Calcular matriu de medianes P 
 
         Args:
-            DegreeMatrix (np.array): Matriu de graus a particionar
+            degreeMatrix (np.array): Matriu de graus a particionar
 
         Returns:
             np.array() : Matriu de medianes 
         """
-        aux_matrix = DegreeMatrix.copy()
+        aux_matrix = degreeMatrix.copy()
         PMatrix = np.zeros((self.T, self.m))
         for i, d_seq in enumerate(aux_matrix):
             # Aleatoritzem la seqüència de graus
@@ -347,16 +348,25 @@ class KDA(GraphProtection):
             PMatrix[i] = np.array([round(np.median(p)) for p in particions])
         return PMatrix
 
-    def anonymizeDegrees(self, DegreeMatrix, PMatrix):
-        # Paràmetres necessaris 
-        T, n = DegreeMatrix.shape
+    def anonymizeDegrees(self, degreeMatrix, PMatrix):
+        """K-Anonimitzar graus de cada seqüència de la matriu degreeMatrix
 
-        anonymizedDegrees = np.zeros_like(DegreeMatrix, dtype=float)
+        Args:
+            degreeMatrix (np.array): Matriu de graus
+            PMatrix (np.array): Matriu de medianes 
+
+        Returns:
+            np.array(): Matriu de graus anonimitzat
+        """
+        # Paràmetres necessaris 
+        T, n = degreeMatrix.shape
+
+        anonymizedDegrees = np.zeros_like(degreeMatrix, dtype=float)
 
         for t in range(T):
             # Ordenar els graus per agrupar-los correctament 
-            sortedIndices = np.argsort(DegreeMatrix[t])
-            sortedDegrees = DegreeMatrix[t][sortedIndices]
+            sortedIndices = np.argsort(degreeMatrix[t])
+            sortedDegrees = degreeMatrix[t][sortedIndices]
             auxmedian = None
 
             # Assignar la mediana a cada conjunt de particions
@@ -369,14 +379,99 @@ class KDA(GraphProtection):
                     median = PMatrix[t,i]
                     sortedDegrees[initial_idx:final_idx] = median
                     auxmedian = median 
-                # En cas contrari, utilitzem l'anterior mediana per tal de 
+                # En cas contrari, utilitzem l'anterior mediana per tal d'assegurar k-anonymity en tota la seqüència
                 else:
                     sortedDegrees[initial_idx:n] = auxmedian
 
             anonymizedDegrees[t, sortedIndices] = sortedDegrees
         
         return anonymizedDegrees
+    
+    def isEvenSequence(self, degreeSequence):
+        """Comprovar que una seqüència de graus, el seu sumatori és parell
 
+        Args:
+            degreeSequence (np.array): Seqüència de graus d'un graf
+
+        Returns:
+            bool: El sumatori de la seqüència és parell o no
+        """
+        return sum(degreeSequence) % 2 == 0
+    
+    def isRealizableSequence(self, degreeSequence):
+        """Comprovar si una seqüència de graus és realizable
+
+        Args:
+            degreeSequence (np.array): Seqüència de graus d'un graf
+
+        Returns:
+            bool: El graf és o no és realizable
+        """
+        degreeSequence = sorted(degreeSequence, reverse=True)
+        # Condició 1. La seqüència és parell 
+        if self.isEvenSequence(degreeSequence):
+            # Condició 2. Compleix Erdős-Gallai 
+            n = len(degreeSequence)
+            cumulativeSum = np.cumsum(degreeSequence)
+            for k in range(1, n + 1):
+                rightSum = k * (k-1) + sum(min(d, k) for d in degreeSequence[k:])
+                if cumulativeSum[k-1] > rightSum:
+                    return False
+            return True
+        return False
+    
+    def dictRealizables(self, degreeMatrix):
+        """Obtenir diccionari de les seqüències realizables i no realizables
+
+        Args:
+            degreeMatrix (np.array): Matriu de graus 
+
+        Returns:
+            dictRealizable, dictNorealizable: Diccionaris amb clau -> seqüència (Tuple), 
+                                                            i valor -> llista d'índexos de la matriu (List)
+        """
+        dictRealizable = {}
+        dictNorealizable = {}
+
+        for idx, seq in enumerate(degreeMatrix):
+            tupleSequence = tuple(seq)
+            if self.isRealizableSequence(seq):
+                if tupleSequence not in dictRealizable:
+                    dictRealizable[tupleSequence] = []
+                dictRealizable[tupleSequence].append(idx)
+            else:
+                if tupleSequence not in dictNorealizable:
+                    dictNorealizable[tupleSequence] = []
+                dictNorealizable[tupleSequence].append(idx)
+
+        return dictRealizable, dictNorealizable
+
+    def l1Distance(self, sequence1, sequence2):
+        """Computar la l1 distance entre dos seqüències de graus
+
+        Args:
+            sequence1 (np.array): Primera seqüència de graus
+            sequence2 (np.array): Segona seqüència de graus
+
+        Returns:
+            float: Distància de les dos seqüències
+        """
+        return np.sum(np.abs(np.array(sequence1) - np.array(sequence2)))
+
+    def realizeDegrees(self, degreeMatrix):
+        """Modifcació de la matriu de graus 
+
+        Args:
+            degreeMatrix (np.array): Matriu de graus Txn
+
+        Returns:
+            np.array: Matriu de graus canviada perquè es puguin dibuixar els grafs 
+        """
+        dictRealizable, dictNorealizable = self.dictRealizables(degreeMatrix)
+        for k1, v1 in dictNorealizable.items():
+            for k2, v2 in dictRealizable.items():
+                print(self.l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]))
+                break
 
     def apply_protection(self):
         pass
