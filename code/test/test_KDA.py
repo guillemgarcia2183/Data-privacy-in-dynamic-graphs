@@ -72,10 +72,17 @@ class TestKDA(unittest.TestCase):
         """4. Test matriu de graus realizable
         """
         for g in self.KDA:
-            PMatrix = g.compute_PMatrix(g.degreeMatrix)
-            anonymizedDegrees= g.anonymizeDegrees(g.degreeMatrix, PMatrix)
-            g.realizeDegrees(anonymizedDegrees)
-            print("================================================")
+            T, n = g.degreeMatrix.shape
+            if g.k <= T:
+                PMatrix = g.compute_PMatrix(g.degreeMatrix)
+                anonymizedDegrees= g.anonymizeDegrees(g.degreeMatrix, PMatrix)
+                finalMatrix = g.realizeDegrees(anonymizedDegrees)
+
+                unique, counts = np.unique(finalMatrix, return_counts=True)
+                self.assertTrue(np.all(counts >= g.k))
+                for anonymousdegrees in finalMatrix:
+                    unique, counts = np.unique(anonymousdegrees, return_counts=True)
+                    self.assertTrue(np.all(counts >= g.k))
 
 if __name__ == '__main__':
     unittest.main()

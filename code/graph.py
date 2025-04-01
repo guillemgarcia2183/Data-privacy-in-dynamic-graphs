@@ -458,6 +458,50 @@ class KDA(GraphProtection):
         """
         return np.sum(np.abs(np.array(sequence1) - np.array(sequence2)))
 
+    def resolveNoRealizable(self, degreeMatrix, dictRealizable, dictNorealizable):
+        """Trobar la millor opció per les seqüències no realizable
+
+        Args:
+            degreeMatrix (np.array): Matriu de graus Txn
+            dictRealizable (Dict): Diccionari de seqüències realizables, amb l'índex de la matriu de graus on es troba
+            dictNorealizable (Dict):  Diccionari de seqüències no realizables, amb l'índex de la matriu de graus on es troba
+        """
+        # Iterem totes les seqüències no realizables
+        for k1, v1 in dictNorealizable.items():
+            distances = {}
+            # Iterem totes les seqüències realizables, i veiem quina és la que menys distància té
+            for k2,v2 in dictRealizable.items():
+                distances[k2] = self.l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]) 
+            
+            # Trobar la key de la seqüència realizable amb la mínima distància
+            min_key = min(distances, key=distances.get)
+            dictRealizable[min_key] += v1            
+
+    def resolveRealizableK(self, degreeMatrix, dictRealizable):
+        """Trobar la millor opció per les seqüències realizables, que apareixen menys de k cops
+
+        Args:
+            degreeMatrix (np.array): Matriu de graus Txn
+            dictRealizable (Dict): Diccionari de seqüències realizables, amb l'índex de la matriu de graus on es troba
+        """
+        minLength = min(len(lst) for lst in dictRealizable.values())
+        min_key = [k for k, lst in dictRealizable.items() if len(lst) == minLength][0]
+
+        while minLength < self.k:
+            # Treiem el valor del diccionari
+            value_removed = dictRealizable.pop(min_key)
+            # Calculem les distàncies entre les altres opcions realizables
+            distances = {}
+            for key,value in dictRealizable.items():
+                distances[key] = self.l1Distance(degreeMatrix[value_removed[0]], degreeMatrix[value[0]]) 
+            # Obtenim la distància mínima i l'afegim al diccionari 
+            minimum = min(distances, key=distances.get)
+            dictRealizable[minimum] += value_removed            
+
+            # Següent iteració
+            minLength = min(len(lst) for lst in dictRealizable.values())
+            min_key = [k for k, lst in dictRealizable.items() if len(lst) == minLength][0]
+            
     def realizeDegrees(self, degreeMatrix):
         """Modifcació de la matriu de graus 
 
@@ -468,10 +512,19 @@ class KDA(GraphProtection):
             np.array: Matriu de graus canviada perquè es puguin dibuixar els grafs 
         """
         dictRealizable, dictNorealizable = self.dictRealizables(degreeMatrix)
-        for k1, v1 in dictNorealizable.items():
-            for k2, v2 in dictRealizable.items():
-                print(self.l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]))
-                break
+        # print(f"dictRealizable: {dictRealizable.values()}")
+        # print(f"dictNorealizable: {dictNorealizable.values()}")
+        # print(f"File: {self.filename}, K = {self.k}")
+        self.resolveNoRealizable(degreeMatrix, dictRealizable, dictNorealizable)
+        self.resolveRealizableK(degreeMatrix, dictRealizable)
+        # print(f"dictRealizable: {dictRealizable}")
+
+        # Fer remplaç de valors en la matriu de graus
+        finalMatrix = degreeMatrix.copy()
+        for new_values, indices in dictRealizable.items():
+            finalMatrix[indices] = new_values
+
+        return finalMatrix
 
     def apply_protection(self):
         pass
