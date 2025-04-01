@@ -526,6 +526,52 @@ class KDA(GraphProtection):
 
         return finalMatrix
 
+    def createProtectedGraphHavel(self, degreeSequence):
+        """Crear un graf a partir d'una seqüència de nodes, amb la funció de networkx
+
+        Args:
+            degreeSequence (np.array): Seqüència de graus
+
+        Returns:
+            nx.graph: Graf construït
+        """
+        if self.directed == "directed":
+            G = nx.havel_hakimi_graph(degreeSequence, create_using=nx.DiGraph)
+        else:
+            G = nx.havel_hakimi_graph(degreeSequence)
+        return G
+    
+    def createProtectedGraphManual(self, degreeSequence):
+        """Crear un graf a partir d'una seqüència de graus de forma manual
+
+        Args:
+            degreeSequence (np.array): Seqüència de graus
+
+        Returns:
+            nx.graph: Graf construït
+        """
+        nodes = list(range(len(degreeSequence)))
+        degrees = degreeSequence.copy()
+        edges = list()
+
+        while any(degrees):
+            sorted_nodes = sorted(zip(nodes, degrees), key=lambda x: -x[1])  # Ordenar nodos por grado descendente
+            node, d = sorted_nodes[0]  # Extraer el nodo con mayor grado
+            nodes.remove(node)  # Eliminarlo temporalmente de la lista
+            degrees.remove(d)  # Eliminar su grado
+
+            for i in range(d):
+                neighbor, _ = sorted_nodes[i + 1]  # Seleccionar los siguientes nodos de mayor grado
+                edges.append((node, neighbor))  # Crear la arista
+                degrees[nodes.index(neighbor)] -= 1  # Reducir su grado en la lista
+
+        if self.directed == "directed":
+            G = nx.DiGraph()
+        else:
+            G = nx.Graph()
+        G.add_edges_from(edges)
+        return G
+
     def apply_protection(self):
         pass
 

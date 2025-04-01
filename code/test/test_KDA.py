@@ -83,6 +83,10 @@ class TestKDA(unittest.TestCase):
                 for anonymousdegrees in finalMatrix:
                     unique, counts = np.unique(anonymousdegrees, return_counts=True)
                     self.assertTrue(np.all(counts >= g.k))
+    
+    def test_Construction(self):
+        """5. Test construcció nou graf
+        """
 
 if __name__ == '__main__':
     unittest.main()
