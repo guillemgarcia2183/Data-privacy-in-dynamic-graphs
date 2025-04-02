@@ -2,6 +2,7 @@ import unittest
 import sys
 import os
 import numpy as np
+import networkx as nx
 
 # Afegir el directori pare 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -13,19 +14,22 @@ import data_paths as dp
 from graph import KDA
 
 class TestKDA(unittest.TestCase):
-    __slots__ = ('dictionary_options', 'readers', 'KDA')
+    __slots__ = ('dictionary_options', 'readers', 'KDA', 'save')
     def setUp(self):
         """Crea una instància de KDA
         """
+        self.save = True # Canviar si es volen guardar els grafs resultants
+
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
                                '2': (dp.DATASET2, True, False, 'FILE'),
-                               '3': (dp.DATASET3, True, False, 'FILE')}
+                               '3': (dp.DATASET3, True, False, 'FILE'),
+                               '4': (dp.DATASET4, False, True, 'FILE'),}
         
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
-        setK = np.arange(2, 4, 1)
+        setK = np.arange(2, 15, 1)
         self.KDA = []
         for k in setK: 
             for i,reader in enumerate(self.readers):
@@ -99,6 +103,25 @@ class TestKDA(unittest.TestCase):
                     finalList = np.array([finalDict.get(node, 0) for node in graph.nodes()])
                     self.assertEqual(row.shape, finalList.shape)
                     self.assertTrue(np.array_equal(finalList, row))
+
+    def test_protection(self):
+        """6. Test protecció del graf
+        """
+        for g in self.KDA:
+            if not g.directed:
+                originalList, protectedList = g.protectionUndirected()
+                self.assertIsInstance(originalList, list)
+                self.assertIsInstance(protectedList, list)
+
+                if len(originalList) > 0 and len(protectedList) > 0:
+                    self.assertIsInstance(originalList[0], nx.Graph)
+                    self.assertIsInstance(protectedList[0], nx.Graph)
+                
+                self.assertEqual(len(originalList), len(protectedList))
+
+                if self.save and len(originalList) > 0 and len(protectedList) > 0:
+                    g.save_graphs(originalList, protectedList, "KDA", g.k)
+            
 
 
 if __name__ == '__main__':

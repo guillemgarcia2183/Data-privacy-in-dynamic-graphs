@@ -573,9 +573,26 @@ class KDA(GraphProtection):
         
         return G
 
-    def apply_protection(self):
-        if not self.directed:
-            pass
-        else:
-            pass
+    def protectionUndirected(self):
+        timestamps = len(self.grouped_df)
+        originalGraphs = list()
+        protectedGraphs = list()
 
+        # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
+        if self.k <= timestamps:
+            # Llista de grafs originals
+            for _, group in self.grouped_df:
+                # Iterem a la següent snapshot
+                self.iterate_graph(group)
+                # Calculem el seu graf complementari
+                originalGraphs.append(self.graph.copy())
+            
+            # Llista de grafs protegits
+            PMatrix = self.compute_PMatrix(self.degreeMatrix)
+            anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
+            realizedDegrees = self.realizeDegrees(anonymizedDegrees)
+            for row in realizedDegrees:
+                graphProtected = self.createProtectedGraphManual(row)
+                protectedGraphs.append(graphProtected)
+        
+        return originalGraphs, protectedGraphs
