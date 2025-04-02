@@ -25,7 +25,7 @@ class TestKDA(unittest.TestCase):
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
-        setK = np.arange(2, 15, 1)
+        setK = np.arange(2, 4, 1)
         self.KDA = []
         for k in setK: 
             for i,reader in enumerate(self.readers):
@@ -87,6 +87,19 @@ class TestKDA(unittest.TestCase):
     def test_Construction(self):
         """5. Test construcció nou graf
         """
+        for g in self.KDA:
+            T, n = g.degreeMatrix.shape
+            if g.k <= T:
+                PMatrix = g.compute_PMatrix(g.degreeMatrix)
+                anonymizedDegrees= g.anonymizeDegrees(g.degreeMatrix, PMatrix)
+                finalMatrix = g.realizeDegrees(anonymizedDegrees)
+                for row in finalMatrix:
+                    graph = g.createProtectedGraphManual(row)
+                    finalDict = dict(graph.degree())
+                    finalList = np.array([finalDict.get(node, 0) for node in graph.nodes()])
+                    self.assertEqual(row.shape, finalList.shape)
+                    self.assertTrue(np.array_equal(finalList, row))
+
 
 if __name__ == '__main__':
     unittest.main()

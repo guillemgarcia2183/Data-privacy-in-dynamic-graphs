@@ -524,10 +524,12 @@ class KDA(GraphProtection):
         for new_values, indices in dictRealizable.items():
             finalMatrix[indices] = new_values
 
+        finalMatrix = finalMatrix.astype(int)
         return finalMatrix
 
     def createProtectedGraphHavel(self, degreeSequence):
         """Crear un graf a partir d'una seqüència de nodes, amb la funció de networkx
+           Característica: Com es reordenen els nodes, no sabem quin era l'identificació original
 
         Args:
             degreeSequence (np.array): Seqüència de graus
@@ -535,14 +537,16 @@ class KDA(GraphProtection):
         Returns:
             nx.graph: Graf construït
         """
+        degreeSequenceCopy = degreeSequence.copy()
         if self.directed == "directed":
-            G = nx.havel_hakimi_graph(degreeSequence, create_using=nx.DiGraph)
+            G = nx.havel_hakimi_graph(degreeSequenceCopy, create_using=nx.DiGraph)
         else:
-            G = nx.havel_hakimi_graph(degreeSequence)
+            G = nx.havel_hakimi_graph(degreeSequenceCopy)
         return G
     
     def createProtectedGraphManual(self, degreeSequence):
         """Crear un graf a partir d'una seqüència de graus de forma manual
+           Característica: Els nodes es mantenen en la seva posició original
 
         Args:
             degreeSequence (np.array): Seqüència de graus
@@ -550,26 +554,25 @@ class KDA(GraphProtection):
         Returns:
             nx.graph: Graf construït
         """
-        nodes = list(range(len(degreeSequence)))
-        degrees = degreeSequence.copy()
-        edges = list()
+        degreeSequenceCopy = degreeSequence.copy()
+        n = len(degreeSequenceCopy) # Nombre de nodes
+        nodes = list(range(n))  # Llista de nodes del graf
+        degree_list = sorted(zip(degreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment 
+        
+        G = nx.DiGraph() if self.directed == "directed" else nx.Graph() # Creem un graf dirigit/no dirigit segons el paràmetre de la classe
+        G.add_nodes_from(nodes)  # Agreguem els nodes
 
-        while any(degrees):
-            sorted_nodes = sorted(zip(nodes, degrees), key=lambda x: -x[1])  # Ordenar nodos por grado descendente
-            node, d = sorted_nodes[0]  # Extraer el nodo con mayor grado
-            nodes.remove(node)  # Eliminarlo temporalmente de la lista
-            degrees.remove(d)  # Eliminar su grado
+        while degree_list:
+            degree_list.sort(reverse=True)  # Ordenem en cada iteració
+            d, node = degree_list.pop(0)  # Extraiem el node de major grau
 
-            for i in range(d):
-                neighbor, _ = sorted_nodes[i + 1]  # Seleccionar los siguientes nodos de mayor grado
-                edges.append((node, neighbor))  # Crear la arista
-                degrees[nodes.index(neighbor)] -= 1  # Reducir su grado en la lista
+            for i in range(d):  # Conectem el node amb altres 
+                neighbor_degree, neighbor = degree_list[i]
+                G.add_edge(node, neighbor)  
+                degree_list[i] = (neighbor_degree - 1, neighbor)  # Reduïm el grau dels veïns
 
-        if self.directed == "directed":
-            G = nx.DiGraph()
-        else:
-            G = nx.Graph()
-        G.add_edges_from(edges)
+            degree_list = [(dg, nd) for dg, nd in degree_list if dg > 0]  # Eliminem nodes amb grau zero
+        
         return G
 
     def apply_protection(self):
