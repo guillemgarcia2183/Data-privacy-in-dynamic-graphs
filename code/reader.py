@@ -17,7 +17,7 @@ def read_file(tp):
     try:
         data = list()
         # En cas que el graf que estem tractant no té pesos:
-        if tp[1] == 'unweighted':
+        if tp[1] == False:
             # Llegir el fitxer i carregar la informació en una taula pandas
             with open(tp[0], 'r') as file:
                 for line in file:

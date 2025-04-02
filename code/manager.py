@@ -74,12 +74,12 @@ class ModuleManager:
         Returns:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
-        dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
-                               '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
-                               '3': (dp.DATASET3, 'weighted', 'undirected', 'FILE'),
-                               '4': (dp.DATASET4, 'unweighted', 'directed', 'FILE'),
-                               '5': (dp.DATASET5, 'weighted', 'directed', 'FILE'),
-                               '6': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')}
+        dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                               '2': (dp.DATASET2, True, False, 'FILE'),
+                               '3': (dp.DATASET3, True, False, 'FILE'),
+                               '4': (dp.DATASET4, False, True, 'FILE'),
+                               '5': (dp.DATASET5, True, True, 'FILE'),
+                               '6': (dp.DATASET6, False, False, 'JSON')}
 
         
         print_options = {'1': "Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)", 

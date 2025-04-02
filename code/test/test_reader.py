@@ -20,8 +20,8 @@ class TestReader(unittest.TestCase):
     def setUp(self):
         """Crea una instància de Dataset
         """
-        self.file1 = rd.read_file((PATH1, 'unweighted'))
-        self.file2 = rd.read_file((PATH2, 'weighted'))
+        self.file1 = rd.read_file((PATH1, False))
+        self.file2 = rd.read_file((PATH2, True))
 
     def test_files(self):
         """1. Test de lectura de fitxers 

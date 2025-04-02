@@ -26,7 +26,7 @@ class TestELDP(unittest.TestCase):
         #                 '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
         #                 '3': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')} 
         
-        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE')} 
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE')} 
         
         self.readers = []
         for key, value in self.dictionary_options.items():
@@ -148,7 +148,7 @@ class TestELDP(unittest.TestCase):
         """
         for i,g in enumerate(self.ELDP):
             
-            print(f"Dataset: {self.ELDP[i].filename}, Epsilon: {self.ELDP[i].epsilon}")
+            # print(f"Dataset: {self.ELDP[i].filename}, Epsilon: {self.ELDP[i].epsilon}")
 
             original_g, protected_g = g.apply_protection()
         
@@ -157,7 +157,7 @@ class TestELDP(unittest.TestCase):
                 density_og = nx.density(og)
                 density_pr = nx.density(pr)
                 self.assertAlmostEqual(density_og, density_pr, delta=0.05)
-                print(f"Densitat original: {density_og}, Densitat protegit: {density_pr}")
+                # print(f"Densitat original: {density_og}, Densitat protegit: {density_pr}")
 
                 p0,p1 = self.ELDP[i].compute_probabilities(density_og)
                 constraint = round(math.exp(self.ELDP[i].epsilon),3)
@@ -167,8 +167,8 @@ class TestELDP(unittest.TestCase):
                 f4 = (1-p0) / p1
                 maxim = round(max(f1,f2,f3,f4),3)
                 self.assertGreaterEqual(constraint, maxim)
-                print(f"Compleix ε-ELDP : {constraint} >= {maxim}")
-                print("================================================")
+                # print(f"Compleix ε-ELDP : {constraint} >= {maxim}")
+                # print("================================================")
 
             
             # 2. Save/Load grafs

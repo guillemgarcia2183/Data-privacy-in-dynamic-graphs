@@ -17,9 +17,9 @@ class TestKDA(unittest.TestCase):
     def setUp(self):
         """Crea una instància de KDA
         """
-        self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
-                               '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
-                               '3': (dp.DATASET3, 'weighted', 'undirected', 'FILE')}
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                               '2': (dp.DATASET2, True, False, 'FILE'),
+                               '3': (dp.DATASET3, True, False, 'FILE')}
         
         self.readers = []
         for key, value in self.dictionary_options.items():

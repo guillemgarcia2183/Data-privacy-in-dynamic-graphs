@@ -25,7 +25,9 @@ class GraphProtection:
         """Inicialització de la classe
 
         Args:
-            df (DataFrame): Dades d'un fitxer en format dataset (From, To, Timestamp)
+            filename (str): Nom del arxiu
+            input_tuple (tuple): Tuple amb la informació del dataset (path, weighted, directed, format)
+            df (pd.DataFrame): Dataframe amb la informació del dataset
         """
         self.path, self.weighted, self.directed, self.format = input_tuple
         self.df = df
@@ -41,7 +43,7 @@ class GraphProtection:
             nx.graph: Graf generat sense cap relació entre nodes
         """
         nodes = set(self.df["From"]).union(set(self.df["To"])) # Fem l'unió de tots els nodes únics del dataset
-        if self.directed == "directed":
+        if self.directed:
             graph = nx.DiGraph() 
         else:
             graph = nx.Graph() # Creem un graf amb networkx, dirigit o no segons el paràmetre directed 
@@ -56,7 +58,7 @@ class GraphProtection:
 
     def iterate_graph(self, group):
         self.graph.clear_edges() # Netejem les arestes del anterior plot
-        if self.weighted == "unweighted":
+        if not self.weighted:
             self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
         else:
             edges = zip(group["From"], group["To"], group["Weight"])
@@ -188,11 +190,7 @@ class ELDP(GraphProtection):
             nx.graph: Noise graph 
         """
         # Depenent de si el graf original és dirigit o no, fem el graf de soroll erdos_renyi amb direccions o sense
-        if self.directed == "directed":
-            graph = nx.erdos_renyi_graph(self.nodes, p, directed=True)
-        else: 
-            graph = nx.erdos_renyi_graph(self.nodes, p, directed=False) 
-
+        graph = nx.erdos_renyi_graph(self.nodes, p, directed=self.directed)
         return graph
 
     def intersection_graph(self, g1, g2):
@@ -299,7 +297,7 @@ class KDA(GraphProtection):
         outdegreeMatrix = None
 
         # En cas de ser un graf dirigit, obtenir les in_degree i out_degree matrices
-        if self.directed == "directed":
+        if self.directed:
             for _, group in self.grouped_df:
                 self.iterate_graph(group)
                 indegree_array = self.get_degree("indegree")
@@ -538,7 +536,7 @@ class KDA(GraphProtection):
             nx.graph: Graf construït
         """
         degreeSequenceCopy = degreeSequence.copy()
-        if self.directed == "directed":
+        if self.directed:
             G = nx.havel_hakimi_graph(degreeSequenceCopy, create_using=nx.DiGraph)
         else:
             G = nx.havel_hakimi_graph(degreeSequenceCopy)
@@ -559,7 +557,7 @@ class KDA(GraphProtection):
         nodes = list(range(n))  # Llista de nodes del graf
         degree_list = sorted(zip(degreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment 
         
-        G = nx.DiGraph() if self.directed == "directed" else nx.Graph() # Creem un graf dirigit/no dirigit segons el paràmetre de la classe
+        G = nx.DiGraph() if self.directed else nx.Graph() # Creem un graf dirigit/no dirigit segons el paràmetre de la classe
         G.add_nodes_from(nodes)  # Agreguem els nodes
 
         while degree_list:
@@ -576,5 +574,8 @@ class KDA(GraphProtection):
         return G
 
     def apply_protection(self):
-        pass
+        if not self.directed:
+            pass
+        else:
+            pass
 
