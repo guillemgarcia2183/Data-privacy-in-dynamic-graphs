@@ -542,7 +542,7 @@ class KDA(GraphProtection):
             G = nx.havel_hakimi_graph(degreeSequenceCopy)
         return G
     
-    def createProtectedGraphManual(self, degreeSequence):
+    def createProtectedGraphUndirected(self, degreeSequence):
         """Crear un graf a partir d'una seqüència de graus de forma manual
            Característica: Els nodes es mantenen en la seva posició original
 
@@ -557,7 +557,7 @@ class KDA(GraphProtection):
         nodes = list(range(n))  # Llista de nodes del graf
         degree_list = sorted(zip(degreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment 
         
-        G = nx.DiGraph() if self.directed else nx.Graph() # Creem un graf dirigit/no dirigit segons el paràmetre de la classe
+        G =nx.Graph() # Creem un no dirigit 
         G.add_nodes_from(nodes)  # Agreguem els nodes
 
         while degree_list:
@@ -573,7 +573,52 @@ class KDA(GraphProtection):
         
         return G
 
+    def createProtectedGraphDirected(self, indegreeSequence, outdegreeSequence):
+        """Crear un graf dirigit a partir d'una seqüència de graus de forma manual
+           Característica: Els nodes es mantenen en la seva posició original
+
+        Args:
+            indegreeSequence (np.array): Seqüència de graus d'entrada
+            outdegreeSequence (np.array): Seqüència de graus de sortida
+
+        Returns:
+            nx.graph: Graf dirigit construït
+        """
+        indegreeSequenceCopy = indegreeSequence.copy()
+        outdegreeSequenceCopy = outdegreeSequence.copy()
+        n = len(indegreeSequenceCopy)
+        nodes = list(range(n))  # Llista de nodes del graf
+
+        G =nx.DiGraph() # Creem un no dirigit 
+        G.add_nodes_from(nodes)  # Agreguem els nodes
+
+        indegreeList = sorted(zip(indegreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment 
+        outdegreeList = sorted(zip(outdegreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment
+
+        while indegreeList and outdegreeList:
+            indegreeList.sort(reverse=True)  # Ordenem en cada iteració
+            outdegreeList.sort(reverse=True)  # Ordenem en cada iteració
+
+            out_d, out_node = outdegreeList.pop(0)  # Nodo con mayor out_degree
+            for _ in range(out_d):  # Asignamos conexiones de salida
+                if not indegreeList:
+                    break
+                in_d, in_node = indegreeList.pop(0)  # Nodo con mayor in_degree
+
+                G.add_edge(out_node, in_node)  # Conectar out_node -> in_node
+                indegreeList.append((in_d - 1, in_node))  # Reducimos su in_degree
+                indegreeList = [(dg, nd) for dg, nd in indegreeList if dg > 0]
+
+            outdegreeList = [(dg, nd) for dg, nd in outdegreeList if dg > 0]
+            
+        return G
+
     def protectionUndirected(self):
+        """Aplicar K-Anonimitat en el dataset, en cas de ser grafs sense direcció
+
+        Returns:
+            List, List: Llistes dels grafs originals i protegits
+        """
         timestamps = len(self.grouped_df)
         originalGraphs = list()
         protectedGraphs = list()
@@ -592,7 +637,38 @@ class KDA(GraphProtection):
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
             realizedDegrees = self.realizeDegrees(anonymizedDegrees)
             for row in realizedDegrees:
-                graphProtected = self.createProtectedGraphManual(row)
+                graphProtected = self.createProtectedGraphUndirected(row)
                 protectedGraphs.append(graphProtected)
+        
+        return originalGraphs, protectedGraphs
+
+    def protectionDirected(self):
+        """Aplicar K-Anonimitat en el dataset, en cas de ser grafs dirigits
+
+        Returns:
+            List, List: Llistes dels grafs originals i protegits
+        """
+        timestamps = len(self.grouped_df)
+        originalGraphs = list()
+        protectedGraphs = list()
+
+        # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
+        if self.k <= timestamps:
+            # Llista de grafs originals
+            for _, group in self.grouped_df:
+                # Iterem a la següent snapshot
+                self.iterate_graph(group)
+                # Calculem el seu graf complementari
+                originalGraphs.append(self.graph.copy())
+            
+            # Llista de grafs protegits
+            PMatrixIn = self.compute_PMatrix(self.indegreeMatrix)
+            PMatrixOut = self.compute_PMatrix(self.outdegreeMatrix) 
+
+            anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
+            anonymizedDegreesOut = self.anonymizeDegrees(self.outdegreeMatrix, PMatrixOut)
+
+            realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
+            realizedDegreesOut = self.realizeDegrees(anonymizedDegreesOut)
         
         return originalGraphs, protectedGraphs
