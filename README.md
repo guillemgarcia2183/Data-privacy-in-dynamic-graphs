@@ -121,6 +121,8 @@ Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darre
 [10] J. You, T. Du, J. Leskovec "ROLAND: Graph Learning Framework for Dynamic Graphs", Conference on Knowledge Discovery and Data Mining, 2022. 
 Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025] 
 
+[11] https://arxiv.org/pdf/0905.4913
+
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
 > Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 

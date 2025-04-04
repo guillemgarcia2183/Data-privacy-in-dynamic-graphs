@@ -20,15 +20,16 @@ class TestKDA(unittest.TestCase):
         """
         self.save = False # Canviar si es volen guardar els grafs resultants
 
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                               '2': (dp.DATASET2, True, True, 'FILE'),}
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'),
+                                   '2': (dp.DATASET2, True, False, 'FILE'), 
+                               '3': (dp.DATASET3, True, True, 'FILE'),}
         
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         # setK = np.arange(2, 15, 1)
-        setK = np.arange(2, 5, 1)
+        setK = np.arange(2, 7, 1)
         self.KDA = []
         for k in setK: 
             for i,reader in enumerate(self.readers):
@@ -159,13 +160,26 @@ class TestKDA(unittest.TestCase):
                         finalList = np.array([finalDict.get(node, 0) for node in graph.nodes()])
                         self.assertEqual(row.shape, finalList.shape)
                         self.assertTrue(np.array_equal(finalList, row))
-                # else:
-                #     PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
-                #     PMatrixOut = g.compute_PMatrix(g.outdegreeMatrix)
-                #     anonymizedDegreesIn= g.anonymizeDegrees(g.indegreeMatrix, PMatrixIn)
-                #     anonymizedDegreesOut= g.anonymizeDegrees(g.outdegreeMatrix, PMatrixOut)
-                #     finalMatrixIn = g.realizeDegrees(anonymizedDegreesIn)
-                #     finalMatrixOut = g.realizeDegrees(anonymizedDegreesOut)
+                else:
+                    # ÉS POT FER AIXÍ? EN TEORIA LES MEDIANES SÓN IGUALS, NOMÉS QUE DIFEREIXEN EN EL MOMENT DE FER LES PARTICIONS
+                    PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
+                    anonymizedDegreesIn= g.anonymizeDegrees(g.indegreeMatrix, PMatrixIn)
+                    finalMatrixIn = g.realizeDegrees(anonymizedDegreesIn)
+
+                    for indegrees in finalMatrixIn:
+                        outdegrees = indegrees.copy()
+                        # ÉS NECESSARI QUE LA SUMA DE OUTDEGREES SIGUI IGUAL A LA DE INDEGREES
+                        outdegrees = np.random.permutation(indegrees)
+                        graph = g.createProtectedGraphDirected(indegrees, outdegrees)
+                        finalInDict = dict(graph.in_degree())
+                        finalInList = np.array([finalInDict.get(node, 0) for node in graph.nodes()])
+                        finalOutDict = dict(graph.out_degree())
+                        finalOutList = np.array([finalOutDict.get(node, 0) for node in graph.nodes()])
+                        self.assertEqual(np.sum(indegrees), np.sum(outdegrees))
+                        self.assertEqual(indegrees.shape, finalInList.shape)
+                        self.assertTrue(np.array_equal(finalInList, indegrees))
+                        self.assertEqual(outdegrees.shape, finalOutList.shape)
+                        self.assertTrue(np.array_equal(finalOutList, outdegrees))
                         
 
     def test_protection(self):
@@ -174,18 +188,21 @@ class TestKDA(unittest.TestCase):
         for g in self.KDA:
             if not g.directed:
                 originalList, protectedList = g.protectionUndirected()
-                self.assertIsInstance(originalList, list)
-                self.assertIsInstance(protectedList, list)
+            else:
+                originalList, protectedList = g.protectionDirected()
 
-                if len(originalList) > 0 and len(protectedList) > 0:
-                    self.assertIsInstance(originalList[0], nx.Graph)
-                    self.assertIsInstance(protectedList[0], nx.Graph)
-                
-                self.assertEqual(len(originalList), len(protectedList))
+            self.assertIsInstance(originalList, list)
+            self.assertIsInstance(protectedList, list)
 
-                if self.save and len(originalList) > 0 and len(protectedList) > 0:
-                    g.save_graphs(originalList, protectedList, "KDA", g.k)
+            if len(originalList) > 0 and len(protectedList) > 0:
+                self.assertIsInstance(originalList[0], nx.Graph)
+                self.assertIsInstance(protectedList[0], nx.Graph)
             
+            self.assertEqual(len(originalList), len(protectedList))
+
+            if self.save and len(originalList) > 0 and len(protectedList) > 0:
+                g.save_graphs(originalList, protectedList, "KDA", g.k)
+
 
 
 if __name__ == '__main__':

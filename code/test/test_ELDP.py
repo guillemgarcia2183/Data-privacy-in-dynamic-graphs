@@ -22,19 +22,16 @@ class TestELDP(unittest.TestCase):
         """Crea una instància de ELDP
         """
         self.save = False # Canviar si no es volen guardar els grafs resultants
-        # self.dictionary_options = {'1': (dp.DATASET1, 'weighted', 'undirected', 'FILE'), 
-        #                 '2': (dp.DATASET2, 'weighted', 'undirected', 'FILE'),
-        #                 '3': (dp.DATASET6, 'unweighted', 'undirected', 'JSON')} 
-        
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE')} 
-        
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                        '2': (dp.DATASET2, True, True, 'FILE')} 
+                
         self.readers = []
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
-        #epsilons = np.arange(0.5, 10.5, 0.5)
-        epsilons = [0.1, 1, 10]
+        # epsilons = np.arange(8, 10, 1)
+        epsilons = [1, 10]
         for eps in epsilons:
             for i,reader in enumerate(self.readers):
                 self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, eps))
@@ -179,17 +176,17 @@ class TestELDP(unittest.TestCase):
     def test_saved_graphs(self):
         """5. Test loading saved graphs
         """
-        with open("code/output/ELDP/LNetwork.json_1.pkl", "rb") as f:
+        with open("code/output/ELDP/LNetwork.json_2.pkl", "rb") as f:
             graphs = pickle.load(f)
         self.assertIsInstance(graphs, list)
         self.assertIsInstance(graphs[0], nx.Graph)
 
-        with open("code/output/ELDP/LNetwork.json_0.1.pkl", "rb") as f:
+        with open("code/output/ELDP/LNetwork.json_3.pkl", "rb") as f:
             graphs = pickle.load(f)
         self.assertIsInstance(graphs, list)
         self.assertIsInstance(graphs[0], nx.Graph)    
 
-        with open("code/output/ELDP/LNetwork.json_10.pkl", "rb") as f:
+        with open("code/output/ELDP/LNetwork.json_4.pkl", "rb") as f:
             graphs = pickle.load(f)
         self.assertIsInstance(graphs, list)
         self.assertIsInstance(graphs[0], nx.Graph)

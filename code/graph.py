@@ -584,33 +584,41 @@ class KDA(GraphProtection):
         Returns:
             nx.graph: Graf dirigit construït
         """
-        indegreeSequenceCopy = indegreeSequence.copy()
-        outdegreeSequenceCopy = outdegreeSequence.copy()
-        n = len(indegreeSequenceCopy)
-        nodes = list(range(n))  # Llista de nodes del graf
+        in_deg = indegreeSequence.copy()
+        out_deg = outdegreeSequence.copy()
+        n = len(in_deg)
 
-        G =nx.DiGraph() # Creem un no dirigit 
-        G.add_nodes_from(nodes)  # Agreguem els nodes
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
 
-        indegreeList = sorted(zip(indegreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment 
-        outdegreeList = sorted(zip(outdegreeSequenceCopy, nodes), reverse=True)  # Ordenació del grau descendentment
+        # Llista de nodes amb graus d'entrada i sortida
+        degree_list = [(out_deg[i], in_deg[i], i) for i in range(n)]
 
-        while indegreeList and outdegreeList:
-            indegreeList.sort(reverse=True)  # Ordenem en cada iteració
-            outdegreeList.sort(reverse=True)  # Ordenem en cada iteració
+        while any(out > 0 for out, _, _ in degree_list):
+            # Ordem la llista
+            degree_list.sort(reverse=True)
+            out_u, in_u, u = degree_list.pop(0)
 
-            out_d, out_node = outdegreeList.pop(0)  # Nodo con mayor out_degree
-            for _ in range(out_d):  # Asignamos conexiones de salida
-                if not indegreeList:
-                    break
-                in_d, in_node = indegreeList.pop(0)  # Nodo con mayor in_degree
+            # Triem nodes entrellaçar-los 
+            degree_list.sort(key=lambda x: (-x[1], x[2])) 
+            connections = []
+            i = 0
+            while len(connections) < out_u and i < len(degree_list):
+                out_v, in_v, v = degree_list[i]
+                if v != u and not G.has_edge(u, v) and in_v > 0:
+                    connections.append((i, v))
+                i += 1
 
-                G.add_edge(out_node, in_node)  # Conectar out_node -> in_node
-                indegreeList.append((in_d - 1, in_node))  # Reducimos su in_degree
-                indegreeList = [(dg, nd) for dg, nd in indegreeList if dg > 0]
+            # Afegir arestes i actualitzar graus
+            for idx, v in connections:
+                G.add_edge(u, v)
+                out_v, in_v, _ = degree_list[idx]
+                degree_list[idx] = (out_v, in_v - 1, v)
+            degree_list.append((0, in_u, u))  # u ya usó todos sus out-degrees
 
-            outdegreeList = [(dg, nd) for dg, nd in outdegreeList if dg > 0]
-            
+            # Eliminar nodes de la llista amb grau zero
+            degree_list = [(o, i, v) for o, i, v in degree_list if o > 0 or i > 0]
+
         return G
 
     def protectionUndirected(self):
@@ -663,12 +671,14 @@ class KDA(GraphProtection):
             
             # Llista de grafs protegits
             PMatrixIn = self.compute_PMatrix(self.indegreeMatrix)
-            PMatrixOut = self.compute_PMatrix(self.outdegreeMatrix) 
-
             anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
-            anonymizedDegreesOut = self.anonymizeDegrees(self.outdegreeMatrix, PMatrixOut)
-
             realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
-            realizedDegreesOut = self.realizeDegrees(anonymizedDegreesOut)
+            for indegrees in realizedDegreesIn:
+                # Fem que els outdegrees siguin una permutació dels indegrees.
+                outdegrees = indegrees.copy()
+                outdegrees = np.random.permutation(indegrees)
+                # Creem la versió protegida del graf i la guardem en una llista
+                graphProtected = self.createProtectedGraphDirected(indegrees, outdegrees)
+                protectedGraphs.append(graphProtected)
         
         return originalGraphs, protectedGraphs
