@@ -15,7 +15,7 @@ from collections import Counter
 # HEIGHT = root.winfo_screenheight()
 # root.destroy()
 
-class GraphProtection:
+class GraphProtection:  
     """Mòdul creador de grafs
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
@@ -418,7 +418,7 @@ class KDA(GraphProtection):
             return True
         return False
     
-    def dictRealizables(self, degreeMatrix):
+    def splitSequences(self, degreeMatrix):
         """Obtenir diccionari de les seqüències realizables i no realizables
 
         Args:
@@ -444,7 +444,7 @@ class KDA(GraphProtection):
 
         return dictRealizable, dictNorealizable
 
-    def l1Distance(self, sequence1, sequence2):
+    def compute_l1Distance(self, sequence1, sequence2):
         """Computar la l1 distance entre dos seqüències de graus
 
         Args:
@@ -456,7 +456,7 @@ class KDA(GraphProtection):
         """
         return np.sum(np.abs(np.array(sequence1) - np.array(sequence2)))
 
-    def resolveNoRealizable(self, degreeMatrix, dictRealizable, dictNorealizable):
+    def resolveNoRealizables(self, degreeMatrix, dictRealizable, dictNorealizable):
         """Trobar la millor opció per les seqüències no realizable
 
         Args:
@@ -469,13 +469,13 @@ class KDA(GraphProtection):
             distances = {}
             # Iterem totes les seqüències realizables, i veiem quina és la que menys distància té
             for k2,v2 in dictRealizable.items():
-                distances[k2] = self.l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]) 
+                distances[k2] = self.compute_l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]) 
             
             # Trobar la key de la seqüència realizable amb la mínima distància
             min_key = min(distances, key=distances.get)
             dictRealizable[min_key] += v1            
 
-    def resolveRealizableK(self, degreeMatrix, dictRealizable):
+    def resolveNoRealizablesK(self, degreeMatrix, dictRealizable):
         """Trobar la millor opció per les seqüències realizables, que apareixen menys de k cops
 
         Args:
@@ -491,7 +491,7 @@ class KDA(GraphProtection):
             # Calculem les distàncies entre les altres opcions realizables
             distances = {}
             for key,value in dictRealizable.items():
-                distances[key] = self.l1Distance(degreeMatrix[value_removed[0]], degreeMatrix[value[0]]) 
+                distances[key] = self.compute_l1Distance(degreeMatrix[value_removed[0]], degreeMatrix[value[0]]) 
             # Obtenim la distància mínima i l'afegim al diccionari 
             minimum = min(distances, key=distances.get)
             dictRealizable[minimum] += value_removed            
@@ -509,12 +509,12 @@ class KDA(GraphProtection):
         Returns:
             np.array: Matriu de graus canviada perquè es puguin dibuixar els grafs 
         """
-        dictRealizable, dictNorealizable = self.dictRealizables(degreeMatrix)
+        dictRealizable, dictNorealizable = self.splitSequences(degreeMatrix)
         # print(f"dictRealizable: {dictRealizable.values()}")
         # print(f"dictNorealizable: {dictNorealizable.values()}")
         # print(f"File: {self.filename}, K = {self.k}")
-        self.resolveNoRealizable(degreeMatrix, dictRealizable, dictNorealizable)
-        self.resolveRealizableK(degreeMatrix, dictRealizable)
+        self.resolveNoRealizables(degreeMatrix, dictRealizable, dictNorealizable)
+        self.resolveNoRealizablesK(degreeMatrix, dictRealizable)
         # print(f"dictRealizable: {dictRealizable}")
 
         # Fer remplaç de valors en la matriu de graus
@@ -621,7 +621,7 @@ class KDA(GraphProtection):
 
         return G
 
-    def protectionUndirected(self):
+    def apply_protectionUndirected(self):
         """Aplicar K-Anonimitat en el dataset, en cas de ser grafs sense direcció
 
         Returns:
@@ -650,7 +650,7 @@ class KDA(GraphProtection):
         
         return originalGraphs, protectedGraphs
 
-    def protectionDirected(self):
+    def apply_protectionDirected(self):
         """Aplicar K-Anonimitat en el dataset, en cas de ser grafs dirigits
 
         Returns:

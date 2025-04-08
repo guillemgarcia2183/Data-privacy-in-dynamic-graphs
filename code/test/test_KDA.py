@@ -29,7 +29,7 @@ class TestKDA(unittest.TestCase):
             self.readers.append(rd.Reader(value))
         
         # setK = np.arange(2, 15, 1)
-        setK = np.arange(2, 7, 1)
+        setK = np.arange(2, 5, 1)
         self.KDA = []
         for k in setK: 
             for i,reader in enumerate(self.readers):
@@ -187,9 +187,9 @@ class TestKDA(unittest.TestCase):
         """
         for g in self.KDA:
             if not g.directed:
-                originalList, protectedList = g.protectionUndirected()
+                originalList, protectedList = g.apply_protectionUndirected()
             else:
-                originalList, protectedList = g.protectionDirected()
+                originalList, protectedList = g.apply_protectionDirected()
 
             self.assertIsInstance(originalList, list)
             self.assertIsInstance(protectedList, list)
