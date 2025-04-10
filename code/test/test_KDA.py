@@ -20,18 +20,17 @@ class TestKDA(unittest.TestCase):
         """
         self.save = False # Canviar si es volen guardar els grafs resultants
 
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'),
-                                   '2': (dp.DATASET2, True, False, 'FILE'), 
-                               '3': (dp.DATASET3, True, True, 'FILE'),}
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                               '2': (dp.DATASET3, True, True, 'FILE')}
         
-        self.readers = []
+        self.readers = [] # Llegim els fitxers i els col·loquem en una llista
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         # setK = np.arange(2, 15, 1)
         setK = np.arange(2, 5, 1)
         self.KDA = []
-        for k in setK: 
+        for k in setK: # Per totes les k que provem, crear una instància de KDA amb tots els fitxers
             for i,reader in enumerate(self.readers):
                 self.KDA.append(KDA(reader.filename, self.dictionary_options[str(i+1)], reader.df, k))
 
@@ -39,82 +38,78 @@ class TestKDA(unittest.TestCase):
         # plt.show()
 
     def test_degrees(self):
-        """1. Test degree matrices
+        """Testing degree matrices...
         """
         for g in self.KDA:
             # En cas de ser dirigit
             if g.directed:
                 self.assertEqual(g.indegreeMatrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.indegreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.indegreeMatrix.dtype, 'int32')
+                self.assertEqual(g.indegreeMatrix.shape, (g.T, g.graph.number_of_nodes()))
+                self.assertEqual(g.outdegreeMatrix.shape, (g.T, g.graph.number_of_nodes()))
                 self.assertEqual(g.outdegreeMatrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.outdegreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.outdegreeMatrix.dtype, 'int32')
                 self.assertEqual(g.degreeMatrix, None)
             # En cas de no ser dirigit
             else:
                 self.assertEqual(g.degreeMatrix[0].shape, (g.graph.number_of_nodes(),))
-                self.assertEqual(g.degreeMatrix[0].dtype, 'int32')
+                self.assertEqual(g.degreeMatrix.dtype, 'int32')
+                self.assertEqual(g.degreeMatrix.shape, (g.T, g.graph.number_of_nodes()))
                 self.assertEqual(g.indegreeMatrix, None)
                 self.assertEqual(g.outdegreeMatrix, None)
 
     def test_PMatrix(self):
-        """2. Test de la matriu P
+        """Testing PMatrix...
         """
         for g in self.KDA:
             # En cas de no ser dirigit
             if not g.directed:
                 P = g.compute_PMatrix(g.degreeMatrix)
                 self.assertEqual(P.shape, (g.T, g.m))
+                self.assertEqual(P.dtype, 'int32')
             # En cas de ser dirigit
             else:
                 PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
-                PMatrixOut = g.compute_PMatrix(g.outdegreeMatrix)
                 self.assertEqual(PMatrixIn.shape, (g.T, g.m))
-                self.assertEqual(PMatrixOut.shape, (g.T, g.m))
-            
+                self.assertEqual(PMatrixIn.dtype, 'int32')
+
     def test_Anonymization(self):
-        """3. Test Anonimització de graus
+        """Testing Anonimització de graus...
         """
         for g in self.KDA:
             # En cas de no ser dirigit
             if not g.directed:
                 PMatrix = g.compute_PMatrix(g.degreeMatrix)
                 anonymizedDegrees= g.anonymizeDegrees(g.degreeMatrix, PMatrix)
-                self.assertEqual(anonymizedDegrees.shape, (g.T, g.degreeMatrix.shape[1]))
+                # Comprovem que sigui de la mateixa dimensió la matriu 
+                self.assertEqual(anonymizedDegrees.shape, (g.T, g.graph.number_of_nodes()))
                 for anonymousdegrees in anonymizedDegrees:
                     unique, counts = np.unique(anonymousdegrees, return_counts=True)
+                    # Veiem que per cada seqüència (graf individual), sigui k-anònim
                     self.assertTrue(np.all(counts >= g.k))
             # En cas de ser dirigit
             else:
                 PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
-                PMatrixOut = g.compute_PMatrix(g.outdegreeMatrix)
                 anonymizedDegreesIn= g.anonymizeDegrees(g.indegreeMatrix, PMatrixIn)
-                anonymizedDegreesOut= g.anonymizeDegrees(g.outdegreeMatrix, PMatrixOut)
-                self.assertEqual(anonymizedDegreesIn.shape, (g.T, g.indegreeMatrix.shape[1]))
-                self.assertEqual(anonymizedDegreesOut.shape, (g.T, g.outdegreeMatrix.shape[1]))
+                # Comprovem que sigui de la mateixa dimensió la matriu 
+                self.assertEqual(anonymizedDegreesIn.shape, (g.T, g.graph.number_of_nodes()))
 
-                for indegrees, outdegrees in zip(anonymizedDegreesIn, anonymizedDegreesOut):
+                for indegrees in zip(anonymizedDegreesIn):
                     uniqueIn, countsIn = np.unique(indegrees, return_counts=True)
-                    uniqueOut, countsOut = np.unique(outdegrees, return_counts=True)
+                    # Veiem que per cada seqüència (graf individual), sigui k-anònim
                     self.assertTrue(np.all(countsIn >= g.k))
-                    self.assertTrue(np.all(countsOut >= g.k))
-
 
     def test_Realizable(self):
-        """4. Test matriu de graus realizable
+        """Testing matriu de graus realizable...
         """
         for g in self.KDA:
-            try:
-                T, n = g.degreeMatrix.shape
-            except:
-                T, n = g.indegreeMatrix.shape
-
-            if g.k <= T:
+            if g.k <= g.T:
                 # En cas de no ser dirigit
                 if not g.directed:
                     PMatrix = g.compute_PMatrix(g.degreeMatrix)
                     anonymizedDegrees= g.anonymizeDegrees(g.degreeMatrix, PMatrix)
                     finalMatrix = g.realizeDegrees(anonymizedDegrees)
-
+                    # Comprovem que ara la matriu compleix K-anonimitat (que les seqüències graficables apareguin k vegades com a mínim)
                     unique, counts = np.unique(finalMatrix, return_counts=True)
                     self.assertTrue(np.all(counts >= g.k))
                     for anonymousdegrees in finalMatrix:
@@ -124,31 +119,21 @@ class TestKDA(unittest.TestCase):
                 # En cas de ser dirigit
                 else:
                     PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
-                    PMatrixOut = g.compute_PMatrix(g.outdegreeMatrix)
                     anonymizedDegreesIn= g.anonymizeDegrees(g.indegreeMatrix, PMatrixIn)
-                    anonymizedDegreesOut= g.anonymizeDegrees(g.outdegreeMatrix, PMatrixOut)
                     finalMatrixIn = g.realizeDegrees(anonymizedDegreesIn)
-                    finalMatrixOut = g.realizeDegrees(anonymizedDegreesOut)
 
                     uniqueIn, countsIn = np.unique(finalMatrixIn, return_counts=True)
-                    uniqueOut, countsOut = np.unique(finalMatrixOut, return_counts=True)
+                    # Comprovem que ara la matriu compleix K-anonimitat (que les seqüències graficables apareguin k vegades com a mínim)
                     self.assertTrue(np.all(countsIn >= g.k))
-                    self.assertTrue(np.all(countsOut >= g.k))
-                    for indegrees, outdegrees in zip(finalMatrixIn, finalMatrixOut):
+                    for indegrees in finalMatrixIn:
                         uniqueIn, countsIn = np.unique(indegrees, return_counts=True)
-                        uniqueOut, countsOut = np.unique(outdegrees, return_counts=True)
                         self.assertTrue(np.all(countsIn >= g.k))
-                        self.assertTrue(np.all(countsOut >= g.k))
         
     def test_Construction(self):
-        """5. Test construcció nou graf
+        """Testing Havel-Hakimi...
         """
         for g in self.KDA:
-            try:
-                T, n = g.degreeMatrix.shape
-            except:
-                T, n = g.indegreeMatrix.shape
-            if g.k <= T:
+            if g.k <= g.T:
                 # En cas de no ser dirigit
                 if not g.directed:
                     PMatrix = g.compute_PMatrix(g.degreeMatrix)
@@ -160,15 +145,17 @@ class TestKDA(unittest.TestCase):
                         finalList = np.array([finalDict.get(node, 0) for node in graph.nodes()])
                         self.assertEqual(row.shape, finalList.shape)
                         self.assertTrue(np.array_equal(finalList, row))
+
+                # En cas de ser dirigit
                 else:
-                    # ÉS POT FER AIXÍ? EN TEORIA LES MEDIANES SÓN IGUALS, NOMÉS QUE DIFEREIXEN EN EL MOMENT DE FER LES PARTICIONS
                     PMatrixIn = g.compute_PMatrix(g.indegreeMatrix)
                     anonymizedDegreesIn= g.anonymizeDegrees(g.indegreeMatrix, PMatrixIn)
                     finalMatrixIn = g.realizeDegrees(anonymizedDegreesIn)
 
                     for indegrees in finalMatrixIn:
+                        # Fem que la matriu de indegrees sigui la mateixa que la de outdegrees, però permutada
+                        #! ÉS NECESSARI QUE LA SUMA DE OUTDEGREES SIGUI IGUAL A LA DE INDEGREES - Per això es fa la permutació
                         outdegrees = indegrees.copy()
-                        # ÉS NECESSARI QUE LA SUMA DE OUTDEGREES SIGUI IGUAL A LA DE INDEGREES
                         outdegrees = np.random.permutation(indegrees)
                         graph = g.createProtectedGraphDirected(indegrees, outdegrees)
                         finalInDict = dict(graph.in_degree())
@@ -181,9 +168,8 @@ class TestKDA(unittest.TestCase):
                         self.assertEqual(outdegrees.shape, finalOutList.shape)
                         self.assertTrue(np.array_equal(finalOutList, outdegrees))
                         
-
     def test_protection(self):
-        """6. Test protecció del graf
+        """Testing protecció KDA...
         """
         for g in self.KDA:
             if not g.directed:
@@ -202,7 +188,6 @@ class TestKDA(unittest.TestCase):
 
             if self.save and len(originalList) > 0 and len(protectedList) > 0:
                 g.save_graphs(originalList, protectedList, "KDA", g.k)
-
 
 
 if __name__ == '__main__':

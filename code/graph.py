@@ -336,14 +336,14 @@ class KDA(GraphProtection):
             np.array() : Matriu de medianes 
         """
         aux_matrix = degreeMatrix.copy()
-        PMatrix = np.zeros((self.T, self.m))
+        PMatrix = np.zeros((self.T, self.m), dtype=int)
         for i, d_seq in enumerate(aux_matrix):
             # Aleatoritzem la seqüència de graus
             np.random.shuffle(d_seq)
             # Particionem la seqüència en m particions
             particions = np.array_split(d_seq, self.m)
             # Calculem la mediana de cada partició, i l'incorporem a la matriu final
-            PMatrix[i] = np.array([round(np.median(p)) for p in particions])
+            PMatrix[i] = np.array([int(round(np.median(p))) for p in particions])
         return PMatrix
 
     def anonymizeDegrees(self, degreeMatrix, PMatrix):

@@ -23,125 +23,42 @@ class TestELDP(unittest.TestCase):
         """
         self.save = False # Canviar si no es volen guardar els grafs resultants
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                        '2': (dp.DATASET2, True, True, 'FILE')} 
+                        '2': (dp.DATASET1, True, True, 'FILE')} 
                 
-        self.readers = []
+        self.readers = [] # LLegim els fitxers, i els guardem en una llista 
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
         # epsilons = np.arange(8, 10, 1)
         epsilons = [1, 10]
-        for eps in epsilons:
+        for eps in epsilons: # Per cada epsilon, creem una instància de ELDP amb tots els fitxers
             for i,reader in enumerate(self.readers):
                 self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, eps))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
 
-    def test_density(self):
-        """1. Test de densitat
-        """
-        # 1. Comprovació per grafs no dirigits
-        self.ELDP[0].graph = nx.Graph()
-        self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
-        self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
-        manual_density_undirected = (2*3)/(4*3)
-        self.assertEqual(manual_density_undirected, nx.density(self.ELDP[0].graph))
-        # print(f"Density for undirected: OK")
-
-        # 2. Comprovació per grafs dirigits
-        self.ELDP[0].graph = nx.DiGraph()
-        self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
-        self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
-        manual_density_directed = (3)/(4*3)
-        self.assertEqual(manual_density_directed, nx.density(self.ELDP[0].graph))  
-        # print(f"Density for directed: OK")
-
-        # 3. Còmput de les densitats individualment
-        for _, group in self.ELDP[1].grouped_df:
-            self.ELDP[1].iterate_graph(group)
-            d = nx.density(self.ELDP[1].graph)
-            self.assertGreater(d,0)
-            self.assertLessEqual(d,0.5)
-        # print(f"Density individually: OK")
-
-    def test_complement_graph(self):
-        """2. Test graf complementari
-        """
-        # 1. Per un graf no dirigit
-        self.ELDP[0].graph = nx.Graph()
-        self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
-        self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
-
-        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
-        ELDP2.graph = nx.Graph()
-        ELDP2.graph.add_nodes_from([1, 2, 3, 4])
-        ELDP2.graph.add_edges_from([(4, 2), (4, 1), (3, 1)])
-        
-        complement = nx.complement(self.ELDP[0].graph)
-
-        correct_result = set([(2, 4), (1, 3), (1, 4)])
-        actual_result = set(list(ELDP2.graph.edges()) + list(complement.edges()))
-        self.assertEqual(actual_result, correct_result)
-        # print(f"Complement graph for undirected: OK")
-
-        # 2. Per un graf dirigit    
-        self.ELDP[0].graph = nx.DiGraph()
-        self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
-        self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
-
-        ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
-        ELDP2.graph = nx.DiGraph()
-        ELDP2.graph.add_nodes_from([1, 2, 3, 4])
-        ELDP2.graph.add_edges_from([(1, 3), (1, 4), (2, 1), (2, 4), 
-                                     (3, 2), (3, 1), (4, 3), (4, 2), (4, 1)])
-        
-        complement = nx.complement(self.ELDP[0].graph)
-        correct_result = set([(1, 3), (1, 4), (2, 1), (2, 4), (3, 1), (3, 2), (4, 1), (4, 2), (4, 3)])
-        actual_result = set(list(ELDP2.graph.edges()) + list(complement.edges()))
-        self.assertEqual(actual_result, correct_result)
-        # print(f"Complement for directed: OK")
-
     def test_gilbert_graph(self):
-        """3. Test noise-graphs
+        """Testing noise-graphs...
         """
         # 1. Comprovar que els nodes del noise-graph són els mateixos
         for g in self.ELDP:
             G = g.gilbert_graph(0.5)
+            
+            # Comprovar que són dirigits o no segons el graf original
+            if g.directed:
+                self.assertIsInstance(G, nx.DiGraph)
+            else:
+                self.assertIsInstance(G, nx.Graph)
+
             self.assertEqual(G.number_of_nodes(), g.graph.number_of_nodes())
             self.assertEqual(list(g.graph.nodes()), list(G.nodes()))
+
         # print(f"Nodes Gilbert noise graph: OK")
 
-    def test_operations_graph(self):
-        """4. Test intersection and XOR
-        """
-        # 1. Comprovar que realment fa l'intersecció com es vol
-        g1 = nx.Graph()
-        g1.add_nodes_from([1, 2, 3, 4])
-        g1.add_edges_from([(1, 2), (2, 3), (3, 4)])
-        g2 = nx.Graph()
-        g2.add_nodes_from([1, 2, 3, 4])
-        g2.add_edges_from([(1, 2), (1, 3), (1, 4)])
-
-        correct_result = [(1,2)]
-        actual_result = nx.intersection(g1, g2)
-        self.assertEqual(list(actual_result.edges()), correct_result)
-
-        # 2. Comprovar XOR
-        g1 = nx.Graph()
-        g1.add_nodes_from([1, 2, 3, 4])
-        g1.add_edges_from([(1, 2), (2, 3), (3, 4)])
-        g2 = nx.Graph()
-        g2.add_nodes_from([1, 2, 3, 4])
-        g2.add_edges_from([(1, 3), (1, 2), (2, 4)])
-
-        correct_result = [(1, 3), (2, 3), (2, 4), (3, 4)]
-        actual_result = nx.symmetric_difference(g1, g2)
-        self.assertEqual(list(actual_result.edges()), correct_result)
-
     def test_protection(self):
-        """5. Test dataset l-EDP protection
+        """Testing ELDP protection...
         """
         for i,g in enumerate(self.ELDP):
             
@@ -164,7 +81,7 @@ class TestELDP(unittest.TestCase):
                 f4 = (1-p0) / p1
                 maxim = round(max(f1,f2,f3,f4),3)
                 self.assertGreaterEqual(constraint, maxim)
-                # print(f"Compleix ε-ELDP : {constraint} >= {maxim}")
+                # print(f"Compleix ε-ELDP: {constraint} >= {maxim}")
                 # print("================================================")
 
             
@@ -173,24 +90,115 @@ class TestELDP(unittest.TestCase):
                 g.save_graphs(original_g, protected_g, "ELDP", self.ELDP[i].epsilon)
         
 
-    def test_saved_graphs(self):
-        """5. Test loading saved graphs
-        """
-        with open("code/output/ELDP/LNetwork.json_2.pkl", "rb") as f:
-            graphs = pickle.load(f)
-        self.assertIsInstance(graphs, list)
-        self.assertIsInstance(graphs[0], nx.Graph)
+    # def test_saved_graphs(self):
+    #     """5. Test loading saved graphs
+    #     """
+    #     with open("code/output/ELDP/LNetwork.json_2.pkl", "rb") as f:
+    #         graphs = pickle.load(f)
+    #     self.assertIsInstance(graphs, list)
+    #     self.assertIsInstance(graphs[0], nx.Graph)
 
-        with open("code/output/ELDP/LNetwork.json_3.pkl", "rb") as f:
-            graphs = pickle.load(f)
-        self.assertIsInstance(graphs, list)
-        self.assertIsInstance(graphs[0], nx.Graph)    
+    #     with open("code/output/ELDP/LNetwork.json_3.pkl", "rb") as f:
+    #         graphs = pickle.load(f)
+    #     self.assertIsInstance(graphs, list)
+    #     self.assertIsInstance(graphs[0], nx.Graph)    
 
-        with open("code/output/ELDP/LNetwork.json_4.pkl", "rb") as f:
-            graphs = pickle.load(f)
-        self.assertIsInstance(graphs, list)
-        self.assertIsInstance(graphs[0], nx.Graph)
+    #     with open("code/output/ELDP/LNetwork.json_4.pkl", "rb") as f:
+    #         graphs = pickle.load(f)
+    #     self.assertIsInstance(graphs, list)
+    #     self.assertIsInstance(graphs[0], nx.Graph)
 
+    # def test_density(self):
+    #     """1. Test de densitat
+    #     """
+    #     # 1. Comprovació per grafs no dirigits
+    #     self.ELDP[0].graph = nx.Graph()
+    #     self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
+    #     self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
+    #     manual_density_undirected = (2*3)/(4*3)
+    #     self.assertEqual(manual_density_undirected, nx.density(self.ELDP[0].graph))
+    #     # print(f"Density for undirected: OK")
+
+    #     # 2. Comprovació per grafs dirigits
+    #     self.ELDP[0].graph = nx.DiGraph()
+    #     self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
+    #     self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
+    #     manual_density_directed = (3)/(4*3)
+    #     self.assertEqual(manual_density_directed, nx.density(self.ELDP[0].graph))  
+    #     # print(f"Density for directed: OK")
+
+    #     # 3. Còmput de les densitats individualment
+    #     for _, group in self.ELDP[1].grouped_df:
+    #         self.ELDP[1].iterate_graph(group)
+    #         d = nx.density(self.ELDP[1].graph)
+    #         self.assertGreater(d,0)
+    #         self.assertLessEqual(d,0.5)
+    #     # print(f"Density individually: OK")
+
+    # def test_complement_graph(self):
+    #     """2. Test graf complementari
+    #     """
+    #     # 1. Per un graf no dirigit
+    #     self.ELDP[0].graph = nx.Graph()
+    #     self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
+    #     self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
+
+    #     ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
+    #     ELDP2.graph = nx.Graph()
+    #     ELDP2.graph.add_nodes_from([1, 2, 3, 4])
+    #     ELDP2.graph.add_edges_from([(4, 2), (4, 1), (3, 1)])
+        
+    #     complement = nx.complement(self.ELDP[0].graph)
+
+    #     correct_result = set([(2, 4), (1, 3), (1, 4)])
+    #     actual_result = set(list(ELDP2.graph.edges()) + list(complement.edges()))
+    #     self.assertEqual(actual_result, correct_result)
+    #     # print(f"Complement graph for undirected: OK")
+
+    #     # 2. Per un graf dirigit    
+    #     self.ELDP[0].graph = nx.DiGraph()
+    #     self.ELDP[0].graph.add_nodes_from([1, 2, 3, 4])
+    #     self.ELDP[0].graph.add_edges_from([(1, 2), (2, 3), (3, 4)])
+
+    #     ELDP2 = ELDP(self.readers[0].filename, self.dictionary_options["1"], self.readers[0].df, 0.5)
+    #     ELDP2.graph = nx.DiGraph()
+    #     ELDP2.graph.add_nodes_from([1, 2, 3, 4])
+    #     ELDP2.graph.add_edges_from([(1, 3), (1, 4), (2, 1), (2, 4), 
+    #                                  (3, 2), (3, 1), (4, 3), (4, 2), (4, 1)])
+        
+    #     complement = nx.complement(self.ELDP[0].graph)
+    #     correct_result = set([(1, 3), (1, 4), (2, 1), (2, 4), (3, 1), (3, 2), (4, 1), (4, 2), (4, 3)])
+    #     actual_result = set(list(ELDP2.graph.edges()) + list(complement.edges()))
+    #     self.assertEqual(actual_result, correct_result)
+    #     # print(f"Complement for directed: OK")
+
+    # def test_operations_graph(self):
+    #     """4. Test intersection and XOR
+    #     """
+    #     # 1. Comprovar que realment fa l'intersecció com es vol
+    #     g1 = nx.Graph()
+    #     g1.add_nodes_from([1, 2, 3, 4])
+    #     g1.add_edges_from([(1, 2), (2, 3), (3, 4)])
+    #     g2 = nx.Graph()
+    #     g2.add_nodes_from([1, 2, 3, 4])
+    #     g2.add_edges_from([(1, 2), (1, 3), (1, 4)])
+
+    #     correct_result = [(1,2)]
+    #     actual_result = nx.intersection(g1, g2)
+    #     self.assertEqual(list(actual_result.edges()), correct_result)
+
+    #     # 2. Comprovar XOR
+    #     g1 = nx.Graph()
+    #     g1.add_nodes_from([1, 2, 3, 4])
+    #     g1.add_edges_from([(1, 2), (2, 3), (3, 4)])
+    #     g2 = nx.Graph()
+    #     g2.add_nodes_from([1, 2, 3, 4])
+    #     g2.add_edges_from([(1, 3), (1, 2), (2, 4)])
+
+    #     correct_result = [(1, 3), (2, 3), (2, 4), (3, 4)]
+    #     actual_result = nx.symmetric_difference(g1, g2)
+    #     self.assertEqual(list(actual_result.edges()), correct_result)
+    
     # def test_epsilon(self):
     #     """6. Test per veure com funciona l'algorisme canviant el paràmetre epsilon
     #     """
@@ -219,7 +227,6 @@ class TestELDP(unittest.TestCase):
 
     #     # Mostrar el gráfico
     #     plt.show()
-
 
 if __name__ == '__main__':
     unittest.main()

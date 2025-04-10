@@ -26,9 +26,8 @@ class TestGP(unittest.TestCase):
         self.graph1 = GraphProtection(reader1.filename, TUPLE1, reader1.df)
         self.graph2 = GraphProtection(reader2.filename, TUPLE2, reader2.df)
 
-
     def test_graph_creation(self):
-        """1. Test de creació de grafs
+        """Testing creació de grafs...
         """
         # 1. Comprovació per grafs no dirigits
         p1 = self.graph1.graph.is_directed()
@@ -41,8 +40,8 @@ class TestGP(unittest.TestCase):
         # 3. Nombre de nodes
         n1 = self.graph1.graph.number_of_nodes()
         n2 = self.graph2.graph.number_of_nodes()
-        self.assertGreater(n1, 0)
-        self.assertGreater(n2, 0)
+        self.assertEqual(n1, 52)
+        self.assertEqual(n2, 1899)
 
         # 4. Nombre d'arestes
         e1 = self.graph1.graph.number_of_edges()
@@ -51,7 +50,7 @@ class TestGP(unittest.TestCase):
         self.assertEqual(e2, 0)
     
     def test_iterations(self):
-        """2. Test comprovar iteracions de grafs
+        """Testing iteracions de grafs
         """
         list_edges = list()
         for _, group in self.graph1.grouped_df:
@@ -59,9 +58,6 @@ class TestGP(unittest.TestCase):
             actual_edges = len(list(self.graph1.graph.edges()))
             list_edges.append(actual_edges)
         self.assertEqual(sum(list_edges), len(self.graph1.df))
-
-    # def test_visualize_graph(self):
-    #     self.graph2.visualize_graph()
 
 if __name__ == '__main__':
     unittest.main()

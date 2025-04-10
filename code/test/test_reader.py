@@ -24,10 +24,13 @@ class TestReader(unittest.TestCase):
         self.file2 = rd.read_file((PATH2, True))
 
     def test_files(self):
-        """1. Test de lectura de fitxers 
+        """Testing lectura de fitxers 
         """
+        required_columns = {"From", "To", "Timestamp"}
         self.assertIsInstance(self.file1, pandas.core.frame.DataFrame)
+        self.assertTrue(required_columns.issubset(self.file1.columns), "file1 is missing required columns")
         self.assertIsInstance(self.file2, pandas.core.frame.DataFrame)
+        self.assertTrue(required_columns.issubset(self.file2.columns), "file1 is missing required columns")
         try:
             self.file3 = rd.read_file((PATH3, 'unweighted'))
         except:
