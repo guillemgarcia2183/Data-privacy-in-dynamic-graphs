@@ -173,10 +173,7 @@ class TestKDA(unittest.TestCase):
         """Testing protecció KDA...
         """
         for g in self.KDA:
-            if not g.directed:
-                originalList, protectedList = g.apply_protectionUndirected(randomize = False)
-            else:
-                originalList, protectedList = g.apply_protectionDirected(randomize = False)
+            originalList, protectedList = g.apply_protection(randomize = False)
 
             self.assertIsInstance(originalList, list)
             self.assertIsInstance(protectedList, list)

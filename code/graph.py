@@ -4,6 +4,7 @@ import math
 import pickle
 import numpy as np
 from collections import Counter
+from tqdm import tqdm
 
 # import pandas as pd
 # import cv2
@@ -231,7 +232,7 @@ class ELDP(GraphProtection):
         original_graphs = list()
         protected_graphs = list()
 
-        for _, group in self.grouped_df:
+        for _, group in tqdm(self.grouped_df, desc="Aplicant ELDP"):
             # Iterem a la següent snapshot
             self.iterate_graph(group)
             # Calculem el seu graf complementari
@@ -639,7 +640,7 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in self.grouped_df:
+            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals -- Dataset:" + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
@@ -649,7 +650,7 @@ class KDA(GraphProtection):
             PMatrix = self.compute_PMatrix(self.degreeMatrix, randomize)
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
             realizedDegrees = self.realizeDegrees(anonymizedDegrees)
-            for row in realizedDegrees:
+            for row in tqdm(realizedDegrees, desc="Guardant grafs protegits -- Dataset:" + str(self.filename)):
                 graphProtected = self.createProtectedGraphUndirected(row)
                 protectedGraphs.append(graphProtected)
         
@@ -671,7 +672,7 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in self.grouped_df:
+            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals -- Dataset:" + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
@@ -681,12 +682,28 @@ class KDA(GraphProtection):
             PMatrixIn = self.compute_PMatrix(self.indegreeMatrix, randomize)
             anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
             realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
-            for indegrees in realizedDegreesIn:
+            for indegrees in tqdm(realizedDegreesIn, desc="Guardant grafs protegits -- Dataset:" + str(self.filename)):
                 # Fem que els outdegrees siguin una permutació dels indegrees.
                 outdegrees = indegrees.copy()
                 outdegrees = np.random.permutation(indegrees)
                 # Creem la versió protegida del graf i la guardem en una llista
                 graphProtected = self.createProtectedGraphDirected(indegrees, outdegrees)
                 protectedGraphs.append(graphProtected)
+        else:
+            print(f"El valor de k ({self.k}) és superior al nombre de grafs ({timestamps}). NO es pot aplicar la protecció")
         
         return originalGraphs, protectedGraphs
+
+    def apply_protection(self, randomize=True):
+        """Aplicar K-Anonimitat en el dataset, en funció de si és dirigit o no
+
+        Args:
+            randomize (bool): Si True, aleatoritzar les particions de la matriu de medianes PMatrix
+
+        Returns:
+            List, List: Llistes dels grafs originals i protegits
+        """
+        if self.directed:
+            return self.apply_protectionDirected(randomize)
+        else:
+            return self.apply_protectionUndirected(randomize)

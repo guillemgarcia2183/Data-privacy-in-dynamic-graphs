@@ -1,15 +1,23 @@
 from reader import Reader
-from graph import GraphProtection
+from graph import GraphProtection, KDA, ELDP
 import data_paths as dp
+from tqdm import tqdm
 
 class ModuleManager:
     """Classe que connecta tots els mòduls de l'aplicació
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('datasets')
+    __slots__ = ('datasets', 'dictionary_options', 'options')
     def __init__(self):
         """Gestió del procés del programa
         """
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                        '2': (dp.DATASET2, True, False, 'FILE'),
+                        '3': (dp.DATASET3, True, False, 'FILE'),
+                        '4': (dp.DATASET4, False, True, 'FILE'),
+                        '5': (dp.DATASET5, True, True, 'FILE')}
+        
+        self.options = None
         self.introduce_program() # Introduïm al usuari com funciona el programa
         
         self.datasets = list()
@@ -18,13 +26,7 @@ class ModuleManager:
             self.datasets.append(Reader(df))
         
         mode = self.select_mode() # Es selecciona el mode que volem executar
-        if mode == '1':
-            protection = self.select_protection()
-            for index, reader in enumerate(self.datasets):
-              graf = GraphProtection(reader.filename, selected_datasets[index], reader.df)
-              break
-            #! Crear segons protection K-Anonimity Class // LEDP Class
-            #! Les classes de forma __init__ ja es desenvolupen la resta
+        self.execute_mode(mode) # Executem el mode seleccionat        
         
     def introduce_program(self):
         """Dona la benvolguda al usuari i descriu el que és capaç de fer el programa
@@ -36,7 +38,6 @@ class ModuleManager:
         print("fer anàlisi de grafs dinàmics. Permet protegir un graf d'entrada")
         print("i fer detecció de comunitats amb diferents algorismes implementats. \n")
 
-    
     def select_option(self, pretext, options):
         """Seleccionador d'opcions dels menús
 
@@ -74,29 +75,23 @@ class ModuleManager:
         Returns:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
-        dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                               '2': (dp.DATASET2, True, False, 'FILE'),
-                               '3': (dp.DATASET3, True, False, 'FILE'),
-                               '4': (dp.DATASET4, False, True, 'FILE'),
-                               '5': (dp.DATASET5, True, True, 'FILE'),
-                               '6': (dp.DATASET6, False, False, 'JSON')}
-
-        
         print_options = {'1': "Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)", 
                                '2': "Mammalia-voles dataset (|V| = 1480, |E| = 4569, weighted, undirected)",
                                '3': "Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)",
                                '4': "CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)",
                                '5': "IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed)",
-                               '6': "Lighning network dataset (JSON FORMAT)",
-                               "7": "TOTS ELS DATASETS"}
+                               "6": "TOTS ELS DATASETS"}
 
         pretext = "Les opcions de datasets que es tenen són les següents:"
         selection = self.select_option(pretext, print_options)
 
-        if selection == '7':
-            return list(dictionary_options.values())
+        if selection == '6':
+            self.options = list(self.dictionary_options.keys())
+            return list(self.dictionary_options.values())
+            
         final_list = list()
-        final_list.append(dictionary_options[selection])         
+        final_list.append(self.dictionary_options[selection])
+        self.options = list(selection)         
         return final_list
 
 
@@ -107,8 +102,11 @@ class ModuleManager:
             str: Opció triada: ['1', '2']
         """
         pretext = "Menú d'opcions disponibles:"
+        
         options = {"1": "Graph protection",
-                   "2": "Graph prediction"}
+                   "2":"Metric computation",
+                   "3": "Graph prediction"}
+        
         return self.select_option(pretext, options)
 
     def select_protection(self):
@@ -117,10 +115,59 @@ class ModuleManager:
         Returns:
             str: Opció triada: ['1', '2']
         """
-        pretext = "Menú d'opcions disponibles:"
+        pretext = "Selecciona un mètode de protecció:"
         options = {"1": "K-Anonimity",
                    "2": "Local-Edge Differential Privacy"}
         return self.select_option(pretext, options)
+
+    def execute_KAnonimity(self):
+        """Realitzar la protecció K-Anonimity sobre els datasets seleccionats
+        """
+        k = 1
+        random = None
+        type_KDA = None
+
+        # Preguntar per si es vol aletorietat en les particions
+        while random is None:
+            randomize = input("Vols que s'apliqui aletorietat al fer K-Anonimity? (S/N): ")
+            if randomize.upper() == 'S':
+                random = True
+                type_KDA = "KDA_RANDOM"
+            elif randomize.upper() == 'N':
+                random = False
+                type_KDA = "KDA"
+
+        # Introduir una k vàlida
+        while k < 2:
+            try:  
+                k = int(input("Introdueix el valor de k: "))
+            except:
+                print("Valor incorrecte. Torna a introduir un valor enter. \n")
+        
+        print()
+
+        for reader, idx in zip(tqdm(self.datasets, desc="Aplicant K-Anonimity als datasets seleccionats"), self.options):
+            # print(f"Options: {self.dictionary_options[idx]}")
+
+            graph = KDA(reader.filename, self.dictionary_options[idx], reader.df, k)
+            orignalGraphs, protectedGraphs = graph.apply_protection(randomize=random)
+            if len(orignalGraphs) > 0 and len(protectedGraphs) > 0:
+                graph.save_graphs(orignalGraphs, protectedGraphs, type_KDA, k)
+                
+    def execute_mode(self, mode):
+        """Executa el mode seleccionat per l'usuari
+
+        Args:
+            mode (str): Mode seleccionat: ['1', '2', '3']
+        """
+        if mode == '1':
+            protectionMethod = self.select_protection()
+            if protectionMethod == '1':
+                self.execute_KAnonimity()
+            else:
+                pass
+
+        #! mode == '2' i mode == '3' no estan implementats, fer-ho quan toqui
 
                 
 if __name__ == "__main__":
