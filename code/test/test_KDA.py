@@ -21,7 +21,8 @@ class TestKDA(unittest.TestCase):
         self.save = False # Canviar si es volen guardar els grafs resultants
 
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                               '2': (dp.DATASET3, True, True, 'FILE')}
+                               '2': (dp.DATASET2, True, False, 'FILE'),
+                               '3': (dp.DATASET3, True, False, 'FILE'),}
         
         self.readers = [] # Llegim els fitxers i els col·loquem en una llista
         for key, value in self.dictionary_options.items():
@@ -173,9 +174,9 @@ class TestKDA(unittest.TestCase):
         """
         for g in self.KDA:
             if not g.directed:
-                originalList, protectedList = g.apply_protectionUndirected()
+                originalList, protectedList = g.apply_protectionUndirected(randomize = False)
             else:
-                originalList, protectedList = g.apply_protectionDirected()
+                originalList, protectedList = g.apply_protectionDirected(randomize = False)
 
             self.assertIsInstance(originalList, list)
             self.assertIsInstance(protectedList, list)

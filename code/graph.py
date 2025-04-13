@@ -326,11 +326,12 @@ class KDA(GraphProtection):
 
         return degreeMatrix, None, None
 
-    def compute_PMatrix(self, degreeMatrix):
+    def compute_PMatrix(self, degreeMatrix, randomize=True):
         """Calcular matriu de medianes P 
 
         Args:
             degreeMatrix (np.array): Matriu de graus a particionar
+            randomize (bool): Si és True, aleatoritzar les particions de la matriu de medianes PMatrix
 
         Returns:
             np.array() : Matriu de medianes 
@@ -338,8 +339,9 @@ class KDA(GraphProtection):
         aux_matrix = degreeMatrix.copy()
         PMatrix = np.zeros((self.T, self.m), dtype=int)
         for i, d_seq in enumerate(aux_matrix):
-            # Aleatoritzem la seqüència de graus
-            np.random.shuffle(d_seq)
+            # Aleatoritzem la seqüència de graus, en cas de voler fer el procediment d'aquesta forma
+            if randomize:
+                np.random.shuffle(d_seq)
             # Particionem la seqüència en m particions
             particions = np.array_split(d_seq, self.m)
             # Calculem la mediana de cada partició, i l'incorporem a la matriu final
@@ -621,8 +623,11 @@ class KDA(GraphProtection):
 
         return G
 
-    def apply_protectionUndirected(self):
+    def apply_protectionUndirected(self, randomize=True):
         """Aplicar K-Anonimitat en el dataset, en cas de ser grafs sense direcció
+
+        Args:
+            randomize (bool): Si True, aleatoritzar les particions de la matriu de medianes PMatrix
 
         Returns:
             List, List: Llistes dels grafs originals i protegits
@@ -641,7 +646,7 @@ class KDA(GraphProtection):
                 originalGraphs.append(self.graph.copy())
             
             # Llista de grafs protegits
-            PMatrix = self.compute_PMatrix(self.degreeMatrix)
+            PMatrix = self.compute_PMatrix(self.degreeMatrix, randomize)
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
             realizedDegrees = self.realizeDegrees(anonymizedDegrees)
             for row in realizedDegrees:
@@ -650,8 +655,11 @@ class KDA(GraphProtection):
         
         return originalGraphs, protectedGraphs
 
-    def apply_protectionDirected(self):
+    def apply_protectionDirected(self, randomize=True):
         """Aplicar K-Anonimitat en el dataset, en cas de ser grafs dirigits
+
+        Args:
+            randomize (bool): Si True, aleatoritzar les particions de la matriu de medianes PMatrix
 
         Returns:
             List, List: Llistes dels grafs originals i protegits
@@ -670,7 +678,7 @@ class KDA(GraphProtection):
                 originalGraphs.append(self.graph.copy())
             
             # Llista de grafs protegits
-            PMatrixIn = self.compute_PMatrix(self.indegreeMatrix)
+            PMatrixIn = self.compute_PMatrix(self.indegreeMatrix, randomize)
             anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
             realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
             for indegrees in realizedDegreesIn:
