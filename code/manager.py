@@ -7,7 +7,7 @@ class ModuleManager:
     """Classe que connecta tots els mòduls de l'aplicació
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
-    __slots__ = ('datasets', 'dictionary_options', 'options')
+    __slots__ = ('datasets', 'dictionary_options', 'options', 'grouping_option')
     def __init__(self):
         """Gestió del procés del programa
         """
@@ -18,6 +18,8 @@ class ModuleManager:
                         '5': (dp.DATASET5, True, True, 'FILE')}
         
         self.options = None
+        self.grouping_option = None
+
         self.introduce_program() # Introduïm al usuari com funciona el programa
         
         self.datasets = list()
@@ -84,6 +86,13 @@ class ModuleManager:
 
         pretext = "Les opcions de datasets que es tenen són les següents:"
         selection = self.select_option(pretext, print_options)
+        
+        if selection in ["4", "5", "6"]:
+            pretext = "Selecciona el tipus de agrupament temporal que vols aplicar als grafs grans"
+            options = {"1": "Agrupació per hores",
+                       "2": "Agrupació per dies",
+                       "3": "Agrupació per setmanes"}
+            self.grouping_option = self.select_option(pretext, options)
 
         if selection == '6':
             self.options = list(self.dictionary_options.keys())
@@ -117,7 +126,7 @@ class ModuleManager:
         """
         pretext = "Selecciona un mètode de protecció:"
         options = {"1": "K-Anonimity",
-                   "2": "Local-Edge Differential Privacy"}
+                   "2": "Edge-Local Differential Privacy"}
         return self.select_option(pretext, options)
 
     def execute_KAnonimity(self):
@@ -146,14 +155,40 @@ class ModuleManager:
         
         print()
 
-        for reader, idx in zip(tqdm(self.datasets, desc="Aplicant K-Anonimity als datasets seleccionats"), self.options):
+        for reader, idx in zip(self.datasets, self.options):
             # print(f"Options: {self.dictionary_options[idx]}")
 
-            graph = KDA(reader.filename, self.dictionary_options[idx], reader.df, k)
+            graph = KDA(reader.filename, self.dictionary_options[idx], reader.df, self.grouping_option, k)
             orignalGraphs, protectedGraphs = graph.apply_protection(randomize=random)
             if len(orignalGraphs) > 0 and len(protectedGraphs) > 0:
                 graph.save_graphs(orignalGraphs, protectedGraphs, type_KDA, k)
-                
+        
+        print("Protecció KDA aplicada amb èxit. Ves al directori code/output per veure els grafs guardats! \n")
+
+    
+    def execute_ELDP(self):
+        """Realitzar la protecció ELDP sobre els datasets seleccionats
+        """
+        epsilon = 0
+        # Introduir una epsilon vàlida
+        while epsilon <= 0:
+            try:  
+                epsilon = int(input("Introdueix el valor de epsilon: "))
+            except:
+                print("Valor incorrecte. Torna a introduir un valor. \n")
+
+        print()
+
+        for reader, idx in zip(self.datasets, self.options):
+            # print(f"Options: {self.dictionary_options[idx]}")
+
+            graph = ELDP(reader.filename, self.dictionary_options[idx], reader.df, self.grouping_option, epsilon)
+            orignalGraphs, protectedGraphs = graph.apply_protection()
+            if len(orignalGraphs) > 0 and len(protectedGraphs) > 0:
+                graph.save_graphs(orignalGraphs, protectedGraphs, "ELDP", epsilon)
+
+        print("Protecció ELDP aplicada amb èxit. Ves al directori code/output per veure els grafs guardats! \n")
+
     def execute_mode(self, mode):
         """Executa el mode seleccionat per l'usuari
 
@@ -165,7 +200,7 @@ class ModuleManager:
             if protectionMethod == '1':
                 self.execute_KAnonimity()
             else:
-                pass
+                self.execute_ELDP()
 
         #! mode == '2' i mode == '3' no estan implementats, fer-ho quan toqui
 

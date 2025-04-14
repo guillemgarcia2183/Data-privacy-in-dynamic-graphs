@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 import numpy as np
-from collections import Counter
 from tqdm import tqdm
+import pandas as pd
+import os
 
-# import pandas as pd
 # import cv2
 # import tkinter as tk
 
@@ -21,8 +21,8 @@ class GraphProtection:
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
     __slots__ = ('path', 'weighted', 'directed', 'format', 'df',
-                 'grouped_df', 'graph', 'node_positions', 'filename')
-    def __init__(self, filename, input_tuple, df):
+                 'grouped_df', 'graph', 'node_positions', 'filename', 'grouping_option')
+    def __init__(self, filename, input_tuple, df, group_option=None):
         """Inicialització de la classe
 
         Args:
@@ -31,11 +31,12 @@ class GraphProtection:
             df (pd.DataFrame): Dataframe amb la informació del dataset
         """
         self.path, self.weighted, self.directed, self.format = input_tuple
+        self.filename = filename
         self.df = df
-        self.grouped_df = self.get_grouped_df()
+        self.grouping_option = group_option
+        self.grouped_df = self.get_grouped_df()        
         self.graph = self.create_graph()
         self.node_positions = nx.spectral_layout(self.graph) # Posicions fixes dels nodes del graf
-        self.filename = filename
 
     def create_graph(self):
         """Creació de tots els nodes del graf.  
@@ -54,9 +55,65 @@ class GraphProtection:
         return graph
 
     def get_grouped_df(self):
-        grouped_df = self.df.groupby("Timestamp")
-        return grouped_df
+        """Agrupar el dataset per timestamp o bé per dies/setmanes/mesos si aquest és gran.
 
+        Returns:
+            pd.DataFrame: Dataset agrupat
+        """
+        if self.grouping_option is None:
+            grouped_df = self.df.groupby("Timestamp")
+            return grouped_df
+        grouped_df = self.groupby_option(self.grouping_option)
+        return grouped_df
+    
+    def groupby_option(self, option):
+        """Depenent de l'opció, agrupar un dataset per hores, dies o setmanes 
+
+        Args:
+            option (str): Opció escollida per l'usuari
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per hores/dies/setmanes 
+        """
+        
+        self.df["Date"] = pd.to_datetime(self.df["Timestamp"], unit="s")
+        if option == "1":
+            self.filename = "HOUR_" + self.filename
+            return self.groupby_hour()
+        elif option == "2":
+            self.filename = "DAY_" + self.filename
+            return self.groupby_day()
+        elif option == "3":
+            self.filename = "WEEK_" + self.filename
+            return self.groupby_week()
+
+    def groupby_hour(self):
+        """Agrupar el dataset per hores
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per hores
+        """
+        df_by_hour = self.df.groupby(self.df["Date"].dt.floor('H'))
+        return df_by_hour
+
+    def groupby_day(self):
+        """Agrupar el dataset per dies
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per dies
+        """
+        df_by_day  = self.df.groupby(self.df["Date"].dt.date)
+        return df_by_day 
+    
+    def groupby_week(self):
+        """Agrupar el dataset per setmanes
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per setmanes
+        """
+        df_by_week = self.df.groupby(self.df["Date"].dt.to_period('W').apply(lambda r: r.start_time))
+        return df_by_week
+    
     def iterate_graph(self, group):
         self.graph.clear_edges() # Netejem les arestes del anterior plot
         if not self.weighted:
@@ -64,6 +121,7 @@ class GraphProtection:
         else:
             edges = zip(group["From"], group["To"], group["Weight"])
             self.graph.add_weighted_edges_from(edges)
+
 
     def visualize_graph(self):
         """Visualitzar cada timestamp del graf temporal
@@ -80,8 +138,12 @@ class GraphProtection:
         plt.show() # Mostrar el graf
         
     def save_graphs(self, original_graphs, protected_graphs, algorithm, parameter):
-        og = "code/output/original_graphs/" + str(self.filename) + ".pkl"
-        pg = "code/output/" + str(algorithm) + "/" + str(self.filename) + "_" + str(parameter) + ".pkl"
+        # Canvi de directori al repositori de l'aplicació
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
+        actualRepository = os.getcwd()
+
+        og = actualRepository + "/output/original_graphs/" + str(self.filename) + ".pkl"
+        pg = actualRepository + "/output/" + str(algorithm) + "/" + str(self.filename) + "_" + str(parameter) + ".pkl"
 
         with open(og, "wb") as f:
             pickle.dump(original_graphs, f)
@@ -136,17 +198,10 @@ class GraphProtection:
     #     grouped_df = self.df.groupby("Date")
     #     self.create_animation(grouped_df)
 
-    # def visualize_per_day(self):
-    #     """Visualitzar el graf temporal agrupat per dies 
-    #     """
-    #     self.df["Date"] = pd.to_datetime(self.df["Timestamp"], unit="s").dt.date
-    #     grouped_df = self.df.groupby("Date")
-    #     self.visualize_graph(grouped_df)
-
 class ELDP(GraphProtection):
     __slots__ = ('nodes', 'epsilon')
-    def __init__(self, filename, input_tuple, df, epsilon=0.5):
-        super().__init__(filename, input_tuple, df)
+    def __init__(self, filename, input_tuple, df, group_option=None, epsilon=0.5):
+        super().__init__(filename, input_tuple, df, group_option)
         self.epsilon = epsilon
         self.nodes = self.graph.number_of_nodes()
 
@@ -232,7 +287,7 @@ class ELDP(GraphProtection):
         original_graphs = list()
         protected_graphs = list()
 
-        for _, group in tqdm(self.grouped_df, desc="Aplicant ELDP"):
+        for _, group in tqdm(self.grouped_df, desc="Aplicant ELDP " + str(self.filename)):
             # Iterem a la següent snapshot
             self.iterate_graph(group)
             # Calculem el seu graf complementari
@@ -251,7 +306,7 @@ class ELDP(GraphProtection):
             # Intersecció dels sorolls amb el graf original i el seu complementari
             g0 = self.intersection_graph(noise_g0, complement_graph) 
             g1 = self.intersection_graph(noise_g1, self.graph)
-
+        
             # Realitzem un XOR del graf original, amb els grafs de sorolls computats
             sum1 = self.xor_graph(self.graph, g0)
             protected_g = self.xor_graph(sum1, g1)
@@ -261,8 +316,8 @@ class ELDP(GraphProtection):
              
 class KDA(GraphProtection):
     __slots__ = ('k', 'm', 'T', 'degreeMatrix', 'indegreeMatrix', 'outdegreeMatrix')
-    def __init__(self, filename, input_tuple, df, k=2):
-        super().__init__(filename, input_tuple, df)
+    def __init__(self, filename, input_tuple, df, group_option=None, k=2):
+        super().__init__(filename, input_tuple, df, group_option)
         self.k = k
         self.m = math.ceil(self.graph.number_of_nodes() / self.k)
         self.T = len(self.grouped_df)
@@ -640,17 +695,18 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals -- Dataset:" + str(self.filename)):
+            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals " + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
                 originalGraphs.append(self.graph.copy())
             
+            print()
             # Llista de grafs protegits
             PMatrix = self.compute_PMatrix(self.degreeMatrix, randomize)
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
             realizedDegrees = self.realizeDegrees(anonymizedDegrees)
-            for row in tqdm(realizedDegrees, desc="Guardant grafs protegits -- Dataset:" + str(self.filename)):
+            for row in tqdm(realizedDegrees, desc="Guardant grafs protegits " + str(self.filename)):
                 graphProtected = self.createProtectedGraphUndirected(row)
                 protectedGraphs.append(graphProtected)
         
@@ -672,17 +728,18 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals -- Dataset:" + str(self.filename)):
+            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals " + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
                 originalGraphs.append(self.graph.copy())
             
+            print()
             # Llista de grafs protegits
             PMatrixIn = self.compute_PMatrix(self.indegreeMatrix, randomize)
             anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
             realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
-            for indegrees in tqdm(realizedDegreesIn, desc="Guardant grafs protegits -- Dataset:" + str(self.filename)):
+            for indegrees in tqdm(realizedDegreesIn, desc="Guardant grafs protegits " + str(self.filename)):
                 # Fem que els outdegrees siguin una permutació dels indegrees.
                 outdegrees = indegrees.copy()
                 outdegrees = np.random.permutation(indegrees)

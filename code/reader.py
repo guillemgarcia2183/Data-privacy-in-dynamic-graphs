@@ -24,23 +24,23 @@ def read_file(tp):
                     from_node, to_node, timestamp = map(int, line.split())  
                     data.append({'From': from_node, 'To': to_node, 'Timestamp': timestamp})
             df = pd.DataFrame(data)
-            return df
-        # En cas que el graf tingui pesos
-        with open(tp[0], 'r') as file:
-            # Llegir el fitxer i carregar la informació en una taula pandas
-            for line in file:
-                from_node, to_node, weight, timestamp = map(float, line.split())  
-                #print(from_node, to_node, weight, timestamp)
-                data.append({'From': int(from_node), 'To': int(to_node), 'Weight': weight, 'Timestamp': int(timestamp)})
-        #Passem les dades a DataFrame
-        df = pd.DataFrame(data)
+        
+        else:
+            # En cas que el graf tingui pesos
+            with open(tp[0], 'r') as file:
+                # Llegir el fitxer i carregar la informació en una taula pandas
+                for line in file:
+                    from_node, to_node, weight, timestamp = map(float, line.split())  
+                    #print(from_node, to_node, weight, timestamp)
+                    data.append({'From': int(from_node), 'To': int(to_node), 'Weight': weight, 'Timestamp': int(timestamp)})
+            #Passem les dades a DataFrame
+            df = pd.DataFrame(data)
 
         # Obtenir tots els nodes, i mapejar-los perquè es trobin en un valor de [0, #nodes]
         unique_nodes = pd.unique(df[['From', 'To']].values.ravel())
         node_mapping = {node: idx for idx, node in enumerate(unique_nodes)}
         df["From"] = df["From"].map(node_mapping)
         df["To"] = df["To"].map(node_mapping)
-
         return df
     # En cas de no seguir un dels formats establerts, parar execució del programa
     except:
