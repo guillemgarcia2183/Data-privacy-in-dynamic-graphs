@@ -19,21 +19,21 @@ class TestKDA(unittest.TestCase):
         """Crea una instància de KDA
         """
         self.save = False # Canviar si es volen guardar els grafs resultants
-
+        grouping = None
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                               '2': (dp.DATASET2, True, False, 'FILE'),
-                               '3': (dp.DATASET3, True, False, 'FILE'),}
+                                    '2': (dp.DATASET3, True, True, 'FILE')} 
+        # self.dictionary_options = {'1': (dp.DATASET4, True, True, 'FILE')}
         
         self.readers = [] # Llegim els fitxers i els col·loquem en una llista
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         # setK = np.arange(2, 15, 1)
-        setK = np.arange(2, 5, 1)
+        setK = [3, 5]
         self.KDA = []
         for k in setK: # Per totes les k que provem, crear una instància de KDA amb tots els fitxers
             for i,reader in enumerate(self.readers):
-                self.KDA.append(KDA(reader.filename, self.dictionary_options[str(i+1)], reader.df, k))
+                self.KDA.append(KDA(reader.filename, self.dictionary_options[str(i+1)], reader.df, grouping, k))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()
@@ -173,7 +173,7 @@ class TestKDA(unittest.TestCase):
         """Testing protecció KDA...
         """
         for g in self.KDA:
-            originalList, protectedList = g.apply_protection(randomize = False)
+            originalList, protectedList = g.apply_protection(randomize = True)
 
             self.assertIsInstance(originalList, list)
             self.assertIsInstance(protectedList, list)
@@ -185,7 +185,7 @@ class TestKDA(unittest.TestCase):
             self.assertEqual(len(originalList), len(protectedList))
 
             if self.save and len(originalList) > 0 and len(protectedList) > 0:
-                g.save_graphs(originalList, protectedList, "KDA", g.k)
+                g.save_graphs(originalList, protectedList, "KDA_RANDOM", g.k)
 
 
 if __name__ == '__main__':

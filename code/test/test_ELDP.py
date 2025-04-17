@@ -22,19 +22,21 @@ class TestELDP(unittest.TestCase):
         """Crea una instància de ELDP
         """
         self.save = False # Canviar si no es volen guardar els grafs resultants
+        # self.dictionary_options = {'1': (dp.DATASET5, False, True, 'FILE')}
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                        '2': (dp.DATASET1, True, True, 'FILE')} 
-                
+                        '2': (dp.DATASET3, True, True, 'FILE')} 
+
+        grouping = "1"       
         self.readers = [] # LLegim els fitxers, i els guardem en una llista 
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
-        # epsilons = np.arange(8, 10, 1)
+        # epsilons = np.arange(1, 11, 1)
         epsilons = [1, 10]
         for eps in epsilons: # Per cada epsilon, creem una instància de ELDP amb tots els fitxers
             for i,reader in enumerate(self.readers):
-                self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, eps))
+                self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, grouping, eps))
 
         # nx.draw(self.ELDP[0].graph, with_labels=True, node_color='lightblue', edge_color='gray', node_size=1000, font_size=16)
         # plt.show()

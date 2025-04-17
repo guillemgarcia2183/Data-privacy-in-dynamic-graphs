@@ -695,7 +695,7 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals " + str(self.filename)):
+            for _, group in tqdm(self.grouped_df, desc="Creant grafs originals " + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
@@ -706,7 +706,7 @@ class KDA(GraphProtection):
             PMatrix = self.compute_PMatrix(self.degreeMatrix, randomize)
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)
             realizedDegrees = self.realizeDegrees(anonymizedDegrees)
-            for row in tqdm(realizedDegrees, desc="Guardant grafs protegits " + str(self.filename)):
+            for row in tqdm(realizedDegrees, desc="Creant grafs protegits " + str(self.filename)):
                 graphProtected = self.createProtectedGraphUndirected(row)
                 protectedGraphs.append(graphProtected)
         
@@ -728,7 +728,7 @@ class KDA(GraphProtection):
         # Per poder aplicar la protecció, el nombre de grafs ha de ser major o igual a k
         if self.k <= timestamps:
             # Llista de grafs originals
-            for _, group in tqdm(self.grouped_df, desc="Guardant grafs originals " + str(self.filename)):
+            for _, group in tqdm(self.grouped_df, desc="Creant grafs originals " + str(self.filename)):
                 # Iterem a la següent snapshot
                 self.iterate_graph(group)
                 # Calculem el seu graf complementari
@@ -739,7 +739,7 @@ class KDA(GraphProtection):
             PMatrixIn = self.compute_PMatrix(self.indegreeMatrix, randomize)
             anonymizedDegreesIn= self.anonymizeDegrees(self.indegreeMatrix, PMatrixIn)
             realizedDegreesIn = self.realizeDegrees(anonymizedDegreesIn)
-            for indegrees in tqdm(realizedDegreesIn, desc="Guardant grafs protegits " + str(self.filename)):
+            for indegrees in tqdm(realizedDegreesIn, desc="Creant grafs protegits " + str(self.filename)):
                 # Fem que els outdegrees siguin una permutació dels indegrees.
                 outdegrees = indegrees.copy()
                 outdegrees = np.random.permutation(indegrees)

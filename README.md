@@ -42,13 +42,13 @@ La llista de datasets que es conté per defecte és la de a continuació:
 
 <div align="center">
   
-| Name | # Vertices | # Edges | Is directed | Has weight | # Snapshots | # DAY | # WEEK 
-|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
-| Aves-sparrow | 52 | 516 | False | True | 2 | - | - |
+| Name | # Vertices | # Edges | Is directed | Has weight | # Snapshots | # HOUR | # DAY | # WEEK 
+|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| Aves-sparrow | 52 | 516 | False | True | 2 | - | - | - |
 | Mammalia-voles | 1480 | 4569 | False | True | 61 | - | - |  
-| Insecta-ant | 152 | 194K | False | True | 41 | - | - | 
-| CollegeMsg | 1899 | 59.8K | True | False | 58911 | 193 | 29 |
-| IA-Facebook | 42.4K | 877K | True | True | 867939 | 1506 | 225 |
+| Insecta-ant | 152 | 194K | False | True | 41 | - | - | - |
+| Enron-Employees | 151 | 50.5K | True | True | 16067 | 6440 | 867 | 161 |
+| CollegeMsg | 1899 | 59.8K | True | False | 58911 | 3320 | 193 | 29 |
 
 </div>
 
@@ -97,11 +97,11 @@ Què pot fer un atacant que no pugui en un graf estàtic protegit? Pot anar reco
 Disponible en: https://networkrepository.com/dynamic.php. [Darrer accés: 26-feb-2025].
 
 [3] L. Rossi, M. Musolesi i A. Torsello, "On the k-Anonymization of Time-Varying and Multi-Layer Social Graphs", 
-Proceedings of the International AAAI Conference on Web and Social Media, 9(1), 377-386, 2021. Disponible en: https://ojs.aaai.org/index.php/ICWSM/article/view/14605. [Darrer accés: 26-feb-2025].
+Proceedings of the International AAAI Conference on Web and Social Media, 9(1), 377-386, 2021. Disponible en: https://ojs.aaai.org/index.php/ICWSM/article/view/14605. [Darrer accés: 13-abr-2025].
 
 [4] S. Paul, J. Salas i V. Torra, "Edge Local Differential Privacy for Dynamic Graphs", 
 In: Modeling Decisions for Artificial Intelligence, M. S. Hossain, A. E. Hassanien y B. Ali, Eds. Cham: Springer Nature Switzerland, 2023. 
-Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 2-feb-2025].
+Disponible en: https://link.springer.com/content/pdf/10.1007/978-981-99-5177-2_13.pdf. [Darrer accés: 13-abr-2025].
 
 [5] B. Ruan, J. Gan, H. Wu, i A. Wirth, "Dynamic Structural Clustering on Graphs", 
 arXiv preprint arXiv:2108.11549, 2021. Disponible en: https://arxiv.org/abs/2108.11549. [Darrer accés: 1-mar-2025].
@@ -121,9 +121,9 @@ Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darre
 [10] J. You, T. Du, J. Leskovec "ROLAND: Graph Learning Framework for Dynamic Graphs", Conference on Knowledge Discovery and Data Mining, 2022. 
 Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025] 
 
-[11] https://en.wikipedia.org/wiki/Havel%E2%80%93Hakimi_algorithm
+[11] "Havel–Hakimi algorithm", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Havel%E2%80%93Hakimi_algorithm. [Darrer accés: 13-abr-2025].
 
-[12] https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Gallai_theorem
+[12] "Erdős–Gallai theorem", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Gallai_theorem. [Darrer accés: 14-abr-2025].
 
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 

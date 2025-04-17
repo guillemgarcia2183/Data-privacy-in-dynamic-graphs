@@ -18,13 +18,13 @@ class TestGP(unittest.TestCase):
         """Crea una instància de Dataset
         """
         TUPLE1 = (dp.DATASET1, True, False, 'FILE')
-        TUPLE2 = (dp.DATASET4, False, True, 'FILE')
+        TUPLE2 = (dp.DATASET4, True, True, 'FILE')
 
         reader1 = rd.Reader(TUPLE1)
         reader2 = rd.Reader(TUPLE2)
-
-        self.graph1 = GraphProtection(reader1.filename, TUPLE1, reader1.df)
-        self.graph2 = GraphProtection(reader2.filename, TUPLE2, reader2.df)
+        
+        self.graph1 = GraphProtection(reader1.filename, TUPLE1, reader1.df, None)
+        self.graph2 = GraphProtection(reader2.filename, TUPLE2, reader2.df, None)
 
     def test_graph_creation(self):
         """Testing creació de grafs...
@@ -41,7 +41,7 @@ class TestGP(unittest.TestCase):
         n1 = self.graph1.graph.number_of_nodes()
         n2 = self.graph2.graph.number_of_nodes()
         self.assertEqual(n1, 52)
-        self.assertEqual(n2, 1899)
+        self.assertEqual(n2, 151)
 
         # 4. Nombre d'arestes
         e1 = self.graph1.graph.number_of_edges()

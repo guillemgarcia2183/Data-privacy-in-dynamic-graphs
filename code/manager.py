@@ -14,20 +14,21 @@ class ModuleManager:
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
                         '2': (dp.DATASET2, True, False, 'FILE'),
                         '3': (dp.DATASET3, True, False, 'FILE'),
-                        '4': (dp.DATASET4, False, True, 'FILE'),
-                        '5': (dp.DATASET5, True, True, 'FILE')}
+                        '4': (dp.DATASET4, True, True, 'FILE'),
+                        '5': (dp.DATASET5, False, True, 'FILE')}
         
         self.options = None
         self.grouping_option = None
 
         self.introduce_program() # Introduïm al usuari com funciona el programa
         
+        mode = self.select_mode() # Es selecciona el mode que volem executar
+        
         self.datasets = list()
         selected_datasets = self.select_dataset() # Decidim quins són els datasets que s'utilitzaràn
         for df in selected_datasets:
             self.datasets.append(Reader(df))
-        
-        mode = self.select_mode() # Es selecciona el mode que volem executar
+
         self.execute_mode(mode) # Executem el mode seleccionat        
         
     def introduce_program(self):
@@ -37,8 +38,8 @@ class ModuleManager:
         print("PRIVACY AND COMMUNITY DETECTION FOR DYNAMIC GRAPHS")
         print("################################################# \n")
         print("El següent programa es pot utilitzar com a eina per")
-        print("fer anàlisi de grafs dinàmics. Permet protegir un graf d'entrada")
-        print("i fer detecció de comunitats amb diferents algorismes implementats. \n")
+        print("fer anàlisi de grafs dinàmics. Permet protegir un dataset d'entrada,")
+        print("també calcular mètriques de grafs, i per últim fer predicció amb GLMs. \n")
 
     def select_option(self, pretext, options):
         """Seleccionador d'opcions dels menús
@@ -77,11 +78,11 @@ class ModuleManager:
         Returns:
             List[Tuple]: Llista amb els datasets a analitzar. Les tuples són de format (PATH, WEIGHTED, DIRECTION)
         """
-        print_options = {'1': "Aves-sparrow dataset (|V| = 52, |E| = 516, weighted, undirected)", 
-                               '2': "Mammalia-voles dataset (|V| = 1480, |E| = 4569, weighted, undirected)",
-                               '3': "Insecta-ant dataset (|V| = 152, |E| = 194K, weighted, undirected)",
-                               '4': "CollegeMsg dataset (|V| = 1899, |E| = 59.8K, unweighted, directed)",
-                               '5': "IA-Facebook dataset (|V| = 42.4K, |E| = 877K, weighted, directed)",
+        print_options = {'1': "Aves-sparrow (|V| = 52, |E| = 516, weighted, undirected)", 
+                               '2': "Mammalia-voles (|V| = 1480, |E| = 4569, weighted, undirected)",
+                               '3': "Insecta-ant (|V| = 152, |E| = 194K, weighted, undirected)",
+                               '4': "Enron-Employees (|V| = 150, |E| = 50.5K, weighted, directed)",
+                               '5': "CollegeMsg (|V| = 1899, |E| = 59.8K, unweighted, directed)",
                                "6": "TOTS ELS DATASETS"}
 
         pretext = "Les opcions de datasets que es tenen són les següents:"
