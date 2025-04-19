@@ -125,6 +125,11 @@ Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025]
 
 [12] "Erdős–Gallai theorem", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Gallai_theorem. [Darrer accés: 14-abr-2025].
 
+[13] https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0228728 -- 19/04
+
+[14] https://web.eecs.umich.edu/~dkoutra/papers/DeltaCon_KoutraVF_withAppendix.pdf?utm_source=chatgpt.com -- 19/04
+
+
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
 > Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 

@@ -26,7 +26,7 @@ class TestELDP(unittest.TestCase):
         self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
                         '2': (dp.DATASET3, True, True, 'FILE')} 
 
-        grouping = "1"       
+        grouping = None     
         self.readers = [] # LLegim els fitxers, i els guardem en una llista 
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
