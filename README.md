@@ -135,12 +135,6 @@ Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025]
 > Disponible en: https://www.visus.uni-stuttgart.de/documentcenter/forschung/visualisierung_und_visual_analytics/eurovis14-star.pdf. 
 > [Darrer accés: 13-gen-2025].
 
-> J. Salas, V. Torra, "Differentially private graph publishing and randomized
-> response for collaborative filtering", In: Proceedings of the 17th International
-> Joint Conference on e-Business and Telecommunications, ICETE 2020 - Volume
-> 2: SECRYPT, Lieusaint, Paris, France, 8–10 July 2020, pp. 415–422. ScitePress
-> (2020). Disponible en: https://www.diva-portal.org/smash/get/diva2:1534357/FULLTEXT01.pdf. [Darrer accés: 6-feb-2025].
-
 > P. Agarwal, R. Verma, A. Agarwal i T. Chakraborty, "DyPerm: Maximizing Permanence for Dynamic Community Detection", 2018.
 > Disponible en: https://arxiv.org/pdf/1802.04593. [Darrer accés: 26-feb-2025].
 
@@ -156,7 +150,4 @@ Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025]
 > K. Zhao, C. Guo, Y. Cheng, P. Han, M. Zhang i B. Yang,  "Multiple Time Series Forecasting with
 > Dynamic Graph Modeling".  Proceedings of the VLDB Endowment, 17(4), 753-765, 2023. 
 > Disponible en: https://vbn.aau.dk/ws/portalfiles/portal/698843020/3636218.3636230.pdf. [Darrer accés: 26-feb-2025].
-
-> S. Raskhodnikova i T. Steiner, "Fully Dynamic Graph Algorithms with Edge Differential Privacy", 2024. 
-> Disponible en: https://arxiv.org/pdf/2409.17623. [Darrer accés: 26-feb-2025]. 
 
