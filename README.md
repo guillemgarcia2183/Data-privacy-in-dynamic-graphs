@@ -77,18 +77,20 @@ i el Edge-Local Differential Privacy [4] aplicats en grafs temporals.
 
 Similarment, en el moment de calcular la privacitat i utilitat, si volem saber la similitud entre grafs, es poden usar altres versions del \textit{Coeficient de Jaccard} o la \textit{Cosine Similarity} \textit{[5,6]}. Si es necessita implementar algorismes de detecció de comunitats com a informació d'utilitat, es té \textit{[7]}.
 
-## 4. Definicions bàsiques - Mètodes de privacitat
+## 4. Definicions bàsiques i Mètodes de privacitat
 
-* Graf dinàmic: (Definition problem -> K-An) 
+* Un graf dinàmic es pot representar com un conjunt de grafs, amb una component afegida comparat amb els grafs estàtics, el temps. És a dir, representa una evolució temporal d'un graf donat G = (G1, G2, ..., Gt), on durant el temps es pot afegir o treure nodes i arestes en la xarxa. La principal difèrencia entre un graf estàtic i dinàmic és aquesta, i comporta a què la privacitat de les dades s'hagi de tractar de diferent forma.
 
-* Diferències entre grafs estàtics i grafs dinàmics: Un graf dinàmic resumidament conté una variable temporal afegida comparat amb els grafs estàtics.
-En què pot afectar això? Doncs s'ha de vigilar més com es protegeixen les dades, perquè un atacant pot obtenir més informació si conté actualitzacions d'una xarxa. 
-Què pot fer un atacant que no pugui en un graf estàtic protegit? Pot anar recollint grafs temporals i anar veient la relació entre les dades, fins poder re-identificar els nodes i relacions reals. 
-
-* Per LEDP: Def 1. Def 2. Def 3. Proposition 1 (DP in dynamic graphs - Julián)
-    * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, ja que aquests contenen un soroll que ell no coneix. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma anivellada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria inferir quin soroll s'ha afegit de forma específica en cada graf. 
+La preocupació dels grafs temporals és que des del punt de vista d'un atacant, aquest pot obtenir més informació si conté actualitzacions d'una xarxa, i poder correlacionar grafs per re-identificar els nodes i relacions reals. O sigui, un graf localment s'ha de protegir-los contra atacs, però ara també s'ha de fer-ho globalment per tots el conjunt de grafs.  
 
 
+* Per ε-ELDP: Def 1. Def 2. Def 3. Proposition 1 [4]
+    * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP, i a part manté la densitat del graf original. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, a causa de l'aletorietat del soroll afegit. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma anivellada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria inferir quin soroll s'ha afegit de forma específica en cada graf. 
+
+* Per K-degree Anonimity: Esquema enforme anonimity, realizability i graph construction, def. graf realitzable [3], [11], [12].
+    * Anàlisi: Es basa en el principi de K-anonimitat, pels graus d'un graf. L'idea és fer que dintre d'un graf els graus es repeteixin almenys k vegades. Però, per grafs dinàmics s'ha de tenir en compte que també ha de ser indistingible el graf almenys k vegades, per assegurar que hi hagi incertesa. Hi ha tres etapes dintre del procés de K-anonimity: anonimity, realizability i graph construction. [3]. Anonimitzem cada seqüència de graus, comprovem que són graficables amb els principis de Erdös Gallai (que poden generar un graf simple), en cas de no ser-ho s'aproxima a la seqüència mínima distància, i per últim reconstruïm el graf amb Havel-Hakimi.
+
+     
 ## 5. Referències
 
 [1] J. Leskovec, Stanford Network Analysis Project (SNAP). Disponible en: https://snap.stanford.edu/index.html. [Darrer accés: 26-feb-2025].
