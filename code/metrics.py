@@ -94,6 +94,14 @@ class Metrics:
         return 1 / (1+maxDegree)
 
     def scoreMatrix(self, graph):
+        """Calcular la matriu d'influència de nodes d'un graf
+
+        Args:
+            graph (nx.Graph): Graf a calcular la matriu S
+
+        Returns:
+            np.array: Matriu S, que descriu la influència entre nodes
+        """
         identityMatrix = np.identity(graph.number_of_nodes())
         # print(f"Identity Matrix: {identityMatrix}")
         degreeMatrix, maxDegree = self.degreeMatrices(graph)
@@ -101,17 +109,30 @@ class Metrics:
         # print(f"Adjacency Matrix: {adjacencyMatrix}")
         influence = self.influenceNeighbors(maxDegree)
         squaredInfluence = pow(self.influenceNeighbors(maxDegree), 2) 
-        finalMatrix = identityMatrix + (squaredInfluence * degreeMatrix) - (influence * adjacencyMatrix)
+        S = identityMatrix + (squaredInfluence * degreeMatrix) - (influence * adjacencyMatrix)
+        finalMatrix = np.linalg.inv(S)
+        # print(f"Final Matrix: {finalMatrix}")
+        return finalMatrix
+    
+    def rootEuclideanDistance(self, S1, S2):
+        """Calcular RootED de les matrius d'influència.
+
+        Args:
+            S1, S2 (np.array): Matrius d'influència de dos grafs
         
-    def rootEuclideanDistance(self):
-        pass
+        Returns:
+            float: valor numèric que defineix la distància entre les dues matrius
+        """
+        diff = S1 - S2
+        squared_diff = np.square(diff)
+        total_sum = np.sum(squared_diff)
+        distance = np.sqrt(total_sum)
+        return distance
 
     def deltaConnectivity(self, g1, g2):
-        # Aplicar l'algorisme per grafs no dirigits
-        if not g1.is_directed() and not g2.is_directed():
-            pass
-        
+        pass
     
+        
     def spectralSimilarity(self, g1, g2):
         pass
 
