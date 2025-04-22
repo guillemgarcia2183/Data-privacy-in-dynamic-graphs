@@ -1,4 +1,5 @@
-
+import numpy as np
+import networkx as nx
 class Metrics:
     __slots__ = ('originalGraphs', 'protectedGraphs')
     """Classe que computa i visualitza les mètriques entre dos grafs.
@@ -62,8 +63,54 @@ class Metrics:
         # Calculem el coeficient de Jaccard i el retornem en forma de percentatge
         return (intersection / union)*100
 
-    def deltaConnectivity(self, g1, g2):
+    def degreeMatrices(self, graph):
+        """Obtenir les matrius diagonals de graus del graf
+
+        Args:
+            graph (nx.Graph): Graf a calcular la seva matriu de graus diagonals 
+
+        Returns:
+            np.array, int: Matriu diagonal de graus, amb el grau màxim
+        """
+        # Obtenim les seqüències de grau per cada graf, i calculem el grau màxim
+        degreeDict1 = dict(graph.degree())
+        degreeSequence1 = [degreeDict1.get(node, 0) for node in graph.nodes()]
+        maxDegree1 = max(degreeSequence1)
+
+        # Ho tornem en una matriu diagonal i la retornem 
+        degreeMatrix1 = np.diag(degreeSequence1)
+
+        return degreeMatrix1, maxDegree1
+
+    def influenceNeighbors(self, maxDegree):
+        """Calcular la influència entre veïns
+
+        Args:
+            maxDegree (int): Grau màxim del graf
+
+        Returns:
+            float: Influència entre veïns
+        """
+        return 1 / (1+maxDegree)
+
+    def scoreMatrix(self, graph):
+        identityMatrix = np.identity(graph.number_of_nodes())
+        # print(f"Identity Matrix: {identityMatrix}")
+        degreeMatrix, maxDegree = self.degreeMatrices(graph)
+        adjacencyMatrix = nx.adjacency_matrix(graph).toarray()
+        # print(f"Adjacency Matrix: {adjacencyMatrix}")
+        influence = self.influenceNeighbors(maxDegree)
+        squaredInfluence = pow(self.influenceNeighbors(maxDegree), 2) 
+        finalMatrix = identityMatrix + (squaredInfluence * degreeMatrix) - (influence * adjacencyMatrix)
+        
+    def rootEuclideanDistance(self):
         pass
+
+    def deltaConnectivity(self, g1, g2):
+        # Aplicar l'algorisme per grafs no dirigits
+        if not g1.is_directed() and not g2.is_directed():
+            pass
+        
     
     def spectralSimilarity(self, g1, g2):
         pass
