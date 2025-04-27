@@ -1,19 +1,22 @@
 import numpy as np
 import networkx as nx
+import os
+import data_paths as dp
+import pickle
+from tqdm import tqdm
+import json
+
+FILE = 'WEEK_CollegeMsg'
+
 class Metrics:
-    __slots__ = ('originalGraphs', 'protectedGraphs')
+    __slots__ = ()
     """Classe que computa i visualitza les mètriques entre dos grafs.
     """
-    def __init__(self, originalGraphs, protectedGraphs):
+    def __init__(self):
         """Inicialitza la classe Metrics amb els grafs originals i protegits.
-
-        Args:
-            originalGraphs (List): Grafs originals 
-            protectedGraphs (List): Grafs protegits per un algorisme de protecció
         """
-        self.originalGraphs = originalGraphs
-        self.protectedGraphs = protectedGraphs
-    
+        self.computeMetrics()
+
     def edgeIntersection(self, e1, e2):
         """Calcular la intersecció d'arestes de dos grafs
 
@@ -62,7 +65,7 @@ class Metrics:
         intersection = self.edgeIntersection(edgesG1, edgesG2)
         union = self.edgeUnion(edgesG1, edgesG2)
  
-        print()
+        # print()
 
         # Quan un dels dos grafs són buits o els dos són buits
         if union == 0:
@@ -171,7 +174,7 @@ class Metrics:
         densityProtected = [nx.density(g) for g in g2]
         return densityOriginal, densityProtected
     
-    def topKNodes(centralityDict, k):
+    def topKNodes(self, centralityDict, k):
         """Obtenir els k nodes més centrals d'un graf
 
         Args:
@@ -183,27 +186,123 @@ class Metrics:
         """
         return set(sorted(centralityDict, key=centralityDict.get, reverse=True)[:k])
 
-    def computeCentrality(self, g1, g2, function):
+    def computeCentrality(self, g1, g2, function, topNodes):
+        """Calcular índex de Jaccard per les centralitats entre dos grafs
+
+        Args:
+            g1, g2 (nx.Graph): Grafs a calcular la seva centralitat
+            function (nx): Funció de centralitat a aplicar (betweenness, closeness, degree)	
+            topNodes (float): Percentatge de nodes més centrals a obtenir   
+        Returns:
+            float: Índex de Jaccard entre els dos grafs, valor en percentatge
+        """
         centrality1 = function(g1)
         centrality2 = function(g2)
 
-        # Obtenim el 5% nodes més centrals de cada graf
-        k = max(1, int(0.05 * g1.number_of_nodes()))
+        # Obtenim el % de nodes més centrals de cada graf
+        k = max(1, int(topNodes * g1.number_of_nodes()))
         topG1 = self.topKNodes(centrality1, k)
         topG2 = self.topKNodes(centrality2, k)
         
         intersection = topG1 & topG2
         union = topG1 | topG2
-        return len(intersection) / len(union)
+        return (len(intersection) / len(union))*100
     
-    def getCentrality(self, g1, g2):
-        jaccardBC = self.computeCentrality(g1, g2, nx.betweenness_centrality)
-        jaccardCC = self.computeCentrality(g1, g2, nx.closeness_centrality)
-        jaccardDC = self.computeCentrality(g1, g2, nx.degree_centrality)
-        return jaccardBC, jaccardCC, jaccardDC
-        
-    def computeMetrics(self):
-        pass
+    def getCentrality(self, g1, g2, topNodes):
+        """Obtenir les mètriques de centralitat entre dos grafs
 
+        Args:
+            g1, g2 (nx.Graph): Grafs a calcular la seva centralitat
+            topNodes (float): valor entre 0 i 1 que defineix el % de nodes més centrals a obtenir
+
+        Returns:
+            float, float, float: Índex de Jaccard entre els dos grafs de totes les funcions de centralitat, valor en percentatge
+        """
+        jaccardBC = self.computeCentrality(g1, g2, nx.betweenness_centrality, topNodes)
+        jaccardCC = self.computeCentrality(g1, g2, nx.closeness_centrality, topNodes)
+        jaccardDC = self.computeCentrality(g1, g2, nx.degree_centrality, topNodes)
+        return jaccardBC, jaccardCC, jaccardDC
+    
+    def readMetrics(self):
+        folders = dp.OUTPUTS
+        originalFiles = {}
+        protectedDict = {}
+
+        for root_folder in folders:
+            name = root_folder.split("/")[-1]
+            protectedDict[name] = {}
+            for dirpath, dirnames, filenames in os.walk(root_folder):
+                if name != "original_graphs":
+                    for f in filenames:
+                        nameFile = f.split(".")[0]  
+                        if nameFile not in protectedDict[name]:
+                            protectedDict[name][nameFile] = []
+                        protectedDict[name][nameFile].append((dirpath, f, float(f.split("_")[-1][:-4])))
+                else:
+                    protectedDict.pop(name)
+                    for f in filenames:
+                        nameFile = f.split(".")[0]  
+                        originalFiles[nameFile] = (dirpath, f)
+
+        # print(f"Original files: {originalFiles}")
+        # print(f"Protected files: {protectedDict}")        
+        return originalFiles, protectedDict
+
+    def computeMetrics(self):
+        originalFiles, protectedDict = self.readMetrics()
+        for method in protectedDict.keys():
+            print(protectedDict[method].keys())
+            # for file in tqdm(protectedDict[method].keys(), desc="Computing metrics"):
+            with open(originalFiles[FILE][0]+"/"+originalFiles[FILE][1], 'rb') as f:
+                originalGraphs = pickle.load(f)
+            
+            results = {"Jaccard": [], "DeltaConnectivity": [], "Betweeness": [], "Closeness": [], "Degree": []}
+            for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE)):
+                listJaccard = []
+                listDeltaConnectivity = []
+                listBetweeness = []
+                listCloseness = []
+                listDegree = []
+
+                with open(i[0]+"/"+ i[1], 'rb') as f:
+                    protectedGraphs = pickle.load(f)
+                                
+                for originalG, protectedG in zip(originalGraphs, protectedGraphs):
+                    
+                    if originalG.is_directed():
+                        connectivity = self.deltaConnectivity(originalG, protectedG, 'out')
+                    else:
+                        connectivity = self.deltaConnectivity(originalG, protectedG, None)
+                        
+                    listJaccard.append(self.jaccardIndex(originalG, protectedG))
+                    listDeltaConnectivity.append(connectivity)
+                    listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
+                    listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
+                    listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
+
+                results["Jaccard"].append((listJaccard, i[2]))
+                results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
+                results["Betweeness"].append((listBetweeness, i[2]))
+                results["Closeness"].append((listCloseness, i[2]))
+                results["Degree"].append((listDegree, i[2]))
+
+                # if originalG.is_directed():
+                #     deltaConnectivityOut = self.deltaConnectivity(originalG, protectedG, 'out')
+                #     deltaConnectivityIn = self.deltaConnectivity(originalG, protectedG, 'in')
+                # else:   
+                #     deltaConnectivity = self.deltaConnectivity(originalG, protectedG, None)
+                # densityOriginal, densityProtected = self.getDensities(originalGraphs, protectedGraphs)
+                # jaccardBC, jaccardCC, jaccardDC = self.getCentrality(originalG, protectedG, 0.1)
+            
+            # print(f"Results: {results} amb mètode {method} i fitxer {file}")
+            # print()
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
+                json.dump(results, f)
+            
     def visualizeMetrics(self):
         pass
+
+if __name__ == "__main__":
+    metric = Metrics()
