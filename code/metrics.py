@@ -6,7 +6,7 @@ import pickle
 from tqdm import tqdm
 import json
 
-FILE = 'WEEK_CollegeMsg'
+FILE = None # Posa el nom del fitxer que vols calcular les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -15,7 +15,9 @@ class Metrics:
     def __init__(self):
         """Inicialitza la classe Metrics amb els grafs originals i protegits.
         """
-        self.computeMetrics()
+        #! Fer un seleccionador, per tal de voler calcular o visualitzar les mètriques
+        #self.computeMetrics()
+        self.visualizeMetrics()
 
     def edgeIntersection(self, e1, e2):
         """Calcular la intersecció d'arestes de dos grafs
@@ -253,6 +255,10 @@ class Metrics:
         for method in protectedDict.keys():
             print(protectedDict[method].keys())
             # for file in tqdm(protectedDict[method].keys(), desc="Computing metrics"):
+
+            if not FILE:
+                raise ValueError("No file selected. Please select a file to compute metrics.")
+            
             with open(originalFiles[FILE][0]+"/"+originalFiles[FILE][1], 'rb') as f:
                 originalGraphs = pickle.load(f)
             
@@ -286,23 +292,22 @@ class Metrics:
                 results["Closeness"].append((listCloseness, i[2]))
                 results["Degree"].append((listDegree, i[2]))
 
-                # if originalG.is_directed():
-                #     deltaConnectivityOut = self.deltaConnectivity(originalG, protectedG, 'out')
-                #     deltaConnectivityIn = self.deltaConnectivity(originalG, protectedG, 'in')
-                # else:   
-                #     deltaConnectivity = self.deltaConnectivity(originalG, protectedG, None)
-                # densityOriginal, densityProtected = self.getDensities(originalGraphs, protectedGraphs)
-                # jaccardBC, jaccardCC, jaccardDC = self.getCentrality(originalG, protectedG, 0.1)
-            
-            # print(f"Results: {results} amb mètode {method} i fitxer {file}")
-            # print()
-
             current_dir = os.path.dirname(os.path.abspath(__file__))
             with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
                 json.dump(results, f)
-            
+
     def visualizeMetrics(self):
-        pass
+        folders = dp.METRICS
+        for root_folder in folders:
+            for dirpath, dirnames, filenames in os.walk(root_folder):
+                for f in filenames:
+                    with open(dirpath + "/" + f, 'r') as file:
+                        data = json.load(file)
+                    
+                    print(f"Data: {data}")
+                    break
+            break
+        
 
 if __name__ == "__main__":
     metric = Metrics()

@@ -17,3 +17,9 @@ OUTPUT_ELDP = current_dir + '/output/ELDP'
 OUTPUT_KDA = current_dir + '/output/KDA'
 OUTPUT_KDA_RANDOM = current_dir + '/output/KDA_RANDOM'
 OUTPUTS = [OUTPUT_ORIGINAL, OUTPUT_ELDP, OUTPUT_KDA, OUTPUT_KDA_RANDOM]
+
+# Per llegir fitxers amb les mètriques 
+METRICS_ELDP = current_dir + '/metrics/ELDP'
+METRICS_KDA = current_dir + '/metrics/KDA'
+METRICS_KDA_RANDOM = current_dir + '/metrics/KDA_RANDOM'
+METRICS = [METRICS_ELDP, METRICS_KDA, METRICS_KDA_RANDOM]
