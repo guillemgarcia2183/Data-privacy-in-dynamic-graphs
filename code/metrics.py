@@ -17,7 +17,7 @@ class Metrics:
         """
         #! Fer un seleccionador, per tal de voler calcular o visualitzar les mètriques
         #self.computeMetrics()
-        self.visualizeMetrics()
+        # self.visualizeMetrics()
 
     def edgeIntersection(self, e1, e2):
         """Calcular la intersecció d'arestes de dos grafs
@@ -81,7 +81,8 @@ class Metrics:
 
         Args:
             graph (nx.Graph): Graf a calcular la seva matriu de graus diagonals 
-
+            type (str): tipus de connexió a calcular (in, out, None)
+            
         Returns:
             np.array, int: Matriu diagonal de graus, amb el grau màxim
         """
@@ -116,6 +117,7 @@ class Metrics:
 
         Args:
             graph (nx.Graph): Graf a calcular la matriu S
+            type (str): tipus de connexió a calcular (in, out, None)
 
         Returns:
             np.array: Matriu S, que descriu la influència entre nodes
@@ -152,7 +154,7 @@ class Metrics:
 
         Args:
             g1, g2 (nx.Graph): Grafs a calcular la seva similaritat
-
+            type (str): tipus de connexió a calcular (in, out, None)
         Returns:
             float: Similaritat entre els dos grafs (afinitat), valor en percentatge
         """
