@@ -296,7 +296,7 @@ class Metrics:
             
             
             results = {"Jaccard": [], "DeltaConnectivity": [], "DeltaIn": [], "DeltaOut": [],
-                        "Betweeness": [], "Closeness": [], "Degree": [], "Densities": []}
+                        "Jaccard Betweenness": [], "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": []}
             
             for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
                 listJaccard = []
@@ -388,22 +388,21 @@ class Metrics:
 
     def viewIndividualSimilarities(self):
         folders = dp.METRICS
-        all_metrics = ["Jaccard", "DeltaConnectivity", "Betweeness", "Closeness", "Degree"]
+        all_metrics = ["Jaccard", "DeltaConnectivity", "Jaccard Betweenness", "Jaccard Closeness", "Jaccard Degree"]
         num_methods = len(folders)
 
-        # Calculate number of rows and columns for the combined figure grid
         cols = 3
-        rows = len(all_metrics) * int(np.ceil(num_methods / cols))  # Stack metrics vertically
+        rows = len(all_metrics) * int(np.ceil(num_methods / cols))
 
-        # Create a single figure for all the subplots (adjusting for all metrics in one plot)
-        fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False)
-        fig.suptitle(f"Comparativa de mètriques en {FILE}", fontsize=12)
-        fig.tight_layout(pad=5.0, rect=[0, 0, 1, 0.96])  # Leave space for suptitle
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 2.5), squeeze=False)
+        fig.suptitle(f"Comparativa de mètriques en: {FILE}", fontsize=12)
+        fig.subplots_adjust(hspace=0.4, wspace=0.2, top=0.9, right=0.9)  # Deja espacio a la derecha para el colorbar
 
-        # Iterate over all metrics and all methods
+        cbar_ax = fig.add_axes([0.91, 0.15, 0.015, 0.7])  # [left, bottom, width, height]
+        show_cbar = True  # Solo mostramos una vez
+
         for metric_idx, metric_name in enumerate(all_metrics):
             for method_idx, path in enumerate(folders):
-                # Calculate the correct row and column for each subplot in the stacked grid
                 row = metric_idx * int(np.ceil(num_methods / cols)) + method_idx // cols
                 col = method_idx % cols
                 ax = axes[row][col]
@@ -412,14 +411,9 @@ class Metrics:
                 with open(file_path, "r") as f:
                     data = json.load(f)
 
-                if metric_name not in data:
-                    ax.set_visible(False)
-                    continue
-
                 values_matrix = []
                 param_labels = []
 
-                # Loop through metrics and capture values and sorted labels
                 for metric in data[metric_name]:
                     values = metric[0]
                     label = metric[1]
@@ -428,44 +422,102 @@ class Metrics:
                         param_labels.append(label)
 
                 if values_matrix:
-                    # Sort the parameter labels
                     sorted_labels, sorted_values = zip(*sorted(zip(param_labels, values_matrix), key=lambda x: x[0]))
+                    df = pd.DataFrame(sorted_values, index=sorted_labels).T
 
-                    # Create DataFrame with sorted labels
-                    df = pd.DataFrame(sorted_values, index=sorted_labels)
-
-                    # Transpose the DataFrame to swap axes
-                    df = df.T
-
-                    sns.heatmap(df, ax=ax, cbar_kws={'label': 'Similaritat (%)'},
+                    sns.heatmap(df, ax=ax, cbar=show_cbar, cbar_ax=cbar_ax if show_cbar else None,
                                 vmin=0, vmax=100, linewidths=0.5, linecolor='gray')
-                    ax.set_title(f"{metric_name} utilitzant: {path.split('/')[-1]}")
 
-                    if path.split("/")[-1] == "ELDP":
-                        xLabel = r'$\epsilon$'
+                    show_cbar = False  # Ya mostramos el colorbar, no lo volvemos a mostrar
+
+                    ax.set_title(f"{metric_name} - {path.split('/')[-1]}", fontsize=9)
+
+                    if col == 0:
+                        ax.set_ylabel("Timestamp", fontsize=8)
                     else:
-                        xLabel = "k"
+                        ax.set_ylabel("")
+                        ax.set_yticks([])
 
-                    ax.set_xlabel(xLabel)
-                    ax.set_ylabel("Timestamp")
+                    if row == rows - 1:
+                        xLabel = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
+                        ax.set_xlabel(xLabel, fontsize=8)
+                    else:
+                        ax.set_xlabel("")
+                        ax.set_xticks([])
+
+                    ax.tick_params(axis='both', labelsize=7)
                 else:
                     ax.set_visible(False)
 
-        # Hide any empty subplots
-        for i in range(len(all_metrics) * num_methods, rows * cols):
-            fig.delaxes(axes[i // cols][i % cols])
-
+        # Etiqueta en la colorbar
+        cbar_ax.set_ylabel("Similaritat (%)", fontsize=10)
+        cbar_ax.tick_params(labelsize=8)
         plt.show()
 
+
+    def viewDensities(self):
+        """Visualitzar les densitats dels grafs originals i protegits"""
+        folders = dp.METRICS
+
+        for path in folders:
+            file = path + "/" + FILE + ".json"
+            with open(file, "r") as f:
+                data = json.load(f)
+
+            # Ordenar los resultados por el valor del parámetro
+            sorted_results = sorted(data["Densities"], key=lambda x: x[1])
+
+            num_plots = len(sorted_results)
+            cols = 3
+            rows = (num_plots + cols - 1) // cols
+
+            fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
+            fig.suptitle('Densitats en ' + str(FILE) +
+                        '\nMètode de protecció: ' + str(path.split("/")[-1]), fontsize=12)
+            fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+
+            for idx, result in enumerate(sorted_results):
+                row, col = divmod(idx, cols)
+                ax = axes[row][col]
+
+                listOriginal = [density[0] for density in result[0]]
+                listProtected = [density[1] for density in result[0]]
+                listGraphs = list(range(len(result[0])))
+
+                parameter = result[1]
+                ax.plot(listGraphs, listOriginal, marker='o', label="Graf original")
+                ax.plot(listGraphs, listProtected, marker='o', label="Graf protegit")
+
+                if row == rows - 1:
+                    ax.set_xlabel("Timestamp")
+                if col == 0:
+                    ax.set_ylabel("Densitat")
+
+                if path.split("/")[-1] == "ELDP":
+                    typeProtection = r'$\epsilon$'
+                else:
+                    typeProtection = "k"
+                ax.set_title(f"{typeProtection} = {parameter}")
+                ax.grid(True)
+
+            # Eliminar subplots vacíos
+            for i in range(num_plots, rows * cols):
+                row, col = divmod(i, cols)
+                fig.delaxes(axes[row][col])
+
+            # Añadir una única leyenda común
+            handles, labels = ax.get_legend_handles_labels()
+            fig.legend(handles, labels, loc='lower center', ncol=2)
+
+            plt.show()
 
 
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
-        #self.viewMeanSimilarities()
+        self.viewMeanSimilarities()
         self.viewIndividualSimilarities()
-        #! Printar individualment en cada epsilon/k la seva distribució de similaritat (per cada paràmetre (x: timestamp, y: Similaritat)).
-        #! Fer gràfics de densitats, comprovar que per ELDP/KDA es mantenen/ o no.
+        self.viewDensities()
         #! (En cas de dividir UnixTimestamps)  Fer un gràfic per cada mètrica, comparant els tres fitxers.
 
 
