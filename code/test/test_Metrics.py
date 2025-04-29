@@ -2,6 +2,7 @@ import unittest
 import sys
 import os
 import networkx as nx
+import numpy as np
 
 # Afegir el directori pare 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +26,7 @@ class TestMetrics(unittest.TestCase):
         self.g2.add_edges_from([(1, 2), (2, 3), (4, 5), (5, 4)])
 
         self.g3 = nx.DiGraph()
-        self.g3.add_edges_from([(1, 2), (2, 3), (3, 4), (4, 3)])
+        self.g3.add_edges_from([(1, 2), (2, 3), (3, 4), (5, 3)])
 
         self.g4 = nx.DiGraph()
         self.g4.add_edges_from([(1, 2), (2, 3), (4, 5), (5, 4)])
@@ -46,17 +47,64 @@ class TestMetrics(unittest.TestCase):
         """Testing DeltaCon: matrius de graus, scores, etc.
         """
         # Matriu de graus
-        matrix, maxdegree = self.metrics.degreeMatrices(self.g1, None)
-        self.assertEqual(matrix.tolist(), [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
-        self.assertEqual(maxdegree, 2)
+        degreeMatrix, maxDegree = self.metrics.degreeMatrices(self.g1, None)
+        self.assertEqual(degreeMatrix.tolist(), [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
+        self.assertEqual(maxDegree, 2)
 
         matrix, maxdegree = self.metrics.degreeMatrices(self.g3, "in")
-        self.assertEqual(matrix.tolist(), [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
+        self.assertEqual(matrix.tolist(), [[0, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 2, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 0]])
         self.assertEqual(maxdegree, 2)
 
-        # Score matrices
+        # Score matrices - Adjacència, identitat i influència
+        identityMatrix = np.identity(self.g1.number_of_nodes())
+        self.assertEqual(identityMatrix.shape, (4, 4))
+        adjacencyMatrix = nx.adjacency_matrix(self.g1).toarray()
+        self.assertEqual(adjacencyMatrix.shape, (4, 4))
+        influence = self.metrics.influenceNeighbors(maxDegree)
+        squaredInfluence = influence * influence
+        self.assertEqual(influence, 1/3)
+        self.assertEqual(squaredInfluence, 1/9)
+        S = identityMatrix + (squaredInfluence * degreeMatrix) - (influence * adjacencyMatrix)
+        self.assertEqual(S.shape, (4, 4))
+        finalMatrix = np.linalg.inv(S)
+
+        scoreMatrix = self.metrics.scoreMatrix(self.g1, None)
+        self.assertEqual(scoreMatrix.tolist(), finalMatrix.tolist())
+
+        # Root Euclidean distance
+        S1 = self.metrics.scoreMatrix(self.g1, None)
+        S2 = self.metrics.scoreMatrix(self.g1, None)
+        rootED = self.metrics.rootEuclideanDistance(S1, S2)
+        self.assertEqual(rootED, 0.0)
+
+        S11 = self.metrics.scoreMatrix(self.g3, "out")
+        S22 = self.metrics.scoreMatrix(self.g4, "out")
+        rootED = self.metrics.rootEuclideanDistance(S11, S22)
+        self.assertGreater(rootED, 0)
+
+        # DeltaCon with directed graphs
+        deltaIn = self.metrics.deltaConnectivity(self.g3, self.g4, "in")
+        deltaOut = self.metrics.deltaConnectivity(self.g3, self.g4, "out")
+        self.assertGreaterEqual(deltaIn, 0)
+        self.assertGreaterEqual(deltaOut, 0)
+        self.assertLessEqual(deltaIn, 100)
+        self.assertLessEqual(deltaOut, 100)        
+
+    def test_centralities(self):
+        """Testing densitats i centralitats
+        """
+        densityOriginal, densityProtected = self.metrics.getDensities(self.g1, self.g2)
+        self.assertGreaterEqual(densityOriginal, 0)
+        self.assertGreaterEqual(densityProtected, 0)
+        self.assertLessEqual(densityOriginal, 1)
+        self.assertLessEqual(densityProtected, 1)
         
-        
+        c1 = nx.betweenness_centrality(self.g1)
+        c2 = nx.closeness_centrality(self.g1)
+        c3 = nx.degree_centrality(self.g1)
+        self.assertIsInstance(c1, dict)
+        self.assertIsInstance(c2, dict)
+        self.assertIsInstance(c3, dict)
 
 if __name__ == '__main__':
     unittest.main()

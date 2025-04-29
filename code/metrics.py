@@ -5,19 +5,38 @@ import data_paths as dp
 import pickle
 from tqdm import tqdm
 import json
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
 
-FILE = None # Posa el nom del fitxer que vols calcular les mètriques en cada mètode, en string
+files = ['HOUR_CollegeMsg', 
+         'DAY_CollegeMsg',
+         'WEEK_CollegeMsg', 
+         'HOUR_ia-enron-employees',
+         'DAY_ia-enron-employees',
+         'WEEK_ia-enron-employees',
+         'insecta-ant-colony5',
+         'aves-sparrow-social', 
+         'mammalia-voles-rob-trapping']
+
+FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
     """Classe que computa i visualitza les mètriques entre dos grafs.
     """
-    def __init__(self):
-        """Inicialitza la classe Metrics amb els grafs originals i protegits.
-        """
-        #! Fer un seleccionador, per tal de voler calcular o visualitzar les mètriques
-        #self.computeMetrics()
-        # self.visualizeMetrics()
+    def __init__(self, mode=None):
+        """Inicialitza la classe Metrics
+
+        Args:
+            mode (int, optional): Mode a executar. Mode 1: Calcula les mètriques del fitxer FILE
+                                                   Mode 2: Llegeix i visualitza les mètriques càlculades
+                                                   Defaults to None (No s'executa cap mode).
+        """ 
+        if mode == 1:
+            self.computeMetrics()
+        elif mode == 2:
+            self.visualizeMetrics()
 
     def edgeIntersection(self, e1, e2):
         """Calcular la intersecció d'arestes de dos grafs
@@ -172,11 +191,11 @@ class Metrics:
             g1, g2 (nx.Graph): Grafs a calcular la seva densitat
 
         Returns:
-            List, List: Llista de densitats dels grafs originals i protegits
+            List : Llista de densitats dels grafs originals i protegits
         """
-        densityOriginal = [nx.density(g) for g in g1]
-        densityProtected = [nx.density(g) for g in g2]
-        return densityOriginal, densityProtected
+        densityOriginal = nx.density(g1)
+        densityProtected = nx.density(g2)
+        return [densityOriginal, densityProtected]
     
     def topKNodes(self, centralityDict, k):
         """Obtenir els k nodes més centrals d'un graf
@@ -228,6 +247,11 @@ class Metrics:
         return jaccardBC, jaccardCC, jaccardDC
     
     def readMetrics(self):
+        """Llegir els fitxers generats al aplicar la protecció de grafs
+
+        Returns:
+            Dict, Dict: Diccionari dels mètodes i fitxers que s'han utilitzat
+        """
         folders = dp.OUTPUTS
         originalFiles = {}
         protectedDict = {}
@@ -253,24 +277,36 @@ class Metrics:
         return originalFiles, protectedDict
 
     def computeMetrics(self):
+        """Calcula les mètriques de tots els fitxers que es tenen, i es guarden en format JSON.
+
+        Raises:
+            ValueError: En cas de no tenir un fitxer per calcular les mètriques
+        """
         originalFiles, protectedDict = self.readMetrics()
+        
+        with open(originalFiles[FILE][0]+"/"+originalFiles[FILE][1], 'rb') as f:
+            originalGraphs = pickle.load(f)
+
         for method in protectedDict.keys():
-            print(protectedDict[method].keys())
+            # print(protectedDict[method].keys())
             # for file in tqdm(protectedDict[method].keys(), desc="Computing metrics"):
 
             if not FILE:
                 raise ValueError("No file selected. Please select a file to compute metrics.")
             
-            with open(originalFiles[FILE][0]+"/"+originalFiles[FILE][1], 'rb') as f:
-                originalGraphs = pickle.load(f)
             
-            results = {"Jaccard": [], "DeltaConnectivity": [], "Betweeness": [], "Closeness": [], "Degree": []}
-            for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE)):
+            results = {"Jaccard": [], "DeltaConnectivity": [], "DeltaIn": [], "DeltaOut": [],
+                        "Betweeness": [], "Closeness": [], "Degree": [], "Densities": []}
+            
+            for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
                 listJaccard = []
                 listDeltaConnectivity = []
+                listDeltaIn = []
+                listDeltaOut = []
                 listBetweeness = []
                 listCloseness = []
                 listDegree = []
+                listDensities = []
 
                 with open(i[0]+"/"+ i[1], 'rb') as f:
                     protectedGraphs = pickle.load(f)
@@ -278,38 +314,160 @@ class Metrics:
                 for originalG, protectedG in zip(originalGraphs, protectedGraphs):
                     
                     if originalG.is_directed():
-                        connectivity = self.deltaConnectivity(originalG, protectedG, 'out')
+                        connectivityOut = self.deltaConnectivity(originalG, protectedG, 'out')
+                        connectivityIn = self.deltaConnectivity(originalG, protectedG, 'in')
+                        listDeltaIn.append(connectivityIn)
+                        listDeltaOut.append(connectivityOut)
                     else:
                         connectivity = self.deltaConnectivity(originalG, protectedG, None)
-                        
+                        listDeltaConnectivity.append(connectivity)
+
                     listJaccard.append(self.jaccardIndex(originalG, protectedG))
-                    listDeltaConnectivity.append(connectivity)
                     listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
                     listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
                     listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
+                    listDensities.append(self.getDensities(originalG, protectedG))
 
                 results["Jaccard"].append((listJaccard, i[2]))
                 results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
                 results["Betweeness"].append((listBetweeness, i[2]))
                 results["Closeness"].append((listCloseness, i[2]))
                 results["Degree"].append((listDegree, i[2]))
+                results["Densities"].append((listDensities, i[2]))
 
             current_dir = os.path.dirname(os.path.abspath(__file__))
             with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
                 json.dump(results, f)
 
-    def visualizeMetrics(self):
+    def viewMeanSimilarities(self):
         folders = dp.METRICS
-        for root_folder in folders:
-            for dirpath, dirnames, filenames in os.walk(root_folder):
-                for f in filenames:
-                    with open(dirpath + "/" + f, 'r') as file:
-                        data = json.load(file)
+        fig, axes = plt.subplots(1, 3, figsize=(6 * 3, 5 * 1), squeeze=False)  # Adjust figsize as needed
+        fig.tight_layout(pad=5.0)
+
+        for idx,path in enumerate(folders):
+            row, col = divmod(idx, 3)
+            ax = axes[row, col]
+
+            file = path + "/" + FILE + ".json"
+            with open(file, "r") as f:
+                data = json.load(f)
+            
+            for key in data:
+                listAverages = list()
+                listParameters = list()
+                for metric in data[key]:
+                    if key != "Densities":
+                        meanMetric = np.array(metric[0]).mean()
+                        parameter = metric[1]
+                        listAverages.append(meanMetric)
+                        listParameters.append(parameter)
                     
-                    print(f"Data: {data}")
-                    break
-            break
-        
+                if not listAverages:
+                    continue
+
+                listParameters, listAverages = zip(*sorted(zip(listParameters, listAverages)))
+                # print(f"Jaccard: {listAverages}")
+                # print(f"Parameters: {listParameters}")
+
+                ax.plot(listParameters, listAverages, marker='o', label=key)
+            
+            if path.split("/")[-1] == "ELDP":
+                xLabel =  r'$\epsilon$'
+            else:
+                xLabel = "k"
+            ax.set_xlabel(xLabel)
+            ax.set_ylabel('Percentatge de similaritat (%)')
+            ax.legend()
+            ax.grid(True)
+            ax.set_title('Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1]))
+            
+            ax.set_ylim([-5, 100])
+            ax.set_yticks(np.arange(0, 101, 20))
+
+        plt.show()
+
+    def viewIndividualSimilarities(self):
+        folders = dp.METRICS
+        all_metrics = ["Jaccard", "DeltaConnectivity", "Betweeness", "Closeness", "Degree"]
+        num_methods = len(folders)
+
+        # Calculate number of rows and columns for the combined figure grid
+        cols = 3
+        rows = len(all_metrics) * int(np.ceil(num_methods / cols))  # Stack metrics vertically
+
+        # Create a single figure for all the subplots (adjusting for all metrics in one plot)
+        fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 5 * rows), squeeze=False)
+        fig.suptitle(f"Comparativa de mètriques en {FILE}", fontsize=12)
+        fig.tight_layout(pad=5.0, rect=[0, 0, 1, 0.96])  # Leave space for suptitle
+
+        # Iterate over all metrics and all methods
+        for metric_idx, metric_name in enumerate(all_metrics):
+            for method_idx, path in enumerate(folders):
+                # Calculate the correct row and column for each subplot in the stacked grid
+                row = metric_idx * int(np.ceil(num_methods / cols)) + method_idx // cols
+                col = method_idx % cols
+                ax = axes[row][col]
+
+                file_path = path + "/" + FILE + ".json"
+                with open(file_path, "r") as f:
+                    data = json.load(f)
+
+                if metric_name not in data:
+                    ax.set_visible(False)
+                    continue
+
+                values_matrix = []
+                param_labels = []
+
+                # Loop through metrics and capture values and sorted labels
+                for metric in data[metric_name]:
+                    values = metric[0]
+                    label = metric[1]
+                    if values:
+                        values_matrix.append(values)
+                        param_labels.append(label)
+
+                if values_matrix:
+                    # Sort the parameter labels
+                    sorted_labels, sorted_values = zip(*sorted(zip(param_labels, values_matrix), key=lambda x: x[0]))
+
+                    # Create DataFrame with sorted labels
+                    df = pd.DataFrame(sorted_values, index=sorted_labels)
+
+                    # Transpose the DataFrame to swap axes
+                    df = df.T
+
+                    sns.heatmap(df, ax=ax, cbar_kws={'label': 'Similaritat (%)'},
+                                vmin=0, vmax=100, linewidths=0.5, linecolor='gray')
+                    ax.set_title(f"{metric_name} utilitzant: {path.split('/')[-1]}")
+
+                    if path.split("/")[-1] == "ELDP":
+                        xLabel = r'$\epsilon$'
+                    else:
+                        xLabel = "k"
+
+                    ax.set_xlabel(xLabel)
+                    ax.set_ylabel("Timestamp")
+                else:
+                    ax.set_visible(False)
+
+        # Hide any empty subplots
+        for i in range(len(all_metrics) * num_methods, rows * cols):
+            fig.delaxes(axes[i // cols][i % cols])
+
+        plt.show()
+
+
+
+    def visualizeMetrics(self):
+        """Visualitza totes les mètriques generades d'un fitxer.
+        """
+        #self.viewMeanSimilarities()
+        self.viewIndividualSimilarities()
+        #! Printar individualment en cada epsilon/k la seva distribució de similaritat (per cada paràmetre (x: timestamp, y: Similaritat)).
+        #! Fer gràfics de densitats, comprovar que per ELDP/KDA es mantenen/ o no.
+        #! (En cas de dividir UnixTimestamps)  Fer un gràfic per cada mètrica, comparant els tres fitxers.
+
 
 if __name__ == "__main__":
-    metric = Metrics()
+    metric = Metrics(mode = 2)
