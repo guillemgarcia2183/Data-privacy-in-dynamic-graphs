@@ -19,7 +19,7 @@ files = ['HOUR_CollegeMsg',
          'aves-sparrow-social', 
          'mammalia-voles-rob-trapping']
 
-FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -352,6 +352,8 @@ class Metrics:
             with open(file, "r") as f:
                 data = json.load(f)
             
+            listMetrics = list()
+            listKeys = list()
             for key in data:
                 listAverages = list()
                 listParameters = list()
@@ -361,27 +363,43 @@ class Metrics:
                         parameter = metric[1]
                         listAverages.append(meanMetric)
                         listParameters.append(parameter)
-                    
+                        
+                        if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP":
+                            listMetrics.append(meanMetric)
+                            listKeys.append(key)
+
                 if not listAverages:
                     continue
 
                 listParameters, listAverages = zip(*sorted(zip(listParameters, listAverages)))
                 # print(f"Jaccard: {listAverages}")
                 # print(f"Parameters: {listParameters}")
-
-                ax.plot(listParameters, listAverages, marker='o', label=key)
+                if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP":
+                    continue
+                else:
+                    ax.plot(listParameters, listAverages, marker='o', label=key)
             
+            if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP": 
+                listMetrics, listKeys = zip(*sorted(zip(listMetrics, listKeys), reverse=True))
+                ax.bar(listKeys, listMetrics, color="blue")
+                ax.tick_params(axis='x', labelrotation=45)
+                ax.set_axisbelow(True)  
+
+            title = 'Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1])
             if path.split("/")[-1] == "ELDP":
                 xLabel =  r'$\epsilon$'
+            elif path.split("/")[-1] != "ELDP" and FILE == "aves-sparrow-social":
+                xLabel = "Mètriques de similaritat"
+                title = 'Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1]) + " amb k = 2"
             else:
                 xLabel = "k"
             ax.set_xlabel(xLabel)
             ax.set_ylabel('Percentatge de similaritat (%)')
             ax.legend()
             ax.grid(True)
-            ax.set_title('Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1]))
+            ax.set_title(title)
             
-            ax.set_ylim([-5, 100])
+            ax.set_ylim([-5, 105])
             ax.set_yticks(np.arange(0, 101, 20))
 
         plt.show()
@@ -478,7 +496,10 @@ class Metrics:
 
             for idx, result in enumerate(sorted_results):
                 row, col = divmod(idx, cols)
-                ax = axes[row][col]
+                if path.split("/")[-1] != "ELDP" and FILE == "aves-sparrow-social":
+                    ax = fig.add_subplot(1, 1, 1)
+                else:
+                    ax = axes[row][col]
 
                 listOriginal = [density[0] for density in result[0]]
                 listProtected = [density[1] for density in result[0]]
