@@ -47,13 +47,9 @@ class TestMetrics(unittest.TestCase):
         """Testing DeltaCon: matrius de graus, scores, etc.
         """
         # Matriu de graus
-        degreeMatrix, maxDegree = self.metrics.degreeMatrices(self.g1, None)
+        degreeMatrix, maxDegree = self.metrics.degreeMatrices(self.g1)
         self.assertEqual(degreeMatrix.tolist(), [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
         self.assertEqual(maxDegree, 2)
-
-        matrix, maxdegree = self.metrics.degreeMatrices(self.g3, "in")
-        self.assertEqual(matrix.tolist(), [[0, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 2, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 0]])
-        self.assertEqual(maxdegree, 2)
 
         # Score matrices - Adjacència, identitat i influència
         identityMatrix = np.identity(self.g1.number_of_nodes())
@@ -68,27 +64,19 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(S.shape, (4, 4))
         finalMatrix = np.linalg.inv(S)
 
-        scoreMatrix = self.metrics.scoreMatrix(self.g1, None)
+        scoreMatrix = self.metrics.scoreMatrix(self.g1)
         self.assertEqual(scoreMatrix.tolist(), finalMatrix.tolist())
 
         # Root Euclidean distance
-        S1 = self.metrics.scoreMatrix(self.g1, None)
-        S2 = self.metrics.scoreMatrix(self.g1, None)
+        S1 = self.metrics.scoreMatrix(self.g1)
+        S2 = self.metrics.scoreMatrix(self.g1)
         rootED = self.metrics.rootEuclideanDistance(S1, S2)
         self.assertEqual(rootED, 0.0)
 
-        S11 = self.metrics.scoreMatrix(self.g3, "out")
-        S22 = self.metrics.scoreMatrix(self.g4, "out")
+        S11 = self.metrics.scoreMatrix(self.g3)
+        S22 = self.metrics.scoreMatrix(self.g4)
         rootED = self.metrics.rootEuclideanDistance(S11, S22)
         self.assertGreater(rootED, 0)
-
-        # DeltaCon with directed graphs
-        deltaIn = self.metrics.deltaConnectivity(self.g3, self.g4, "in")
-        deltaOut = self.metrics.deltaConnectivity(self.g3, self.g4, "out")
-        self.assertGreaterEqual(deltaIn, 0)
-        self.assertGreaterEqual(deltaOut, 0)
-        self.assertLessEqual(deltaIn, 100)
-        self.assertLessEqual(deltaOut, 100)        
 
     def test_centralities(self):
         """Testing densitats i centralitats

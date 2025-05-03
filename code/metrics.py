@@ -8,6 +8,7 @@ import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import math
 
 files = ['HOUR_CollegeMsg', 
          'DAY_CollegeMsg',
@@ -19,7 +20,7 @@ files = ['HOUR_CollegeMsg',
          'aves-sparrow-social', 
          'mammalia-voles-rob-trapping']
 
-FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -95,30 +96,24 @@ class Metrics:
         # Calculem el coeficient de Jaccard i el retornem en forma de percentatge
         return (intersection / union)*100
 
-    def degreeMatrices(self, graph, type):
+    def degreeMatrices(self, graph):
         """Obtenir les matrius diagonals de graus del graf
 
         Args:
             graph (nx.Graph): Graf a calcular la seva matriu de graus diagonals 
-            type (str): tipus de connexió a calcular (in, out, None)
             
         Returns:
             np.array, int: Matriu diagonal de graus, amb el grau màxim
         """
-        # Obtenim les seqüències de grau per cada graf, i calculem el grau màxim
-        if graph.is_directed() and type == 'out':
-            degreeDict1 = dict(graph.out_degree())
-        elif graph.is_directed() and type == 'in':
-            degreeDict1 = dict(graph.in_degree())
-        else:
-            degreeDict1 = dict(graph.degree())
-        degreeSequence1 = [degreeDict1.get(node, 0) for node in graph.nodes()]
-        maxDegree1 = max(degreeSequence1)
+        # Obtenim les seqüències de grau per cada graf, i calculem el grau màxim 
+        degreeDict= dict(graph.degree())
+        degreeSequence = [degreeDict.get(node, 0) for node in graph.nodes()]
+        maxDegree = max(degreeSequence)
 
         # Ho tornem en una matriu diagonal i la retornem 
-        degreeMatrix1 = np.diag(degreeSequence1)
+        degreeMatrix = np.diag(degreeSequence)
 
-        return degreeMatrix1, maxDegree1
+        return degreeMatrix, maxDegree
 
     def influenceNeighbors(self, maxDegree):
         """Calcular la influència entre veïns
@@ -131,24 +126,22 @@ class Metrics:
         """
         return 1 / (1+maxDegree)
 
-    def scoreMatrix(self, graph, type):
+    def scoreMatrix(self, graph):
         """Calcular la matriu d'influència de nodes d'un graf
 
         Args:
             graph (nx.Graph): Graf a calcular la matriu S
-            type (str): tipus de connexió a calcular (in, out, None)
 
         Returns:
             np.array: Matriu S, que descriu la influència entre nodes
         """
         identityMatrix = np.identity(graph.number_of_nodes())
         # print(f"Identity Matrix: {identityMatrix}")
-        degreeMatrix, maxDegree = self.degreeMatrices(graph, type)
-        adjacencyMatrix = nx.adjacency_matrix(graph).toarray()
+        degreeMatrix, maxDegree = self.degreeMatrices(graph)
+        adjacencyMatrix = nx.to_numpy_array(graph)
         # print(f"Adjacency Matrix: {adjacencyMatrix}")
         influence = self.influenceNeighbors(maxDegree)
-        squaredInfluence = pow(self.influenceNeighbors(maxDegree), 2) 
-        S = identityMatrix + (squaredInfluence * degreeMatrix) - (influence * adjacencyMatrix)
+        S = identityMatrix + ((influence**2) * degreeMatrix) - (influence * adjacencyMatrix)
         finalMatrix = np.linalg.inv(S)
         # print(f"Final Matrix: {finalMatrix}")
         return finalMatrix
@@ -162,13 +155,15 @@ class Metrics:
         Returns:
             float: valor numèric que defineix la distància entre les dues matrius
         """
-        diff = S1 - S2
+        rootS1 = np.sqrt(np.abs(S1))
+        rootS2 = np.sqrt(np.abs(S2))
+        diff = rootS1 - rootS2
         squared_diff = np.square(diff)
         total_sum = np.sum(squared_diff)
-        distance = np.sqrt(total_sum)
+        distance = math.sqrt(total_sum)
         return distance
 
-    def deltaConnectivity(self, g1, g2, type):
+    def deltaConnectivity(self, g1, g2):
         """Obtenir la similaritat per l'afinitat entre nodes de dos grafs
 
         Args:
@@ -177,8 +172,8 @@ class Metrics:
         Returns:
             float: Similaritat entre els dos grafs (afinitat), valor en percentatge
         """
-        S1 = self.scoreMatrix(g1, type)
-        S2 = self.scoreMatrix(g2, type)
+        S1 = self.scoreMatrix(g1)
+        S2 = self.scoreMatrix(g2)
         # print(f"S1: {S1}, S2: {S2}")
         distance = self.rootEuclideanDistance(S1, S2)
         # print(f"Distance: {distance}")
@@ -295,14 +290,12 @@ class Metrics:
                 raise ValueError("No file selected. Please select a file to compute metrics.")
             
             
-            results = {"Jaccard": [], "DeltaConnectivity": [], "DeltaIn": [], "DeltaOut": [],
-                        "Jaccard Betweenness": [], "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": []}
+            results = {"Jaccard": [], "DeltaConnectivity": [], "Jaccard Betweenness": [], 
+                       "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": []}
             
             for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
                 listJaccard = []
                 listDeltaConnectivity = []
-                listDeltaIn = []
-                listDeltaOut = []
                 listBetweeness = []
                 listCloseness = []
                 listDegree = []
@@ -312,17 +305,8 @@ class Metrics:
                     protectedGraphs = pickle.load(f)
                                 
                 for originalG, protectedG in zip(originalGraphs, protectedGraphs):
-                    
-                    if originalG.is_directed():
-                        connectivityOut = self.deltaConnectivity(originalG, protectedG, 'out')
-                        connectivityIn = self.deltaConnectivity(originalG, protectedG, 'in')
-                        listDeltaIn.append(connectivityIn)
-                        listDeltaOut.append(connectivityOut)
-                    else:
-                        connectivity = self.deltaConnectivity(originalG, protectedG, None)
-                        listDeltaConnectivity.append(connectivity)
-
                     listJaccard.append(self.jaccardIndex(originalG, protectedG))
+                    listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
                     listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
                     listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
                     listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
@@ -330,9 +314,9 @@ class Metrics:
 
                 results["Jaccard"].append((listJaccard, i[2]))
                 results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
-                results["Betweeness"].append((listBetweeness, i[2]))
-                results["Closeness"].append((listCloseness, i[2]))
-                results["Degree"].append((listDegree, i[2]))
+                results["Jaccard Betweenness"].append((listBetweeness, i[2]))
+                results["Jaccard Closeness"].append((listCloseness, i[2]))
+                results["Jaccard Degree"].append((listDegree, i[2]))
                 results["Densities"].append((listDensities, i[2]))
 
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -532,12 +516,18 @@ class Metrics:
 
             plt.show()
 
-
+    def compareAggregations(self):
+        """Comparar arxius agrupats per Unix Timestamps (Hores, Dies, Setmanes)
+        """
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
+
         self.viewMeanSimilarities()
-        self.viewIndividualSimilarities()
+        if FILE.endswith("CollegeMsg") or FILE.endswith("ia-enron-employees"):
+            self.compareAggregations()
+        else: 
+            self.viewIndividualSimilarities()
         self.viewDensities()
         #! (En cas de dividir UnixTimestamps)  Fer un gràfic per cada mètrica, comparant els tres fitxers.
 

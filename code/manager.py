@@ -92,7 +92,9 @@ class ModuleManager:
             pretext = "Selecciona el tipus de agrupament temporal que vols aplicar als grafs grans"
             options = {"1": "Agrupació per hores",
                        "2": "Agrupació per dies",
-                       "3": "Agrupació per setmanes"}
+                       "3": "Agrupació per setmanes",
+                       "4": "Agrupació per mesos",
+                       "5": "Agrupació per anys"}
             self.grouping_option = self.select_option(pretext, options)
 
         if selection == '6':

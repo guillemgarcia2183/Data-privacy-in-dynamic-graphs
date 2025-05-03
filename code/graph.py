@@ -86,6 +86,12 @@ class GraphProtection:
         elif option == "3":
             self.filename = "WEEK_" + self.filename
             return self.groupby_week()
+        elif option == "4":
+            self.filename = "MONTH_" + self.filename
+            return self.groupby_month() 
+        elif option == "5":
+            self.filename = "YEAR_" + self.filename
+            return self.groupby_year() 
 
     def groupby_hour(self):
         """Agrupar el dataset per hores
@@ -113,6 +119,24 @@ class GraphProtection:
         """
         df_by_week = self.df.groupby(self.df["Date"].dt.to_period('W').apply(lambda r: r.start_time))
         return df_by_week
+    
+    def groupby_month(self):
+        """Agrupar el dataset per mesos
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per mesos
+        """
+        df_by_month = self.df.groupby(self.df["Date"].dt.to_period('M').apply(lambda r: r.start_time))
+        return df_by_month
+
+    def groupby_year(self):
+        """Agrupar el dataset per anys
+
+        Returns:
+            pd.DataFrame: Dataset agrupat per anys
+        """
+        df_by_year = self.df.groupby(self.df["Date"].dt.to_period('Y').apply(lambda r: r.start_time))
+        return df_by_year
     
     def iterate_graph(self, group):
         self.graph.clear_edges() # Netejem les arestes del anterior plot
@@ -522,16 +546,20 @@ class KDA(GraphProtection):
             dictRealizable (Dict): Diccionari de seqüències realizables, amb l'índex de la matriu de graus on es troba
             dictNorealizable (Dict):  Diccionari de seqüències no realizables, amb l'índex de la matriu de graus on es troba
         """
-        # Iterem totes les seqüències no realizables
-        for k1, v1 in dictNorealizable.items():
-            distances = {}
-            # Iterem totes les seqüències realizables, i veiem quina és la que menys distància té
-            for k2,v2 in dictRealizable.items():
-                distances[k2] = self.compute_l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]) 
-            
-            # Trobar la key de la seqüència realizable amb la mínima distància
-            min_key = min(distances, key=distances.get)
-            dictRealizable[min_key] += v1            
+        if dictNorealizable:
+            # Iterem totes les seqüències no realizables
+            for k1, v1 in dictNorealizable.items():
+                distances = {}
+                # Iterem totes les seqüències realizables, i veiem quina és la que menys distància té
+                for k2,v2 in dictRealizable.items():
+                    distances[k2] = self.compute_l1Distance(degreeMatrix[v1[0]], degreeMatrix[v2[0]]) 
+                
+                # Trobar la key de la seqüència realizable amb la mínima distància
+                try:
+                    min_key = min(distances, key=distances.get)
+                    dictRealizable[min_key] += v1
+                except:
+                    pass            
 
     def resolveNoRealizablesK(self, degreeMatrix, dictRealizable):
         """Trobar la millor opció per les seqüències realizables, que apareixen menys de k cops
