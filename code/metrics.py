@@ -12,15 +12,17 @@ import math
 
 files = ['HOUR_CollegeMsg', 
          'DAY_CollegeMsg',
-         'WEEK_CollegeMsg', 
+         'WEEK_CollegeMsg',
+         'MONTH_CollegeMsg',
          'HOUR_ia-enron-employees',
          'DAY_ia-enron-employees',
          'WEEK_ia-enron-employees',
+         'MONTH_ia-enron-employees',
          'insecta-ant-colony5',
          'aves-sparrow-social', 
          'mammalia-voles-rob-trapping']
 
-FILE = files[1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[4] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -293,35 +295,38 @@ class Metrics:
             results = {"Jaccard": [], "DeltaConnectivity": [], "Jaccard Betweenness": [], 
                        "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": []}
             
-            for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
-                listJaccard = []
-                listDeltaConnectivity = []
-                listBetweeness = []
-                listCloseness = []
-                listDegree = []
-                listDensities = []
+            try:
+                for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
+                    listJaccard = []
+                    listDeltaConnectivity = []
+                    listBetweeness = []
+                    listCloseness = []
+                    listDegree = []
+                    listDensities = []
 
-                with open(i[0]+"/"+ i[1], 'rb') as f:
-                    protectedGraphs = pickle.load(f)
-                                
-                for originalG, protectedG in zip(originalGraphs, protectedGraphs):
-                    listJaccard.append(self.jaccardIndex(originalG, protectedG))
-                    listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
-                    listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
-                    listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
-                    listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
-                    listDensities.append(self.getDensities(originalG, protectedG))
+                    with open(i[0]+"/"+ i[1], 'rb') as f:
+                        protectedGraphs = pickle.load(f)
+                                    
+                    for originalG, protectedG in zip(originalGraphs, protectedGraphs):
+                        listJaccard.append(self.jaccardIndex(originalG, protectedG))
+                        listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
+                        listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
+                        listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
+                        listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
+                        listDensities.append(self.getDensities(originalG, protectedG))
 
-                results["Jaccard"].append((listJaccard, i[2]))
-                results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
-                results["Jaccard Betweenness"].append((listBetweeness, i[2]))
-                results["Jaccard Closeness"].append((listCloseness, i[2]))
-                results["Jaccard Degree"].append((listDegree, i[2]))
-                results["Densities"].append((listDensities, i[2]))
+                    results["Jaccard"].append((listJaccard, i[2]))
+                    results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
+                    results["Jaccard Betweenness"].append((listBetweeness, i[2]))
+                    results["Jaccard Closeness"].append((listCloseness, i[2]))
+                    results["Jaccard Degree"].append((listDegree, i[2]))
+                    results["Densities"].append((listDensities, i[2]))
 
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
-                json.dump(results, f)
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
+                    json.dump(results, f)
+            except:
+                pass
 
     def viewMeanSimilarities(self):
         folders = dp.METRICS
@@ -333,8 +338,11 @@ class Metrics:
             ax = axes[row, col]
 
             file = path + "/" + FILE + ".json"
-            with open(file, "r") as f:
-                data = json.load(f)
+            try:
+                with open(file, "r") as f:
+                    data = json.load(f)
+            except:
+                continue
             
             listMetrics = list()
             listKeys = list()
@@ -386,6 +394,83 @@ class Metrics:
             ax.set_ylim([-5, 105])
             ax.set_yticks(np.arange(0, 101, 20))
 
+        plt.show()
+
+    def viewMeanSimilaritiesGrouped(self, files, name):
+        folders = dp.METRICS
+
+        n_rows = len(files)
+        n_cols = len(folders)
+
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4.5, n_rows * 3.0), squeeze=False)
+        fig.suptitle(f"Mitjana de mètriques de similaritat en {name}", fontsize=12)
+        fig.subplots_adjust(hspace=0.5, wspace=0.3, bottom=0.15)  # espacio inferior para leyenda
+
+        # Lista para almacenar todos los manejadores de leyendas
+        all_legend_handles = []
+        all_legend_labels = []
+
+        for row_idx, file in enumerate(files):
+            for col_idx, path in enumerate(folders):
+                ax = axes[row_idx, col_idx]
+                dir = os.path.join(path, file + ".json")
+
+                try:
+                    with open(dir, "r") as f:
+                        data = json.load(f)
+                except:
+                    ax.set_visible(False)
+                    continue
+
+                for key in data:
+                    listAverages = []
+                    listParameters = []
+                    for metric in data[key]:
+                        if key != "Densities":
+                            meanMetric = np.array(metric[0]).mean()
+                            parameter = metric[1]
+                            listAverages.append(meanMetric)
+                            listParameters.append(parameter)
+
+                    if not listAverages:
+                        continue
+
+                    # Ordenar las métricas por parámetros
+                    listParameters, listAverages = zip(*sorted(zip(listParameters, listAverages)))
+
+                    # Graficar la línea y añadirla a la lista de leyendas
+                    line, = ax.plot(listParameters, listAverages, marker='o', label=key)
+                    if key not in all_legend_labels:
+                        all_legend_handles.append(line)
+                        all_legend_labels.append(key)
+
+                method = path.split("/")[-1]
+                ax.set_title(f"{file} - {method}", fontsize=8)
+
+                # Solo mostrar etiquetas en los ejes exteriores
+                xLabel = r'$\epsilon$' if method == "ELDP" else "k"
+                if row_idx == n_rows - 1:
+                    ax.set_xlabel(xLabel, fontsize=8)
+                else:
+                    ax.set_xticklabels([])  # No mostrar etiquetas de x
+                    ax.set_xlabel("")  # Sin título en el eje x
+
+                if col_idx == 0:
+                    ax.set_ylabel("Similaritat (%)", fontsize=8)
+                else:
+                    ax.set_yticklabels([])  # No mostrar etiquetas de y
+                    ax.set_ylabel("")  # Sin título en el eje y
+
+                ax.set_ylim([-5, 105])
+                ax.set_yticks(np.arange(0, 101, 20))
+                ax.grid(True)
+                ax.tick_params(axis='both', labelsize=7)
+
+        # Leyenda global (abajo centrada)
+        if all_legend_handles:
+            fig.legend(all_legend_handles, all_legend_labels, loc='lower center', ncol=len(all_legend_labels), fontsize='medium')
+
+        plt.tight_layout(rect=[0, 0.08, 1, 0.95])  # espacio para leyenda y título
         plt.show()
 
     def viewIndividualSimilarities(self):
@@ -456,65 +541,85 @@ class Metrics:
         cbar_ax.tick_params(labelsize=8)
         plt.show()
 
-
-    def viewDensities(self):
+    def viewDensities(self, file):
         """Visualitzar les densitats dels grafs originals i protegits"""
         folders = dp.METRICS
 
         for path in folders:
-            file = path + "/" + FILE + ".json"
-            with open(file, "r") as f:
-                data = json.load(f)
+            dir = path + "/" + file + ".json"
+            try:
+                with open(dir, "r") as f:
+                    data = json.load(f)
+            except:
+                continue
 
             # Ordenar los resultados por el valor del parámetro
             sorted_results = sorted(data["Densities"], key=lambda x: x[1])
-
             num_plots = len(sorted_results)
-            cols = 3
-            rows = (num_plots + cols - 1) // cols
 
-            fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
-            fig.suptitle('Densitats en ' + str(FILE) +
-                        '\nMètode de protecció: ' + str(path.split("/")[-1]), fontsize=12)
-            fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
-
-            for idx, result in enumerate(sorted_results):
-                row, col = divmod(idx, cols)
-                if path.split("/")[-1] != "ELDP" and FILE == "aves-sparrow-social":
-                    ax = fig.add_subplot(1, 1, 1)
-                else:
-                    ax = axes[row][col]
-
-                listOriginal = [density[0] for density in result[0]]
-                listProtected = [density[1] for density in result[0]]
+            if num_plots == 1:
+                # Caso especial: solo un gráfico → fig y ax simples
+                fig, ax = plt.subplots(figsize=(6, 4))
+                result = sorted_results[0]
+                parameter = result[1]
+                listOriginal = [d[0] for d in result[0]]
+                listProtected = [d[1] for d in result[0]]
                 listGraphs = list(range(len(result[0])))
 
-                parameter = result[1]
                 ax.plot(listGraphs, listOriginal, marker='o', label="Graf original")
                 ax.plot(listGraphs, listProtected, marker='o', label="Graf protegit")
 
-                if row == rows - 1:
-                    ax.set_xlabel("Timestamp")
-                if col == 0:
-                    ax.set_ylabel("Densitat")
+                ax.set_xlabel("Timestamp")
+                ax.set_ylabel("Densitat")
 
-                if path.split("/")[-1] == "ELDP":
-                    typeProtection = r'$\epsilon$'
-                else:
-                    typeProtection = "k"
+                typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
                 ax.set_title(f"{typeProtection} = {parameter}")
                 ax.grid(True)
 
-            # Eliminar subplots vacíos
-            for i in range(num_plots, rows * cols):
-                row, col = divmod(i, cols)
-                fig.delaxes(axes[row][col])
+                fig.suptitle(f'Densitats en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+                fig.legend(loc='lower center', ncol=2)
+                fig.subplots_adjust(top=0.85, bottom=0.15)
 
-            # Añadir una única leyenda común
-            handles, labels = ax.get_legend_handles_labels()
-            fig.legend(handles, labels, loc='lower center', ncol=2)
+            else:
+                # Múltiples plots → usar subplots organizados
+                cols = 3
+                rows = (num_plots + cols - 1) // cols
+                fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
+                fig.suptitle(f'Densitats en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+                fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+
+                for idx, result in enumerate(sorted_results):
+                    row, col = divmod(idx, cols)
+                    ax = axes[row][col]
+
+                    listOriginal = [d[0] for d in result[0]]
+                    listProtected = [d[1] for d in result[0]]
+                    listGraphs = list(range(len(result[0])))
+                    parameter = result[1]
+
+                    ax.plot(listGraphs, listOriginal, marker='o', label="Graf original")
+                    ax.plot(listGraphs, listProtected, marker='o', label="Graf protegit")
+
+                    if row == rows - 1:
+                        ax.set_xlabel("Timestamp")
+                    if col == 0:
+                        ax.set_ylabel("Densitat")
+
+                    typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
+                    ax.set_title(f"{typeProtection} = {parameter}")
+                    ax.grid(True)
+
+                # Eliminar subplots vacíos
+                for i in range(num_plots, rows * cols):
+                    row, col = divmod(i, cols)
+                    fig.delaxes(axes[row][col])
+
+                # Añadir una única leyenda común
+                handles, labels = axes[0][0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='lower center', ncol=2)
 
             plt.show()
+
 
     def compareAggregations(self):
         """Comparar arxius agrupats per Unix Timestamps (Hores, Dies, Setmanes)
@@ -522,14 +627,21 @@ class Metrics:
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
+        if FILE.endswith("CollegeMsg"):
+            files = ["HOUR_CollegeMsg", "DAY_CollegeMsg", "WEEK_CollegeMsg", "MONTH_CollegeMsg"]
+            name = "CollegeMsg"
+        else:
+            files = ["HOUR_ia-enron-employees", "DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
+            name  = "ia-enron-employees"
 
-        self.viewMeanSimilarities()
-        if FILE.endswith("CollegeMsg") or FILE.endswith("ia-enron-employees"):
-            self.compareAggregations()
-        else: 
+        if  FILE.endswith("CollegeMsg") or FILE.endswith("ia-enron-employees"):
+            self.viewMeanSimilaritiesGrouped(files, name)
+            for file in files:
+                self.viewDensities(file)
+        else:
+            self.viewMeanSimilarities()
             self.viewIndividualSimilarities()
-        self.viewDensities()
-        #! (En cas de dividir UnixTimestamps)  Fer un gràfic per cada mètrica, comparant els tres fitxers.
+            self.viewDensities(FILE)
 
 
 if __name__ == "__main__":
