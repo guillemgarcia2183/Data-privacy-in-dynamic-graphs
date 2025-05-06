@@ -131,6 +131,8 @@ Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025]
 
 [14] https://web.eecs.umich.edu/~dkoutra/papers/DeltaCon_KoutraVF_withAppendix.pdf?utm_source=chatgpt.com -- 19/04
 
+[15] H. Qin, R. -H. Li, G. Wang, X. Huang, Y. Yuan and J. X. Yu, "Mining Stable Communities in Temporal Networks by Density-Based Clustering," in IEEE Transactions on Big Data, vol. 8, no. 3, pp. 671-684, 1 June 2022, doi: 10.1109/TBDATA.2020.2974849. -- 04/05
+
 
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
