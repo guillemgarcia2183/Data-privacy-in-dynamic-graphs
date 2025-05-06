@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'aves-sparrow-social', 
          'mammalia-voles-rob-trapping']
 
-FILE = files[4] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -194,6 +194,27 @@ class Metrics:
         densityProtected = nx.density(g2)
         return [densityOriginal, densityProtected]
     
+    def getDegrees(self, g1, g2):
+        """Obtenir la mitjana i mediana de graus dels grafs d'entrada
+
+        Args:
+            g1, g2 (nx.Graph): Grafs a calcular els seus graus
+        
+        Returns:
+            List: Llista de la mitjana i mediana de graus de cada graf
+        """
+        degreesG1 = [grau for _, grau in g1.degree()]
+        degreesG2 = [grau for _, grau in g2.degree()]
+        
+        meanDegreeG1 = np.mean(degreesG1)
+        medianDegreeG1 = np.median(degreesG1)
+
+        meanDegreeG2 = np.mean(degreesG2)
+        medianDegreeG2 = np.median(degreesG2)
+
+        return [(meanDegreeG1, medianDegreeG1), (meanDegreeG2, medianDegreeG2)]
+
+
     def topKNodes(self, centralityDict, k):
         """Obtenir els k nodes més centrals d'un graf
 
@@ -293,7 +314,7 @@ class Metrics:
             
             
             results = {"Jaccard": [], "DeltaConnectivity": [], "Jaccard Betweenness": [], 
-                       "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": []}
+                       "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": [], "Degrees": []}
             
             try:
                 for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
@@ -301,8 +322,9 @@ class Metrics:
                     listDeltaConnectivity = []
                     listBetweeness = []
                     listCloseness = []
-                    listDegree = []
+                    listDegreeCentrality = []
                     listDensities = []
+                    listDegrees = []
 
                     with open(i[0]+"/"+ i[1], 'rb') as f:
                         protectedGraphs = pickle.load(f)
@@ -310,17 +332,19 @@ class Metrics:
                     for originalG, protectedG in zip(originalGraphs, protectedGraphs):
                         listJaccard.append(self.jaccardIndex(originalG, protectedG))
                         listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
-                        listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.1))
-                        listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.1))
-                        listDegree.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.1))
+                        listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.05))
+                        listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.05))
+                        listDegreeCentrality.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.05))
                         listDensities.append(self.getDensities(originalG, protectedG))
+                        listDegrees.append(self.getDegrees(originalG, protectedG))
 
                     results["Jaccard"].append((listJaccard, i[2]))
                     results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
                     results["Jaccard Betweenness"].append((listBetweeness, i[2]))
                     results["Jaccard Closeness"].append((listCloseness, i[2]))
-                    results["Jaccard Degree"].append((listDegree, i[2]))
+                    results["Jaccard Degree"].append((listDegreeCentrality, i[2]))
                     results["Densities"].append((listDensities, i[2]))
+                    results["Degrees"].append((listDegrees, i[2]))
 
                 current_dir = os.path.dirname(os.path.abspath(__file__))
                 with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
@@ -350,7 +374,7 @@ class Metrics:
                 listAverages = list()
                 listParameters = list()
                 for metric in data[key]:
-                    if key != "Densities":
+                    if key not in ["Densities", "Degrees"]:
                         meanMetric = np.array(metric[0]).mean()
                         parameter = metric[1]
                         listAverages.append(meanMetric)
@@ -620,10 +644,97 @@ class Metrics:
 
             plt.show()
 
+    def viewDegrees(self, file):
+        """Visualitzar les densitats dels grafs originals i protegits"""
+        folders = dp.METRICS
 
-    def compareAggregations(self):
-        """Comparar arxius agrupats per Unix Timestamps (Hores, Dies, Setmanes)
-        """
+        for path in folders:
+            dir = path + "/" + file + ".json"
+            try:
+                with open(dir, "r") as f:
+                    data = json.load(f)
+            except:
+                continue
+
+            # Ordenar los resultados por el valor del parámetro
+            sorted_results = sorted(data["Degrees"], key=lambda x: x[1])
+            num_plots = len(sorted_results)
+
+            if num_plots == 1:
+                # Caso especial: solo un gráfico → fig y ax simples
+                fig, ax = plt.subplots(figsize=(6, 4))
+                result = sorted_results[0]
+                parameter = result[1]
+                meanOriginal = [d[0][0] for d in result[0]]
+                medianOriginal = [d[0][1] for d in result[0]]
+                meanProtected = [d[1][0] for d in result[0]]
+                medianProtected = [d[1][1] for d in result[0]]
+                listGraphs = list(range(len(result[0])))
+
+                ax.plot(listGraphs, meanOriginal, marker='o', label="Mitjana graus original", color = '#1f77b4')
+                ax.plot(listGraphs, medianOriginal, marker='x', label="Mediana graus original", color = '#1f77b4', linestyle='--')
+                ax.plot(listGraphs, meanProtected, marker='o', label="Mitjana graus protegit", color = '#ff7f0e')
+                ax.plot(listGraphs, medianProtected, marker='x', label="Mediana graus protegit", color = '#ff7f0e', linestyle='--')
+
+
+                ax.set_xlabel("Timestamp")
+                ax.set_ylabel("Resultat")
+
+                typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
+                ax.set_title(f"{typeProtection} = {parameter}")
+                ax.grid(True)
+
+                fig.suptitle(f'Mètriques de graus en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+                fig.legend(loc='lower center', ncol=2)
+                fig.subplots_adjust(top=0.85, bottom=0.15)
+
+            else:
+                # Múltiples plots → usar subplots organizados
+                cols = 3
+                rows = (num_plots + cols - 1) // cols
+                fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
+                fig.suptitle(f'Mètriques de graus en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+                fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+
+                for idx, result in enumerate(sorted_results):
+                    row, col = divmod(idx, cols)
+                    ax = axes[row][col]
+
+                    meanOriginal = [d[0][0] for d in result[0]]
+                    medianOriginal = [d[0][1] for d in result[0]]
+                    meanProtected = [d[1][0] for d in result[0]]
+                    medianProtected = [d[1][1] for d in result[0]]
+
+                    
+                    listProtected = [d[1] for d in result[0]]
+                    listGraphs = list(range(len(result[0])))
+                    parameter = result[1]
+
+                    ax.plot(listGraphs, meanOriginal, marker='o', label="Mitjana graus original", color = '#1f77b4')
+                    ax.plot(listGraphs, medianOriginal, marker='x', label="Mediana graus original", color = '#1f77b4', linestyle='--')
+                    ax.plot(listGraphs, meanProtected, marker='o', label="Mitjana graus protegit", color = '#ff7f0e')
+                    ax.plot(listGraphs, medianProtected, marker='x', label="Mediana graus protegit", color = '#ff7f0e', linestyle='--')
+
+                    if row == rows - 1:
+                        ax.set_xlabel("Timestamp")
+                    if col == 0:
+                        ax.set_ylabel("Resultat")
+
+                    typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
+                    ax.set_title(f"{typeProtection} = {parameter}")
+                    ax.grid(True)
+
+                # Eliminar subplots vacíos
+                for i in range(num_plots, rows * cols):
+                    row, col = divmod(i, cols)
+                    fig.delaxes(axes[row][col])
+
+                # Añadir una única leyenda común
+                handles, labels = axes[0][0].get_legend_handles_labels()
+                fig.legend(handles, labels, loc='lower center', ncol=2)
+
+            plt.show()
+
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
@@ -642,6 +753,7 @@ class Metrics:
             self.viewMeanSimilarities()
             self.viewIndividualSimilarities()
             self.viewDensities(FILE)
+            self.viewDegrees(FILE)
 
 
 if __name__ == "__main__":
