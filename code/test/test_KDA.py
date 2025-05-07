@@ -14,22 +14,29 @@ import data_paths as dp
 from graph import KDA
 
 class TestKDA(unittest.TestCase):
-    __slots__ = ('dictionary_options', 'readers', 'KDA', 'save')
+    __slots__ = ('dictionary_options', 'readers', 'KDA', 'save', 'numExperiments')
     def setUp(self):
         """Crea una instància de KDA
         """
-        self.save = False # Canviar si es volen guardar els grafs resultants
-        grouping = None
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                                    '2': (dp.DATASET3, True, True, 'FILE')} 
-        # self.dictionary_options = {'1': (dp.DATASET4, True, True, 'FILE')}
+        # Per Testing !
+        # self.save = False # Canviar si es volen guardar els grafs resultants
+        # grouping = None
+        # self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+        #                             '2': (dp.DATASET3, True, True, 'FILE')} 
+        # setK = [3, 5]
+        # self.numExperiments = 1
+
         
+        self.save = True
+        grouping = None
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE')}
+        setK = np.arange(2,8,1)
+        self.numExperiments = 5
+
         self.readers = [] # Llegim els fitxers i els col·loquem en una llista
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
-        # setK = np.arange(2, 15, 1)
-        setK = [3, 5]
         self.KDA = []
         for k in setK: # Per totes les k que provem, crear una instància de KDA amb tots els fitxers
             for i,reader in enumerate(self.readers):
@@ -155,7 +162,7 @@ class TestKDA(unittest.TestCase):
 
                     for indegrees in finalMatrixIn:
                         # Fem que la matriu de indegrees sigui la mateixa que la de outdegrees, però permutada
-                        #! ÉS NECESSARI QUE LA SUMA DE OUTDEGREES SIGUI IGUAL A LA DE INDEGREES - Per això es fa la permutació
+                        # ÉS NECESSARI QUE LA SUMA DE OUTDEGREES SIGUI IGUAL A LA DE INDEGREES - Per això es fa la permutació
                         outdegrees = indegrees.copy()
                         outdegrees = np.random.permutation(indegrees)
                         graph = g.createProtectedGraphDirected(indegrees, outdegrees)
@@ -172,20 +179,21 @@ class TestKDA(unittest.TestCase):
     def test_protection(self):
         """Testing protecció KDA...
         """
-        for g in self.KDA:
-            originalList, protectedList = g.apply_protection(randomize = True)
+        for e in self.numExperiments:
+            for g in self.KDA:
+                originalList, protectedList = g.apply_protection(randomize = True)
 
-            self.assertIsInstance(originalList, list)
-            self.assertIsInstance(protectedList, list)
+                self.assertIsInstance(originalList, list)
+                self.assertIsInstance(protectedList, list)
 
-            if len(originalList) > 0 and len(protectedList) > 0:
-                self.assertIsInstance(originalList[0], nx.Graph)
-                self.assertIsInstance(protectedList[0], nx.Graph)
-            
-            self.assertEqual(len(originalList), len(protectedList))
+                if len(originalList) > 0 and len(protectedList) > 0:
+                    self.assertIsInstance(originalList[0], nx.Graph)
+                    self.assertIsInstance(protectedList[0], nx.Graph)
+                
+                self.assertEqual(len(originalList), len(protectedList))
 
-            if self.save and len(originalList) > 0 and len(protectedList) > 0:
-                g.save_graphs(originalList, protectedList, "KDA_RANDOM", g.k)
+                if self.save and len(originalList) > 0 and len(protectedList) > 0:
+                    g.save_graphs(originalList, protectedList, "KDA", e+1, g.k)
 
 
 if __name__ == '__main__':

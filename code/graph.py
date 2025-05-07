@@ -161,14 +161,21 @@ class GraphProtection:
             plt.pause(0.1)  # Pausar per visualitzar canvis 
         plt.show() # Mostrar el graf
         
-    def save_graphs(self, original_graphs, protected_graphs, algorithm, parameter):
+    def save_graphs(self, original_graphs, protected_graphs, algorithm, experiment, parameter):
         # Canvi de directori al repositori de l'aplicació
+        directoryFiles = {"aves-sparrow-social.edges":"AVES-SPARROW",
+                          "insecta-ant-colony5.edges": "INSECTA-ANT",
+                          "mammalia-voles-rob-trapping.edges": "MAMMALIA-VOLES"}
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         actualRepository = os.getcwd()
 
         og = actualRepository + "/output/original_graphs/" + str(self.filename) + ".pkl"
-        pg = actualRepository + "/output/" + str(algorithm) + "/" + str(self.filename) + "_" + str(parameter) + ".pkl"
+        newRepository = newRepository = os.path.join(actualRepository, "output", str(algorithm), str(experiment), directoryFiles[str(self.filename)])
+        pg =  os.path.join(newRepository, f"{self.filename}_{parameter}.pkl")
 
+        if not os.path.exists(newRepository):
+            os.makedirs(newRepository)
+        
         with open(og, "wb") as f:
             pickle.dump(original_graphs, f)
 
@@ -311,7 +318,7 @@ class ELDP(GraphProtection):
         original_graphs = list()
         protected_graphs = list()
 
-        for _, group in tqdm(self.grouped_df, desc="Aplicant ELDP " + str(self.filename)):
+        for _, group in tqdm(self.grouped_df, desc="Aplicant ELDP " + str(self.filename) + ": ε = " + str(self.epsilon)):
             # Iterem a la següent snapshot
             self.iterate_graph(group)
             # Calculem el seu graf complementari

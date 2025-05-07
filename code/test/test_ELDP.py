@@ -17,23 +17,29 @@ import data_paths as dp
 from graph import ELDP
 
 class TestELDP(unittest.TestCase):
-    __slots__ = ('dictionary_options', 'readers', 'ELDP', 'save')
+    __slots__ = ('dictionary_options', 'readers', 'ELDP', 'save', 'numExperiments')
     def setUp(self):
         """Crea una instància de ELDP
         """
-        self.save = False # Canviar si no es volen guardar els grafs resultants
-        # self.dictionary_options = {'1': (dp.DATASET5, False, True, 'FILE')}
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-                        '2': (dp.DATASET3, True, True, 'FILE')} 
+        # En cas de testejar !
+        # self.save = False # Canviar si no es volen guardar els grafs resultants
+        # self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+        #                 '2': (dp.DATASET3, True, True, 'FILE')} 
+        # grouping = None     
+        # epsilons = [1, 10]
+        # self.numExperiments = 1 
 
-        grouping = None     
+        self.save = True # Canviar si no es volen guardar els grafs resultants
+        self.dictionary_options = {'1': (dp.DATASET2, True, False, 'FILE')} 
+        self.numExperiments = 5     
+        grouping = None
+        epsilons = [0.1, 2, 4, 6, 8, 10]     
+
         self.readers = [] # LLegim els fitxers, i els guardem en una llista 
         for key, value in self.dictionary_options.items():
             self.readers.append(rd.Reader(value))
         
         self.ELDP = []
-        # epsilons = np.arange(1, 11, 1)
-        epsilons = [1, 10]
         for eps in epsilons: # Per cada epsilon, creem una instància de ELDP amb tots els fitxers
             for i,reader in enumerate(self.readers):
                 self.ELDP.append(ELDP(reader.filename, self.dictionary_options[str(i+1)], reader.df, grouping, eps))
@@ -62,35 +68,36 @@ class TestELDP(unittest.TestCase):
     def test_protection(self):
         """Testing ELDP protection...
         """
-        for i,g in enumerate(self.ELDP):
+        for e in range(self.numExperiments):
+            for i,g in enumerate(self.ELDP):
+                
+                # print(f"Dataset: {self.ELDP[i].filename}, Epsilon: {self.ELDP[i].epsilon}")
+
+                original_g, protected_g = g.apply_protection()
             
-            # print(f"Dataset: {self.ELDP[i].filename}, Epsilon: {self.ELDP[i].epsilon}")
+                # 1. Comprovar densitat // ε-ELDP
+                for og, pr in zip(original_g, protected_g):
+                    density_og = nx.density(og)
+                    density_pr = nx.density(pr)
+                    self.assertAlmostEqual(density_og, density_pr, delta=0.05)
+                    # print(f"Densitat original: {density_og}, Densitat protegit: {density_pr}")
 
-            original_g, protected_g = g.apply_protection()
-        
-            # 1. Comprovar densitat // ε-ELDP
-            for og, pr in zip(original_g, protected_g):
-                density_og = nx.density(og)
-                density_pr = nx.density(pr)
-                self.assertAlmostEqual(density_og, density_pr, delta=0.05)
-                # print(f"Densitat original: {density_og}, Densitat protegit: {density_pr}")
+                    p0,p1 = self.ELDP[i].compute_probabilities(density_og)
+                    constraint = round(math.exp(self.ELDP[i].epsilon),3)
+                    f1  = (1-p1) / p0
+                    f2 = p1 / (1-p0)
+                    f3 = p0 / (1-p1) 
+                    f4 = (1-p0) / p1
+                    maxim = round(max(f1,f2,f3,f4),3)
+                    self.assertGreaterEqual(constraint, maxim)
+                    # print(f"Compleix ε-ELDP: {constraint} >= {maxim}")
+                    # print("================================================")
 
-                p0,p1 = self.ELDP[i].compute_probabilities(density_og)
-                constraint = round(math.exp(self.ELDP[i].epsilon),3)
-                f1  = (1-p1) / p0
-                f2 = p1 / (1-p0)
-                f3 = p0 / (1-p1) 
-                f4 = (1-p0) / p1
-                maxim = round(max(f1,f2,f3,f4),3)
-                self.assertGreaterEqual(constraint, maxim)
-                # print(f"Compleix ε-ELDP: {constraint} >= {maxim}")
-                # print("================================================")
-
+                
+                # 2. Save/Load grafs
+                if self.save: 
+                    g.save_graphs(original_g, protected_g, "ELDP", e+1, self.ELDP[i].epsilon)
             
-            # 2. Save/Load grafs
-            if self.save: 
-                g.save_graphs(original_g, protected_g, "ELDP", self.ELDP[i].epsilon)
-        
 
     # def test_saved_graphs(self):
     #     """5. Test loading saved graphs
