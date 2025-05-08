@@ -29,7 +29,7 @@ class TestKDA(unittest.TestCase):
         
         self.save = True
         grouping = None
-        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE')}
+        self.dictionary_options = {'1': (dp.DATASET3, True, False, 'FILE')}
         setK = np.arange(2,8,1)
         self.numExperiments = 5
 
@@ -179,7 +179,7 @@ class TestKDA(unittest.TestCase):
     def test_protection(self):
         """Testing protecció KDA...
         """
-        for e in self.numExperiments:
+        for e in range(self.numExperiments):
             for g in self.KDA:
                 originalList, protectedList = g.apply_protection(randomize = True)
 

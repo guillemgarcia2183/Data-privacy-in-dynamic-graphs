@@ -30,10 +30,10 @@ class TestELDP(unittest.TestCase):
         # self.numExperiments = 1 
 
         self.save = True # Canviar si no es volen guardar els grafs resultants
-        self.dictionary_options = {'1': (dp.DATASET2, True, False, 'FILE')} 
+        self.dictionary_options = {'1': (dp.DATASET3, True, False, 'FILE')} 
         self.numExperiments = 5     
         grouping = None
-        epsilons = [0.1, 2, 4, 6, 8, 10]     
+        epsilons = [0.1, 2, 4, 6, 8, 10, 20]     
 
         self.readers = [] # LLegim els fitxers, i els guardem en una llista 
         for key, value in self.dictionary_options.items():

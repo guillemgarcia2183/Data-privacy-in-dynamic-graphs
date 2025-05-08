@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'aves-sparrow-social', 
          'mammalia-voles-rob-trapping']
 
-FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -214,7 +214,6 @@ class Metrics:
 
         return [(meanDegreeG1, medianDegreeG1), (meanDegreeG2, medianDegreeG2)]
 
-
     def topKNodes(self, centralityDict, k):
         """Obtenir els k nodes més centrals d'un graf
 
@@ -265,158 +264,178 @@ class Metrics:
         return jaccardBC, jaccardCC, jaccardDC
     
     def readMetrics(self):
-        """Llegir els fitxers generats al aplicar la protecció de grafs
+        """Llegir les mètriques dels fitxers originals i protegits
 
         Returns:
-            Dict, Dict: Diccionari dels mètodes i fitxers que s'han utilitzat
+            Dict, Dict: Diccionari amb els fitxers originals i protegits.
         """
         folders = dp.OUTPUTS
         originalFiles = {}
         protectedDict = {}
 
         for root_folder in folders:
-            name = root_folder.split("/")[-1]
-            protectedDict[name] = {}
-            for dirpath, dirnames, filenames in os.walk(root_folder):
-                if name != "original_graphs":
+            method = os.path.basename(root_folder)
+            if method == "original_graphs":
+                for dirpath, _, filenames in os.walk(root_folder):
                     for f in filenames:
-                        nameFile = f.split(".")[0]  
-                        if nameFile not in protectedDict[name]:
-                            protectedDict[name][nameFile] = []
-                        protectedDict[name][nameFile].append((dirpath, f, float(f.split("_")[-1][:-4])))
-                else:
-                    protectedDict.pop(name)
-                    for f in filenames:
-                        nameFile = f.split(".")[0]  
+                        nameFile = f.split(".")[0]
                         originalFiles[nameFile] = (dirpath, f)
+                continue
 
-        # print(f"Original files: {originalFiles}")
-        # print(f"Protected files: {protectedDict}")        
+            for dirpath, _, filenames in os.walk(root_folder):
+                for f in filenames:
+                    if not f.endswith(".pkl"):
+                        continue
+
+                    nameFile = f.split(".")[0]
+                    rel_path = os.path.relpath(dirpath, root_folder)  
+                    full_method_key = method + "/" + rel_path          
+
+                    if full_method_key not in protectedDict:
+                        protectedDict[full_method_key] = {}
+
+                    if nameFile not in protectedDict[full_method_key]:
+                        protectedDict[full_method_key][nameFile] = []
+
+                    try:
+                        param = float(f.split("_")[-1].replace(".pkl", ""))
+                    except ValueError:
+                        param = -1  # valor por defecto
+
+                    protectedDict[full_method_key][nameFile].append((dirpath, f, param))
+
         return originalFiles, protectedDict
 
     def computeMetrics(self):
-        """Calcula les mètriques de tots els fitxers que es tenen, i es guarden en format JSON.
-
-        Raises:
-            ValueError: En cas de no tenir un fitxer per calcular les mètriques
-        """
+        """Calcula les mètriques de tots els fitxers protegits i els guarda en JSON."""
         originalFiles, protectedDict = self.readMetrics()
-        
-        with open(originalFiles[FILE][0]+"/"+originalFiles[FILE][1], 'rb') as f:
+
+        if not FILE:
+            raise ValueError("No file selected. Please select a file to compute metrics.")
+
+        with open(os.path.join(originalFiles[FILE][0], originalFiles[FILE][1]), 'rb') as f:
             originalGraphs = pickle.load(f)
 
-        for method in protectedDict.keys():
-            # print(protectedDict[method].keys())
-            # for file in tqdm(protectedDict[method].keys(), desc="Computing metrics"):
+        for method in protectedDict:
+            if FILE not in protectedDict[method]:
+                continue
 
-            if not FILE:
-                raise ValueError("No file selected. Please select a file to compute metrics.")
-            
-            
-            results = {"Jaccard": [], "DeltaConnectivity": [], "Jaccard Betweenness": [], 
-                       "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": [], "Degrees": []}
-            
-            try:
-                for i in tqdm(protectedDict[method][FILE], desc="Computing metrics in file: " + str(FILE) + "-" + str(method)):
-                    listJaccard = []
-                    listDeltaConnectivity = []
-                    listBetweeness = []
-                    listCloseness = []
-                    listDegreeCentrality = []
-                    listDensities = []
-                    listDegrees = []
+            results = {
+                "Jaccard": [], "DeltaConnectivity": [], "Jaccard Betweenness": [],
+                "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": [], "Degrees": []
+            }
 
-                    with open(i[0]+"/"+ i[1], 'rb') as f:
-                        protectedGraphs = pickle.load(f)
-                                    
-                    for originalG, protectedG in zip(originalGraphs, protectedGraphs):
-                        listJaccard.append(self.jaccardIndex(originalG, protectedG))
-                        listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
-                        listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.05))
-                        listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.05))
-                        listDegreeCentrality.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.05))
-                        listDensities.append(self.getDensities(originalG, protectedG))
-                        listDegrees.append(self.getDegrees(originalG, protectedG))
+            for i in tqdm(protectedDict[method][FILE], desc="Calculant mètriques en: " + str(FILE) + " - " + method.split("/")[0] + method.split("/")[1][0]):
+                listJaccard, listDeltaConnectivity = [], []
+                listBetweeness, listCloseness, listDegreeCentrality = [], [], []
+                listDensities, listDegrees = [], []
 
-                    results["Jaccard"].append((listJaccard, i[2]))
-                    results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
-                    results["Jaccard Betweenness"].append((listBetweeness, i[2]))
-                    results["Jaccard Closeness"].append((listCloseness, i[2]))
-                    results["Jaccard Degree"].append((listDegreeCentrality, i[2]))
-                    results["Densities"].append((listDensities, i[2]))
-                    results["Degrees"].append((listDegrees, i[2]))
+                with open(os.path.join(i[0], i[1]), 'rb') as f:
+                    protectedGraphs = pickle.load(f)
 
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                with open(current_dir + "/metrics/" + method + "/" + FILE + ".json", 'w') as f:
-                    json.dump(results, f)
-            except:
-                pass
+                for originalG, protectedG in zip(originalGraphs, protectedGraphs):
+                    listJaccard.append(self.jaccardIndex(originalG, protectedG))
+                    listDeltaConnectivity.append(self.deltaConnectivity(originalG, protectedG))
+                    listBetweeness.append(self.computeCentrality(originalG, protectedG, nx.betweenness_centrality, 0.05))
+                    listCloseness.append(self.computeCentrality(originalG, protectedG, nx.closeness_centrality, 0.05))
+                    listDegreeCentrality.append(self.computeCentrality(originalG, protectedG, nx.degree_centrality, 0.05))
+                    listDensities.append(self.getDensities(originalG, protectedG))
+                    listDegrees.append(self.getDegrees(originalG, protectedG))
+
+                results["Jaccard"].append((listJaccard, i[2]))
+                results["DeltaConnectivity"].append((listDeltaConnectivity, i[2]))
+                results["Jaccard Betweenness"].append((listBetweeness, i[2]))
+                results["Jaccard Closeness"].append((listCloseness, i[2]))
+                results["Jaccard Degree"].append((listDegreeCentrality, i[2]))
+                results["Densities"].append((listDensities, i[2]))
+                results["Degrees"].append((listDegrees, i[2]))
+
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            output_path = os.path.join(current_dir, "metrics", method, FILE + ".json")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+            with open(output_path, 'w') as f:
+                json.dump(results, f)
 
     def viewMeanSimilarities(self):
         folders = dp.METRICS
-        fig, axes = plt.subplots(1, 3, figsize=(6 * 3, 5 * 1), squeeze=False)  # Adjust figsize as needed
+        results = {}
+
+        # Pas 1: Recollir totes les mètriques de cada mètode
+        for path in folders:
+            method = os.path.basename(path)
+            if method not in results:
+                results[method] = {}
+
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    if not file.endswith(".json") or not file.startswith(FILE):
+                        continue
+
+                    with open(os.path.join(root, file), "r") as f:
+                        data = json.load(f)
+
+                    for metric, entries in data.items():
+                        if metric in ["Densities", "Degrees"]:
+                            continue
+
+                        if metric not in results[method]:
+                            results[method][metric] = {}
+
+                        for values, param in entries:
+                            values = np.array(values)
+                            param = float(param)
+                            if param not in results[method][metric]:
+                                results[method][metric][param] = []
+                            results[method][metric][param].append(values.mean())
+
+        # Pas 2: Graficar
+        num_methods = len(results)
+        fig, axes = plt.subplots(1, num_methods, figsize=(6 * num_methods, 5), squeeze=False)
         fig.tight_layout(pad=5.0)
 
-        for idx,path in enumerate(folders):
+        handles_labels = []
+
+        for idx, (method, metrics) in enumerate(results.items()):
             row, col = divmod(idx, 3)
-            ax = axes[row, col]
+            ax = axes[row][col]
 
-            file = path + "/" + FILE + ".json"
-            try:
-                with open(file, "r") as f:
-                    data = json.load(f)
-            except:
-                continue
-            
-            listMetrics = list()
-            listKeys = list()
-            for key in data:
-                listAverages = list()
-                listParameters = list()
-                for metric in data[key]:
-                    if key not in ["Densities", "Degrees"]:
-                        meanMetric = np.array(metric[0]).mean()
-                        parameter = metric[1]
-                        listAverages.append(meanMetric)
-                        listParameters.append(parameter)
-                        
-                        if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP":
-                            listMetrics.append(meanMetric)
-                            listKeys.append(key)
+            for metric, param_dict in metrics.items():
+                params = sorted(param_dict.keys())
+                means = [np.mean(param_dict[p]) for p in params]
+                stds = [np.std(param_dict[p]) for p in params]
 
-                if not listAverages:
-                    continue
+                line = ax.plot(params, means, label=metric, marker='o')[0]
+                ax.fill_between(params,
+                                np.array(means) - np.array(stds),
+                                np.array(means) + np.array(stds),
+                                alpha=0.5)
 
-                listParameters, listAverages = zip(*sorted(zip(listParameters, listAverages)))
-                # print(f"Jaccard: {listAverages}")
-                # print(f"Parameters: {listParameters}")
-                if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP":
-                    continue
-                else:
-                    ax.plot(listParameters, listAverages, marker='o', label=key)
-            
-            if FILE == "aves-sparrow-social" and path.split("/")[-1] != "ELDP": 
-                listMetrics, listKeys = zip(*sorted(zip(listMetrics, listKeys), reverse=True))
-                ax.bar(listKeys, listMetrics, color="blue")
-                ax.tick_params(axis='x', labelrotation=45)
-                ax.set_axisbelow(True)  
+            title = f'Mitjana de mètriques en {FILE}\nMètode: {method}, numExperiments = 5'
+            xLabel = r'$\epsilon$' if method == "ELDP" else "k"
 
-            title = 'Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1])
-            if path.split("/")[-1] == "ELDP":
-                xLabel =  r'$\epsilon$'
-            elif path.split("/")[-1] != "ELDP" and FILE == "aves-sparrow-social":
-                xLabel = "Mètriques de similaritat"
-                title = 'Mitjana de mètriques en ' + str(FILE) + '\n Mètode de protecció: ' + str(path.split("/")[-1]) + " amb k = 2"
-            else:
-                xLabel = "k"
-            ax.set_xlabel(xLabel)
-            ax.set_ylabel('Percentatge de similaritat (%)')
-            ax.legend()
-            ax.grid(True)
             ax.set_title(title)
-            
+            ax.set_xlabel(xLabel)
+            ax.set_ylabel("Percentatge de similaritat (%)")
             ax.set_ylim([-5, 105])
-            ax.set_yticks(np.arange(0, 101, 20))
+            ax.set_yticks(np.arange(0, 101, 10))
+            ax.grid(True)
+            ax.set_axisbelow(True)
+
+            h, l = ax.get_legend_handles_labels()
+            handles_labels.extend(zip(h, l))
+
+        # Llegendes
+        seen = set()
+        unique_handles_labels = []
+        for h, l in handles_labels:
+            if l not in seen:
+                unique_handles_labels.append((h, l))
+                seen.add(l)
+
+        handles, labels = zip(*unique_handles_labels)
+        fig.legend(handles, labels, loc='lower center', ncol=len(labels), bbox_to_anchor=(0.5, 0.02))
+        plt.subplots_adjust(bottom=0.2)
 
         plt.show()
 
@@ -519,8 +538,11 @@ class Metrics:
                 ax = axes[row][col]
 
                 file_path = path + "/" + FILE + ".json"
-                with open(file_path, "r") as f:
-                    data = json.load(f)
+                try:
+                    with open(file_path, "r") as f:
+                        data = json.load(f)
+                except:
+                    continue
 
                 values_matrix = []
                 param_labels = []
@@ -749,12 +771,12 @@ class Metrics:
             self.viewMeanSimilaritiesGrouped(files, name)
             for file in files:
                 self.viewDensities(file)
+                self.viewDegrees(file)
         else:
             self.viewMeanSimilarities()
             self.viewIndividualSimilarities()
             self.viewDensities(FILE)
             self.viewDegrees(FILE)
-
 
 if __name__ == "__main__":
     metric = Metrics(mode = 2)
