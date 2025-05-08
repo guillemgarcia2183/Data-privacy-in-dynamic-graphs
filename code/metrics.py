@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -607,175 +607,189 @@ class Metrics:
         plt.show()
 
     def viewDensities(self, file):
-        """Visualitzar les densitats dels grafs originals i protegits"""
-        folders = dp.METRICS
+        """Visualitzar les densitats per cada paràmetre utilitzat de cada algorisme"""
+        folders = dp.METRICS  
 
         for path in folders:
-            dir = path + "/" + file + ".json"
-            try:
-                with open(dir, "r") as f:
-                    data = json.load(f)
-            except:
+            all_results = []
+
+            # Buscar recursivamente archivos .json que empiecen por el nombre del fichero
+            for subfolder in sorted(os.listdir(path)):
+                subfolder_path = os.path.join(path, subfolder)
+                if not os.path.isdir(subfolder_path):
+                    continue
+
+                for root, _, files in os.walk(subfolder_path):
+                    for fname in files:
+                        if fname.endswith(".json") and fname.startswith(file):
+                            json_path = os.path.join(root, fname)
+                            try:
+                                with open(json_path, "r") as f:
+                                    data = json.load(f)
+                                    all_results.extend(data.get("Densities", []))
+                            except:
+                                continue
+
+            if not all_results:
                 continue
 
-            # Ordenar los resultados por el valor del parámetro
-            sorted_results = sorted(data["Densities"], key=lambda x: x[1])
-            num_plots = len(sorted_results)
-
-            if num_plots == 1:
-                # Caso especial: solo un gráfico → fig y ax simples
-                fig, ax = plt.subplots(figsize=(6, 4))
-                result = sorted_results[0]
+            # Agrupar por valor del parámetro (ε o k)
+            grouped_results = {}
+            for result in all_results:
+                densities = result[0]  # lista de pares (original, protegido)
                 parameter = result[1]
-                listOriginal = [d[0] for d in result[0]]
-                listProtected = [d[1] for d in result[0]]
-                listGraphs = list(range(len(result[0])))
 
-                ax.plot(listGraphs, listOriginal, marker='o', label="Graf original")
-                ax.plot(listGraphs, listProtected, marker='o', label="Graf protegit")
+                if parameter not in grouped_results:
+                    grouped_results[parameter] = []
 
-                ax.set_xlabel("Timestamp")
-                ax.set_ylabel("Densitat")
+                grouped_results[parameter].append(densities)
 
-                typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
-                ax.set_title(f"{typeProtection} = {parameter}")
+            sorted_keys = sorted(grouped_results.keys())
+            num_plots = len(sorted_keys)
+
+            # Crear subplots
+            cols = 3
+            rows = (num_plots + cols - 1) // cols
+            fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
+            fig.suptitle(f'Densitats en {file}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+            fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+
+            for idx, key in enumerate(sorted_keys):
+                row, col = divmod(idx, cols)
+                ax = axes[row][col]
+                group = grouped_results[key]
+
+                # Transponer para obtener listas separadas de densitats originals i protegides
+                original_all = np.array([[x[0] for x in run] for run in group])
+                protected_all = np.array([[x[1] for x in run] for run in group])
+                timestamps = np.arange(original_all.shape[1])
+
+                original_mean = np.mean(original_all, axis=0)
+                protected_mean = np.mean(protected_all, axis=0)
+
+                original_std = np.std(original_all, axis=0)
+                protected_std = np.std(protected_all, axis=0)
+
+                # Línea + desviació típica
+                ax.plot(timestamps, original_mean, label="Graf original", marker='o')
+                ax.fill_between(timestamps, original_mean - original_std, original_mean + original_std, alpha=0.2)
+
+                ax.plot(timestamps, protected_mean, label="Graf protegit", marker='o')
+                ax.fill_between(timestamps, protected_mean - protected_std, protected_mean + protected_std, alpha=0.2)
+
+                if row == rows - 1:
+                    ax.set_xlabel("Timestamp")
+                if col == 0:
+                    ax.set_ylabel("Densitat")
+
+                typeProtection = r'$\epsilon$' if "ELDP" in path else "k"
+                ax.set_title(f"{typeProtection} = {key}")
                 ax.grid(True)
 
-                fig.suptitle(f'Densitats en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
-                fig.legend(loc='lower center', ncol=2)
-                fig.subplots_adjust(top=0.85, bottom=0.15)
+            # Eliminar subplots buits
+            for i in range(num_plots, rows * cols):
+                row, col = divmod(i, cols)
+                fig.delaxes(axes[row][col])
 
-            else:
-                # Múltiples plots → usar subplots organizados
-                cols = 3
-                rows = (num_plots + cols - 1) // cols
-                fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
-                fig.suptitle(f'Densitats en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
-                fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
-
-                for idx, result in enumerate(sorted_results):
-                    row, col = divmod(idx, cols)
-                    ax = axes[row][col]
-
-                    listOriginal = [d[0] for d in result[0]]
-                    listProtected = [d[1] for d in result[0]]
-                    listGraphs = list(range(len(result[0])))
-                    parameter = result[1]
-
-                    ax.plot(listGraphs, listOriginal, marker='o', label="Graf original")
-                    ax.plot(listGraphs, listProtected, marker='o', label="Graf protegit")
-
-                    if row == rows - 1:
-                        ax.set_xlabel("Timestamp")
-                    if col == 0:
-                        ax.set_ylabel("Densitat")
-
-                    typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
-                    ax.set_title(f"{typeProtection} = {parameter}")
-                    ax.grid(True)
-
-                # Eliminar subplots vacíos
-                for i in range(num_plots, rows * cols):
-                    row, col = divmod(i, cols)
-                    fig.delaxes(axes[row][col])
-
-                # Añadir una única leyenda común
-                handles, labels = axes[0][0].get_legend_handles_labels()
-                fig.legend(handles, labels, loc='lower center', ncol=2)
+            # Llegenda comuna
+            handles, labels = axes[0][0].get_legend_handles_labels()
+            fig.legend(handles, labels, loc='lower center', ncol=2)
 
             plt.show()
 
     def viewDegrees(self, file):
         """Visualitzar les densitats dels grafs originals i protegits"""
-        folders = dp.METRICS
+        folders = dp.METRICS  
 
         for path in folders:
-            dir = path + "/" + file + ".json"
-            try:
-                with open(dir, "r") as f:
-                    data = json.load(f)
-            except:
+            all_results = []
+
+            # Buscar recursivamente archivos .json que empiecen por el nombre del fichero
+            for subfolder in sorted(os.listdir(path)):
+                subfolder_path = os.path.join(path, subfolder)
+                if not os.path.isdir(subfolder_path):
+                    continue
+
+                for root, _, files in os.walk(subfolder_path):
+                    for fname in files:
+                        if fname.endswith(".json") and fname.startswith(file):
+                            json_path = os.path.join(root, fname)
+                            try:
+                                with open(json_path, "r") as f:
+                                    data = json.load(f)
+                                    all_results.extend(data.get("Degrees", []))
+                            except:
+                                continue
+
+            if not all_results:
                 continue
 
-            # Ordenar los resultados por el valor del parámetro
-            sorted_results = sorted(data["Degrees"], key=lambda x: x[1])
-            num_plots = len(sorted_results)
-
-            if num_plots == 1:
-                # Caso especial: solo un gráfico → fig y ax simples
-                fig, ax = plt.subplots(figsize=(6, 4))
-                result = sorted_results[0]
+            # Agrupar por valor del parámetro (ε o k)
+            grouped_results = {}
+            print(all_results)
+            for result in all_results:
+                degrees = result[0]  # lista de pares (original, protegido)
                 parameter = result[1]
-                meanOriginal = [d[0][0] for d in result[0]]
-                medianOriginal = [d[0][1] for d in result[0]]
-                meanProtected = [d[1][0] for d in result[0]]
-                medianProtected = [d[1][1] for d in result[0]]
-                listGraphs = list(range(len(result[0])))
 
-                ax.plot(listGraphs, meanOriginal, marker='o', label="Mitjana graus original", color = '#1f77b4')
-                ax.plot(listGraphs, medianOriginal, marker='x', label="Mediana graus original", color = '#1f77b4', linestyle='--')
-                ax.plot(listGraphs, meanProtected, marker='o', label="Mitjana graus protegit", color = '#ff7f0e')
-                ax.plot(listGraphs, medianProtected, marker='x', label="Mediana graus protegit", color = '#ff7f0e', linestyle='--')
+                if parameter not in grouped_results:
+                    grouped_results[parameter] = []
 
+                grouped_results[parameter].append(degrees)
 
-                ax.set_xlabel("Timestamp")
-                ax.set_ylabel("Resultat")
+            sorted_keys = sorted(grouped_results.keys())
+            num_plots = len(sorted_keys)
 
-                typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
-                ax.set_title(f"{typeProtection} = {parameter}")
+            # Crear subplots
+            cols = 3
+            rows = (num_plots + cols - 1) // cols
+            fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
+            fig.suptitle(f'Densitats en {file}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+            fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+
+            for idx, key in enumerate(sorted_keys):
+                row, col = divmod(idx, cols)
+                ax = axes[row][col]
+                group = grouped_results[key]
+
+                # Transponer para obtener listas separadas de densitats originals i protegides
+                original_all = np.array([[x[0] for x in run] for run in group])
+                protected_all = np.array([[x[1] for x in run] for run in group])
+                timestamps = np.arange(original_all.shape[1])
+
+                original_mean = np.mean(original_all, axis=0)
+                protected_mean = np.mean(protected_all, axis=0)
+
+                original_std = np.std(original_all, axis=0)
+                protected_std = np.std(protected_all, axis=0)
+
+                # Línea + desviació típica
+                ax.plot(timestamps, original_mean, label="Graf original", marker='o')
+                ax.fill_between(timestamps, original_mean - original_std, original_mean + original_std, alpha=0.2)
+
+                ax.plot(timestamps, protected_mean, label="Graf protegit", marker='o')
+                ax.fill_between(timestamps, protected_mean - protected_std, protected_mean + protected_std, alpha=0.2)
+
+                if row == rows - 1:
+                    ax.set_xlabel("Timestamp")
+                if col == 0:
+                    ax.set_ylabel("Densitat")
+
+                typeProtection = r'$\epsilon$' if "ELDP" in path else "k"
+                ax.set_title(f"{typeProtection} = {key}")
                 ax.grid(True)
 
-                fig.suptitle(f'Mètriques de graus en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
-                fig.legend(loc='lower center', ncol=2)
-                fig.subplots_adjust(top=0.85, bottom=0.15)
+            # Eliminar subplots buits
+            for i in range(num_plots, rows * cols):
+                row, col = divmod(i, cols)
+                fig.delaxes(axes[row][col])
 
-            else:
-                # Múltiples plots → usar subplots organizados
-                cols = 3
-                rows = (num_plots + cols - 1) // cols
-                fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
-                fig.suptitle(f'Mètriques de graus en {FILE}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
-                fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
-
-                for idx, result in enumerate(sorted_results):
-                    row, col = divmod(idx, cols)
-                    ax = axes[row][col]
-
-                    meanOriginal = [d[0][0] for d in result[0]]
-                    medianOriginal = [d[0][1] for d in result[0]]
-                    meanProtected = [d[1][0] for d in result[0]]
-                    medianProtected = [d[1][1] for d in result[0]]
-
-                    
-                    listProtected = [d[1] for d in result[0]]
-                    listGraphs = list(range(len(result[0])))
-                    parameter = result[1]
-
-                    ax.plot(listGraphs, meanOriginal, marker='o', label="Mitjana graus original", color = '#1f77b4')
-                    ax.plot(listGraphs, medianOriginal, marker='x', label="Mediana graus original", color = '#1f77b4', linestyle='--')
-                    ax.plot(listGraphs, meanProtected, marker='o', label="Mitjana graus protegit", color = '#ff7f0e')
-                    ax.plot(listGraphs, medianProtected, marker='x', label="Mediana graus protegit", color = '#ff7f0e', linestyle='--')
-
-                    if row == rows - 1:
-                        ax.set_xlabel("Timestamp")
-                    if col == 0:
-                        ax.set_ylabel("Resultat")
-
-                    typeProtection = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
-                    ax.set_title(f"{typeProtection} = {parameter}")
-                    ax.grid(True)
-
-                # Eliminar subplots vacíos
-                for i in range(num_plots, rows * cols):
-                    row, col = divmod(i, cols)
-                    fig.delaxes(axes[row][col])
-
-                # Añadir una única leyenda común
-                handles, labels = axes[0][0].get_legend_handles_labels()
-                fig.legend(handles, labels, loc='lower center', ncol=2)
+            # Llegenda comuna
+            handles, labels = axes[0][0].get_legend_handles_labels()
+            fig.legend(handles, labels, loc='lower center', ncol=2)
 
             plt.show()
 
+        
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
@@ -792,9 +806,9 @@ class Metrics:
                 self.viewDensities(file)
                 self.viewDegrees(file)
         else:
-            self.viewMeanSimilarities()
-            self.viewIndividualSimilarities()
-            self.viewDensities(FILE)
+            # self.viewMeanSimilarities()
+            # self.viewIndividualSimilarities()
+            # self.viewDensities(FILE)
             self.viewDegrees(FILE)
 
 if __name__ == "__main__":
