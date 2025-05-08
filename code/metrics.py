@@ -19,10 +19,10 @@ files = ['HOUR_CollegeMsg',
          'WEEK_ia-enron-employees',
          'MONTH_ia-enron-employees',
          'insecta-ant-colony5',
-         'aves-sparrow-social', 
-         'mammalia-voles-rob-trapping']
+         'mammalia-voles-rob-trapping',
+         'aves-sparrow-social'] 
 
-FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -409,9 +409,9 @@ class Metrics:
                 ax.fill_between(params,
                                 np.array(means) - np.array(stds),
                                 np.array(means) + np.array(stds),
-                                alpha=0.5)
+                                alpha=0.2)
 
-            title = f'Mitjana de mètriques en {FILE}\nMètode: {method}, numExperiments = 5'
+            title = f'Mitjana de mètriques en {FILE}\nMètode: {method}, #Experiments = 5'
             xLabel = r'$\epsilon$' if method == "ELDP" else "k"
 
             ax.set_title(title)
@@ -517,72 +517,91 @@ class Metrics:
         plt.show()
 
     def viewIndividualSimilarities(self):
-        folders = dp.METRICS
+        base_folders = dp.METRICS  # Ej. ['metrics/ELDP', 'metrics/KDA']
         all_metrics = ["Jaccard", "DeltaConnectivity", "Jaccard Betweenness", "Jaccard Closeness", "Jaccard Degree"]
-        num_methods = len(folders)
+        num_methods = len(base_folders)
 
-        cols = 3
+        cols = len(base_folders)
         rows = len(all_metrics) * int(np.ceil(num_methods / cols))
 
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 2.5), squeeze=False)
-        fig.suptitle(f"Comparativa de mètriques en: {FILE}", fontsize=12)
-        fig.subplots_adjust(hspace=0.4, wspace=0.2, top=0.9, right=0.9)  # Deja espacio a la derecha para el colorbar
+        fig.suptitle(f"Mitjana de mètriques per timestamp en: {FILE}", fontsize=12)
+        fig.subplots_adjust(hspace=0.4, wspace=0.2, top=0.9, right=0.9)
 
-        cbar_ax = fig.add_axes([0.91, 0.15, 0.015, 0.7])  # [left, bottom, width, height]
-        show_cbar = True  # Solo mostramos una vez
+        cbar_ax = fig.add_axes([0.91, 0.15, 0.015, 0.7])
+        show_cbar = True
 
         for metric_idx, metric_name in enumerate(all_metrics):
-            for method_idx, path in enumerate(folders):
-                row = metric_idx * int(np.ceil(num_methods / cols)) + method_idx // cols
-                col = method_idx % cols
+            for method_idx, base_path in enumerate(base_folders):
+                row = metric_idx * int(np.ceil(num_methods / cols)) + method_idx % int(np.ceil(num_methods / cols))
+                col = method_idx // int(np.ceil(num_methods / cols))
                 ax = axes[row][col]
 
-                file_path = path + "/" + FILE + ".json"
-                try:
-                    with open(file_path, "r") as f:
-                        data = json.load(f)
-                except:
+                all_experiment_values = {}
+                all_param_labels = set()
+
+                for subfolder in sorted(os.listdir(base_path)):
+                    subfolder_path = os.path.join(base_path, subfolder)
+                    if not os.path.isdir(subfolder_path):
+                        continue
+
+                    # Buscar recursivamente archivos JSON cuyo nombre empiece por FILE
+                    for root, _, files in os.walk(subfolder_path):
+                        for file in files:
+                            if file.endswith(".json") and file.startswith(FILE):
+                                json_path = os.path.join(root, file)
+                                try:
+                                    with open(json_path, "r") as f:
+                                        data = json.load(f)
+                                except Exception:
+                                    continue
+
+                                if metric_name not in data:
+                                    continue
+
+                                for metric in data[metric_name]:
+                                    values = metric[0]
+                                    label = metric[1]
+                                    all_param_labels.add(label)
+
+                                    if label not in all_experiment_values:
+                                        all_experiment_values[label] = []
+                                    all_experiment_values[label].append(values)
+
+                if not all_experiment_values:
+                    ax.set_visible(False)
                     continue
 
-                values_matrix = []
-                param_labels = []
+                mean_values_matrix = []
+                sorted_labels = sorted(all_param_labels)
+                for label in sorted_labels:
+                    group = np.array(all_experiment_values[label])
+                    mean = np.mean(group, axis=0)
+                    mean_values_matrix.append(mean)
 
-                for metric in data[metric_name]:
-                    values = metric[0]
-                    label = metric[1]
-                    if values:
-                        values_matrix.append(values)
-                        param_labels.append(label)
+                df = pd.DataFrame(mean_values_matrix, index=sorted_labels).T
 
-                if values_matrix:
-                    sorted_labels, sorted_values = zip(*sorted(zip(param_labels, values_matrix), key=lambda x: x[0]))
-                    df = pd.DataFrame(sorted_values, index=sorted_labels).T
+                sns.heatmap(df, ax=ax, cbar=show_cbar, cbar_ax=cbar_ax if show_cbar else None,
+                            vmin=0, vmax=100, linewidths=0.5, linecolor='gray')
+                show_cbar = False
 
-                    sns.heatmap(df, ax=ax, cbar=show_cbar, cbar_ax=cbar_ax if show_cbar else None,
-                                vmin=0, vmax=100, linewidths=0.5, linecolor='gray')
+                ax.set_title(f"{metric_name} - {base_path.split('/')[-1]}", fontsize=9)
 
-                    show_cbar = False  # Ya mostramos el colorbar, no lo volvemos a mostrar
-
-                    ax.set_title(f"{metric_name} - {path.split('/')[-1]}", fontsize=9)
-
-                    if col == 0:
-                        ax.set_ylabel("Timestamp", fontsize=8)
-                    else:
-                        ax.set_ylabel("")
-                        ax.set_yticks([])
-
-                    if row == rows - 1:
-                        xLabel = r'$\epsilon$' if path.split("/")[-1] == "ELDP" else "k"
-                        ax.set_xlabel(xLabel, fontsize=8)
-                    else:
-                        ax.set_xlabel("")
-                        ax.set_xticks([])
-
-                    ax.tick_params(axis='both', labelsize=7)
+                if col == 0:
+                    ax.set_ylabel("Timestamp", fontsize=8)
                 else:
-                    ax.set_visible(False)
+                    ax.set_ylabel("")
+                    ax.set_yticks([])
 
-        # Etiqueta en la colorbar
+                if row == rows - 1:
+                    xLabel = r'$\epsilon$' if "ELDP" in base_path else "k"
+                    ax.set_xlabel(xLabel, fontsize=8)
+                else:
+                    ax.set_xlabel("")
+                    ax.set_xticks([])
+
+                ax.tick_params(axis='both', labelsize=7)
+
         cbar_ax.set_ylabel("Similaritat (%)", fontsize=10)
         cbar_ax.tick_params(labelsize=8)
         plt.show()
