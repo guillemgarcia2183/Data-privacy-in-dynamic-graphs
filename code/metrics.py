@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -358,6 +358,7 @@ class Metrics:
                 json.dump(results, f)
 
     def viewMeanSimilarities(self):
+        """Visualitzar les mètriques de similaritat de cada mètode en un gràfic, donat un fitxer"""
         folders = dp.METRICS
         results = {}
 
@@ -382,12 +383,17 @@ class Metrics:
                         if metric not in results[method]:
                             results[method][metric] = {}
 
+
                         for values, param in entries:
                             values = np.array(values)
                             param = float(param)
                             if param not in results[method][metric]:
                                 results[method][metric][param] = []
                             results[method][metric][param].append(values.mean())
+
+        # En cas d'aquest fitxer que no s'ha fet ELDP, només mostrar KDA.
+        if FILE.startswith("insecta-ant"):
+            results = {"KDA": results["KDA"]}
 
         # Pas 2: Graficar
         num_methods = len(results)
@@ -399,7 +405,7 @@ class Metrics:
         for idx, (method, metrics) in enumerate(results.items()):
             row, col = divmod(idx, 3)
             ax = axes[row][col]
-
+            
             for metric, param_dict in metrics.items():
                 params = sorted(param_dict.keys())
                 means = [np.mean(param_dict[p]) for p in params]
@@ -416,7 +422,7 @@ class Metrics:
 
             ax.set_title(title)
             ax.set_xlabel(xLabel)
-            ax.set_ylabel("Percentatge de similaritat (%)")
+            ax.set_ylabel("Similaritat (%)")
             ax.set_ylim([-5, 105])
             ax.set_yticks(np.arange(0, 101, 10))
             ax.grid(True)
@@ -521,12 +527,15 @@ class Metrics:
         all_metrics = ["Jaccard", "DeltaConnectivity", "Jaccard Betweenness", "Jaccard Closeness", "Jaccard Degree"]
         num_methods = len(base_folders)
 
-        cols = len(base_folders)
+        cols = num_methods
+        if FILE.startswith("insecta-ant"):
+            cols = 1
+            
         rows = len(all_metrics) * int(np.ceil(num_methods / cols))
 
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 2.5), squeeze=False)
-        fig.suptitle(f"Mitjana de mètriques per timestamp en: {FILE}", fontsize=12)
-        fig.subplots_adjust(hspace=0.4, wspace=0.2, top=0.9, right=0.9)
+        fig.suptitle(f"Mitjana de mètriques de similaritat per timestamp en {FILE} \n #Experiments = 5", fontsize=12)
+        fig.subplots_adjust(hspace=0.4, wspace=0.1, top=0.95, right=0.9)
 
         cbar_ax = fig.add_axes([0.91, 0.15, 0.015, 0.7])
         show_cbar = True
@@ -651,7 +660,7 @@ class Metrics:
             cols = 3
             rows = (num_plots + cols - 1) // cols
             fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
-            fig.suptitle(f'Densitats en {file}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
+            fig.suptitle(f'Densitats en {file}\nMètode de protecció: {path.split("/")[-1]}, #Experiments = 5', fontsize=12)
             fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
 
             for idx, key in enumerate(sorted_keys):
@@ -662,6 +671,7 @@ class Metrics:
                 # Transponer para obtener listas separadas de densitats originals i protegides
                 original_all = np.array([[x[0] for x in run] for run in group])
                 protected_all = np.array([[x[1] for x in run] for run in group])
+
                 timestamps = np.arange(original_all.shape[1])
 
                 original_mean = np.mean(original_all, axis=0)
@@ -726,7 +736,6 @@ class Metrics:
 
             # Agrupar por valor del parámetro (ε o k)
             grouped_results = {}
-            print(all_results)
             for result in all_results:
                 degrees = result[0]  # lista de pares (original, protegido)
                 parameter = result[1]
@@ -743,8 +752,8 @@ class Metrics:
             cols = 3
             rows = (num_plots + cols - 1) // cols
             fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
-            fig.suptitle(f'Densitats en {file}\nMètode de protecció: {path.split("/")[-1]}', fontsize=12)
-            fig.subplots_adjust(hspace=0.6, wspace=0.4, top=0.88, bottom=0.08)
+            fig.suptitle(f'Graus en {file}\nMètode de protecció: {path.split("/")[-1]}, #Experiments = 5', fontsize=12)
+            fig.subplots_adjust(hspace=0.2, wspace=0.2, top=0.88, bottom=0.125)
 
             for idx, key in enumerate(sorted_keys):
                 row, col = divmod(idx, cols)
@@ -752,27 +761,40 @@ class Metrics:
                 group = grouped_results[key]
 
                 # Transponer para obtener listas separadas de densitats originals i protegides
-                original_all = np.array([[x[0] for x in run] for run in group])
-                protected_all = np.array([[x[1] for x in run] for run in group])
-                timestamps = np.arange(original_all.shape[1])
+                original_means = np.array([[x[0][0] for x in run] for run in group])
+                original_medians = np.array([[x[0][1] for x in run] for run in group])
+                protected_means = np.array([[x[1][0] for x in run] for run in group])
+                protected_medians = np.array([[x[1][1] for x in run] for run in group])
+                
+                timestamps = np.arange(original_means.shape[1])
 
-                original_mean = np.mean(original_all, axis=0)
-                protected_mean = np.mean(protected_all, axis=0)
+                original_means_std = np.std(original_means, axis=0)
+                original_medians_std = np.std(original_medians, axis=0)
+                protected_means_std = np.std(protected_means, axis=0)
+                protected_medians_std = np.std(protected_medians, axis=0)
 
-                original_std = np.std(original_all, axis=0)
-                protected_std = np.std(protected_all, axis=0)
+                original_means = np.mean(original_means, axis=0)
+                original_medians = np.mean(original_medians, axis=0)
+                protected_means = np.mean(protected_means, axis=0)
+                protected_medians = np.mean(protected_medians, axis=0)
 
                 # Línea + desviació típica
-                ax.plot(timestamps, original_mean, label="Graf original", marker='o')
-                ax.fill_between(timestamps, original_mean - original_std, original_mean + original_std, alpha=0.2)
+                ax.plot(timestamps, original_means, label="Mitjana graus grafs originals", marker='o', color='#1f77b4')
+                ax.fill_between(timestamps, original_means - original_means_std, original_means + original_means_std, alpha=0.2, color='#1f77b4')
+                
+                ax.plot(timestamps, original_medians, label="Mediana graus grafs originals", marker='x', color='#1f77b4', linestyle='--')
+                ax.fill_between(timestamps, original_medians - original_medians_std, original_medians + original_medians_std, alpha=0.2, color='#1f77b4')
 
-                ax.plot(timestamps, protected_mean, label="Graf protegit", marker='o')
-                ax.fill_between(timestamps, protected_mean - protected_std, protected_mean + protected_std, alpha=0.2)
+                ax.plot(timestamps, protected_means, label="Mitjana graus grafs protegits", marker='o', color='#ff7f0e')
+                ax.fill_between(timestamps, protected_means - protected_means_std, protected_means + protected_means_std, alpha=0.2, color='#ff7f0e')
+                
+                ax.plot(timestamps, protected_medians, label="Mediana graus grafs protegits", marker='x', linestyle='--', color='#ff7f0e')
+                ax.fill_between(timestamps, protected_medians - protected_medians_std, protected_medians + protected_medians_std, alpha=0.2, color='#ff7f0e')   
 
                 if row == rows - 1:
                     ax.set_xlabel("Timestamp")
                 if col == 0:
-                    ax.set_ylabel("Densitat")
+                    ax.set_ylabel("Graus")
 
                 typeProtection = r'$\epsilon$' if "ELDP" in path else "k"
                 ax.set_title(f"{typeProtection} = {key}")
@@ -787,7 +809,7 @@ class Metrics:
             handles, labels = axes[0][0].get_legend_handles_labels()
             fig.legend(handles, labels, loc='lower center', ncol=2)
 
-            plt.show()
+            plt.show()        
 
         
     def visualizeMetrics(self):
@@ -806,10 +828,11 @@ class Metrics:
                 self.viewDensities(file)
                 self.viewDegrees(file)
         else:
-            # self.viewMeanSimilarities()
-            # self.viewIndividualSimilarities()
-            # self.viewDensities(FILE)
+            #self.viewMeanSimilarities()
+            #self.viewIndividualSimilarities()
+            self.viewDensities(FILE)
             self.viewDegrees(FILE)
+
 
 if __name__ == "__main__":
     metric = Metrics(mode = 2)
