@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -810,8 +810,7 @@ class Metrics:
             fig.legend(handles, labels, loc='lower center', ncol=2)
 
             plt.show()        
-
-        
+     
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
@@ -828,11 +827,11 @@ class Metrics:
                 self.viewDensities(file)
                 self.viewDegrees(file)
         else:
-            #self.viewMeanSimilarities()
-            #self.viewIndividualSimilarities()
+            self.viewMeanSimilarities()
+            self.viewIndividualSimilarities()
             self.viewDensities(FILE)
             self.viewDegrees(FILE)
 
 
 if __name__ == "__main__":
-    metric = Metrics(mode = 2)
+    metric = Metrics(mode = 1)

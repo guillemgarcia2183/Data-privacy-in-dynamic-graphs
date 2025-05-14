@@ -1,6 +1,7 @@
 import os
 import pickle
 import data_paths as dp  
+from tqdm import tqdm
 
 def convertOutputsTxt():
     """Converteix els grafs originals i protegits en format .txt
@@ -9,7 +10,7 @@ def convertOutputsTxt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     for root_folder in folders:
-        for dirpath, dirnames, filenames in os.walk(root_folder):
+        for dirpath, dirnames, filenames in tqdm(os.walk(root_folder), desc="Conversió de grafs en .txt", unit="repositori"):
             for file in filenames:
                 if not file.endswith('.pkl'):
                     continue  
