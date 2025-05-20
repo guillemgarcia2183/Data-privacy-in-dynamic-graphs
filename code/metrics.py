@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[-1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -98,7 +98,7 @@ class Metrics:
         # Calculem el coeficient de Jaccard i el retornem en forma de percentatge
         return (intersection / union)*100
 
-    def degreeMatrices(self, graph):
+    def degreeMatrix(self, graph):
         """Obtenir les matrius diagonals de graus del graf
 
         Args:
@@ -139,7 +139,7 @@ class Metrics:
         """
         identityMatrix = np.identity(graph.number_of_nodes())
         # print(f"Identity Matrix: {identityMatrix}")
-        degreeMatrix, maxDegree = self.degreeMatrices(graph)
+        degreeMatrix, maxDegree = self.degreeMatrix(graph)
         adjacencyMatrix = nx.to_numpy_array(graph)
         # print(f"Adjacency Matrix: {adjacencyMatrix}")
         influence = self.influenceNeighbors(maxDegree)
@@ -533,7 +533,7 @@ class Metrics:
             
         rows = len(all_metrics) * int(np.ceil(num_methods / cols))
 
-        fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 2.5), squeeze=False)
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 2.5), squeeze=False)
         fig.suptitle(f"Mitjana de mètriques de similaritat per timestamp en {FILE} \n #Experiments = 5", fontsize=12)
         fig.subplots_adjust(hspace=0.4, wspace=0.1, top=0.95, right=0.9)
 
@@ -834,4 +834,4 @@ class Metrics:
 
 
 if __name__ == "__main__":
-    metric = Metrics(mode = 1)
+    metric = Metrics(mode = 2)

@@ -87,7 +87,7 @@ La preocupació dels grafs temporals és que des del punt de vista d'un atacant,
 * Per ε-ELDP: Def 1. Def 2. Def 3. Proposition 1 [4]
     * Anàlisi: L'algorisme afegeix un soroll a cada graf que es conté de forma individual i paral·lelament, que compleix ε-Edge Local DP, i a part manté la densitat del graf original. Un atacant (només amb l'informació protegida) no pot treure informació dels grafs individuals, a causa de l'aletorietat del soroll afegit. És a dir, no pot conèixer si les relacions dels nodes són reals o no. Si es tenen tots els grafs protegits, de forma global només es pot arribar a saber quina era aproximadament la densitat mitjana dels grafs originals, ja que aquest algorisme permet preservar-la (afegir/treure soroll d'una forma anivellada). Ara bé, si es tenen els grafs originals, es pot arribar a veure a partir d'aquests quines són les relacions reals dels nodes, i es podria inferir quin soroll s'ha afegit de forma específica en cada graf. 
 
-* Per K-degree Anonimity: Esquema enforme anonimity, realizability i graph construction, def. graf realitzable [3], [11], [12].
+* Per K-degree Anonimity: Esquema enforme anonimity, realizability i graph construction, def. graf realitzable [3], [8], [9].
     * Anàlisi: Es basa en el principi de K-anonimitat, pels graus d'un graf. L'idea és fer que dintre d'un graf els graus es repeteixin almenys k vegades. Però, per grafs dinàmics s'ha de tenir en compte que també ha de ser indistingible el graf almenys k vegades, per assegurar que hi hagi incertesa. Hi ha tres etapes dintre del procés de K-anonimity: anonimity, realizability i graph construction. [3]. Anonimitzem cada seqüència de graus, comprovem que són graficables amb els principis de Erdös Gallai (que poden generar un graf simple), en cas de no ser-ho s'aproxima a la seqüència mínima distància, i per últim reconstruïm el graf amb Havel-Hakimi.
 
      
@@ -114,25 +114,22 @@ arXiv preprint arXiv:1805.01419, 2018. Disponible en: https://arxiv.org/abs/1805
 [7] B. Rozemberczki, Awesome Community Detection - Temporal Networks. GitHub. 
 Disponible en: https://github.com/benedekrozemberczki/awesome-community-detection/blob/master/chapters/temporal.md. [Darrer accés: 26-feb-2025]. 
 
-[8] P. Sarkar, D. Chakrabarti i M. Jordan, "Nonparametric Link Prediction in Dynamic Networks", arXiv preprint arXiv:1206.6394, 2012.
-Disponible en: https://arxiv.org/pdf/1206.6394. [Darrer accés: 2-mar-2025].
+[8] "Havel–Hakimi algorithm", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Havel%E2%80%93Hakimi_algorithm. [Darrer accés: 13-abr-2025].
 
-[9] X. Li, N. Du, H. Li, K. Li, J. Gao i A. Zhang, "Deep Learning Approach to Link Prediction in Dynamic Networks", SIAM, 2014.
-Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darrer accés: 2-mar-2025].
+[9] "Erdős–Gallai theorem", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Gallai_theorem. [Darrer accés: 14-abr-2025].
 
-[10] J. You, T. Du, J. Leskovec "ROLAND: Graph Learning Framework for Dynamic Graphs", Conference on Knowledge Discovery and Data Mining, 2022. 
-Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025] 
+[10] D. Koutra, J. T. Vogelstein i C. Faloutsos, "DeltaCon: A Principled Massive-Graph Similarity Function with Attribution", SIAM International Conference on Data Mining (SDM), 2013. Disponible en: https://web.eecs.umich.edu/~dkoutra/papers/DeltaCon_KoutraVF_withAppendix.pdf. [Darrer accés: 19-abril-2025]. 
 
-[11] "Havel–Hakimi algorithm", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Havel%E2%80%93Hakimi_algorithm. [Darrer accés: 13-abr-2025].
+[11] H. Qin, R.-H. Li, G. Wang, X. Huang, Y. Yuan i J. X. Yu, "Mining Stable Communities in Temporal Networks by Density-Based Clustering", IEEE Transactions on Big Data, vol. 8, núm. 3, pp. 671–684, 1 juny 2022. Disponible en: https://doi.org/10.1109/TBDATA.2020.2974849. [Darrer accés: 4-maig-2025].
 
-[12] "Erdős–Gallai theorem", Wikipedia, l'enciclopèdia lliure. Disponible en: https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Gallai_theorem. [Darrer accés: 14-abr-2025].
+>[8] P. Sarkar, D. Chakrabarti i M. Jordan, "Nonparametric Link Prediction in Dynamic Networks", arXiv preprint arXiv:1206.6394, 2012.
+>Disponible en: https://arxiv.org/pdf/1206.6394. [Darrer accés: 2-mar-2025].
 
-[13] https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0228728 -- 19/04
+>[14] J. You, T. Du, J. Leskovec "ROLAND: Graph Learning Framework for Dynamic Graphs", Conference on Knowledge Discovery and Data Mining, 2022. 
+> Disponible en: https://arxiv.org/pdf/2208.07239 [Darrer accés: 6-mar-2025] 
 
-[14] https://web.eecs.umich.edu/~dkoutra/papers/DeltaCon_KoutraVF_withAppendix.pdf?utm_source=chatgpt.com -- 19/04
-
-[15] H. Qin, R. -H. Li, G. Wang, X. Huang, Y. Yuan and J. X. Yu, "Mining Stable Communities in Temporal Networks by Density-Based Clustering," in IEEE Transactions on Big Data, vol. 8, no. 3, pp. 671-684, 1 June 2022, doi: 10.1109/TBDATA.2020.2974849. -- 04/05
-
+>[9] X. Li, N. Du, H. Li, K. Li, J. Gao i A. Zhang, "Deep Learning Approach to Link Prediction in Dynamic Networks", SIAM, 2014.
+>Disponible en: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973440.33. [Darrer accés: 2-mar-2025].
 
 > F. Beck, M. Burch, S. Diehl i D. Weiskopf, "The State of the Art in Visualizing Dynamic Graphs", 
 > Eurographics Conference on Visualization (EuroVis) - State of The Art Report, 2014. 
