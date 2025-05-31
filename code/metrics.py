@@ -22,7 +22,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[-2] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
 
 class Metrics:
     __slots__ = ()
@@ -447,80 +447,88 @@ class Metrics:
 
     def viewMeanSimilaritiesGrouped(self, files, name):
         folders = dp.METRICS
-
         n_rows = len(files)
         n_cols = len(folders)
 
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4.5, n_rows * 3.0), squeeze=False)
-        fig.suptitle(f"Mitjana de mètriques de similaritat en {name}", fontsize=12)
-        fig.subplots_adjust(hspace=0.5, wspace=0.3, bottom=0.15)  # espacio inferior para leyenda
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4), squeeze=False)
+        fig.suptitle(f"Mitjana de mètriques de similaritat en {name} \n #Experiments = 5", fontsize=14)
+        fig.subplots_adjust(hspace=0.5, wspace=0.3, bottom=0.15)
 
-        # Lista para almacenar todos los manejadores de leyendas
         all_legend_handles = []
         all_legend_labels = []
 
-        for row_idx, file in enumerate(files):
+        for row_idx, file_prefix in enumerate(files):
             for col_idx, path in enumerate(folders):
+                method = os.path.basename(path)
                 ax = axes[row_idx, col_idx]
-                dir = os.path.join(path, file + ".json")
+                results = {}
 
-                try:
-                    with open(dir, "r") as f:
-                        data = json.load(f)
-                except:
+                # Recolectar todos los archivos que empiezan con el prefijo
+                for root, _, fs in os.walk(path):
+                    for fname in fs:
+                        if not fname.endswith(".json") or not fname.startswith(file_prefix):
+                            continue
+
+                        with open(os.path.join(root, fname), "r") as f:
+                            data = json.load(f)
+
+                        for metric, entries in data.items():
+                            if metric in ["Densities", "Degrees"]:
+                                continue
+                            if metric not in results:
+                                results[metric] = {}
+
+                            for values, param in entries:
+                                values = np.array(values)
+                                param = float(param)
+                                if param not in results[metric]:
+                                    results[metric][param] = []
+                                results[metric][param].append(values.mean())
+
+                if not results:
                     ax.set_visible(False)
                     continue
 
-                for key in data:
-                    listAverages = []
-                    listParameters = []
-                    for metric in data[key]:
-                        if key != "Densities":
-                            meanMetric = np.array(metric[0]).mean()
-                            parameter = metric[1]
-                            listAverages.append(meanMetric)
-                            listParameters.append(parameter)
+                # Graficar cada métrica
+                for metric, param_dict in results.items():
+                    params = sorted(param_dict.keys())
+                    means = [np.mean(param_dict[p]) for p in params]
+                    stds = [np.std(param_dict[p]) for p in params]
 
-                    if not listAverages:
-                        continue
+                    line = ax.plot(params, means, label=metric, marker='o')[0]
+                    ax.fill_between(params, np.array(means) - np.array(stds), np.array(means) + np.array(stds), alpha=0.2)
 
-                    # Ordenar las métricas por parámetros
-                    listParameters, listAverages = zip(*sorted(zip(listParameters, listAverages)))
-
-                    # Graficar la línea y añadirla a la lista de leyendas
-                    line, = ax.plot(listParameters, listAverages, marker='o', label=key)
-                    if key not in all_legend_labels:
+                    if metric not in all_legend_labels:
                         all_legend_handles.append(line)
-                        all_legend_labels.append(key)
+                        all_legend_labels.append(metric)
 
-                method = path.split("/")[-1]
-                ax.set_title(f"{file} - {method}", fontsize=8)
-
-                # Solo mostrar etiquetas en los ejes exteriores
+                ax.set_title(f"{file_prefix} - {method}", fontsize=10)
                 xLabel = r'$\epsilon$' if method == "ELDP" else "k"
+
                 if row_idx == n_rows - 1:
-                    ax.set_xlabel(xLabel, fontsize=8)
+                    ax.set_xlabel(xLabel, fontsize=9)
                 else:
-                    ax.set_xticklabels([])  # No mostrar etiquetas de x
-                    ax.set_xlabel("")  # Sin título en el eje x
+                    ax.set_xticklabels([])
+                    ax.set_xlabel("")
 
                 if col_idx == 0:
-                    ax.set_ylabel("Similaritat (%)", fontsize=8)
+                    ax.set_ylabel("Similaritat (%)", fontsize=9)
                 else:
-                    ax.set_yticklabels([])  # No mostrar etiquetas de y
-                    ax.set_ylabel("")  # Sin título en el eje y
+                    ax.set_yticklabels([])
+                    ax.set_ylabel("")
 
                 ax.set_ylim([-5, 105])
                 ax.set_yticks(np.arange(0, 101, 20))
                 ax.grid(True)
                 ax.tick_params(axis='both', labelsize=7)
 
-        # Leyenda global (abajo centrada)
         if all_legend_handles:
             fig.legend(all_legend_handles, all_legend_labels, loc='lower center', ncol=len(all_legend_labels), fontsize='medium')
 
-        plt.tight_layout(rect=[0, 0.08, 1, 0.95])  # espacio para leyenda y título
+        plt.tight_layout(rect=[0, 0.08, 1, 0.95])
         plt.show()
+
+
 
     def viewIndividualSimilarities(self):
         base_folders = dp.METRICS  # Ej. ['metrics/ELDP', 'metrics/KDA']
@@ -815,10 +823,11 @@ class Metrics:
         """Visualitza totes les mètriques generades d'un fitxer.
         """
         if FILE.endswith("CollegeMsg"):
-            files = ["HOUR_CollegeMsg", "DAY_CollegeMsg", "WEEK_CollegeMsg", "MONTH_CollegeMsg"]
+            files = ["DAY_CollegeMsg", "WEEK_CollegeMsg", "MONTH_CollegeMsg"]
             name = "CollegeMsg"
         else:
-            files = ["HOUR_ia-enron-employees", "DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
+            # files = ["HOUR_ia-enron-employees", "DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
+            files = ["DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
             name  = "ia-enron-employees"
 
         if  FILE.endswith("CollegeMsg") or FILE.endswith("ia-enron-employees"):
