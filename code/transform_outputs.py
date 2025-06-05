@@ -12,7 +12,7 @@ def convertOutputsTxt():
     for root_folder in folders:
         for dirpath, dirnames, filenames in tqdm(os.walk(root_folder), desc="Conversió de grafs en .txt", unit="repositori"):
             for file in filenames:
-                if not file.endswith('.pkl'):
+                if not file.endswith('.pkl') or file.startswith('HOUR_CollegeMsg'):
                     continue  
 
                 input_path = os.path.join(dirpath, file)

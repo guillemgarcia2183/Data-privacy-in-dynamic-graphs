@@ -826,7 +826,6 @@ class Metrics:
             files = ["DAY_CollegeMsg", "WEEK_CollegeMsg", "MONTH_CollegeMsg"]
             name = "CollegeMsg"
         else:
-            # files = ["HOUR_ia-enron-employees", "DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
             files = ["DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
             name  = "ia-enron-employees"
 
