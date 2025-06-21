@@ -35,7 +35,7 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 
 </div>
 
-> **Note**  
+> [!NOTE]
 > You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns:
 
 | From_node | To_node | Timestamp | Weight (optional) |
