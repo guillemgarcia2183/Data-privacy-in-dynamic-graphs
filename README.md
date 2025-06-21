@@ -40,7 +40,7 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 
 <div align="center">
   
-| From_node | To_node | Timestamp | Weight (optional) |
+| From_node | To_node | Weight (optional) | Timestamp |
 |-----------|---------|-----------|-------------------|
 
 </div>
