@@ -33,6 +33,8 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 | Enron-Employees | 151 | 50.5K | True | True | 16067 | 
 | CollegeMsg | 1899 | 59.8K | True | False | 58911 | 
 
+</div>
+
 > **Note**  
 > You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns:
 
