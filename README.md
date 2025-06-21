@@ -33,15 +33,13 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 | Enron-Employees | 151 | 50.5K | True | True | 16067 | 
 | CollegeMsg | 1899 | 59.8K | True | False | 58911 | 
 
-> [!NOTE]
-> You can add your own dataset, but it must be in .txt or .json format and include the following columns:
+> **Note**  
+> You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns:
 
-<div align="center">
-  
-| From_node | To_node | Timestamp | Weight | 
+| From_node | To_node | Timestamp | Weight (optional) |
+|-----------|---------|-----------|-------------------|
 
-> The weight parameter is optional and only used for graphs that include edge weights.
-
+> The `weight` column is optional and only used for graphs that include edge weights.
 
 
 
