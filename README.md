@@ -11,7 +11,7 @@
 >compare temporal graphs. Specifically, one of the goals is to analyze whether the protected graphs
 >preserve their features when community detection algorithms are applied, using TSCAN for this task.
 
-## How to run  
+## Installation and how to run  
 Follow the steps below to clone the repository, install the dependencies, and run the code:
 
 ```bash
@@ -38,10 +38,12 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 > [!NOTE]
 > You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns. The `weight` column is optional and only used for graphs that include edge weights.
 
+<div align="center">
+  
 | From_node | To_node | Timestamp | Weight (optional) |
 |-----------|---------|-----------|-------------------|
 
-
+</div>
 
 
 
