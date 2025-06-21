@@ -36,12 +36,12 @@ Here you can find the datasets used to apply the privacy methods and evaluate th
 </div>
 
 > [!NOTE]
-> You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns:
+> You can add your own dataset, but it must be in `.txt` or `.json` format and include the following columns. The `weight` column is optional and only used for graphs that include edge weights.
 
 | From_node | To_node | Timestamp | Weight (optional) |
 |-----------|---------|-----------|-------------------|
 
-> The `weight` column is optional and only used for graphs that include edge weights.
+
 
 
 
