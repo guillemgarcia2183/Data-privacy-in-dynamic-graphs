@@ -10,11 +10,9 @@ import seaborn as sns
 import pandas as pd
 import math
 
-files = ['HOUR_CollegeMsg', 
-         'DAY_CollegeMsg',
+files = ['DAY_CollegeMsg',
          'WEEK_CollegeMsg',
          'MONTH_CollegeMsg',
-         'HOUR_ia-enron-employees',
          'DAY_ia-enron-employees',
          'WEEK_ia-enron-employees',
          'MONTH_ia-enron-employees',
@@ -22,7 +20,7 @@ files = ['HOUR_CollegeMsg',
          'mammalia-voles-rob-trapping',
          'aves-sparrow-social'] 
 
-FILE = files[1] # Posa el nom del fitxer que vols calcular/visualitzar les mètriques en cada mètode, en string
+FILE = files[1] # Posa el fitxer en que vols calcular/visualitzar les mètriques
 
 class Metrics:
     __slots__ = ()
@@ -34,7 +32,7 @@ class Metrics:
         Args:
             mode (int, optional): Mode a executar. Mode 1: Calcula les mètriques del fitxer FILE
                                                    Mode 2: Llegeix i visualitza les mètriques càlculades
-                                                   Defaults to None (No s'executa cap mode).
+                                                  
         """ 
         if mode == 1:
             self.computeMetrics()
@@ -68,7 +66,7 @@ class Metrics:
         return len(union)
 
     def jaccardIndex(self, g1, g2):
-        """Calcular el coeficient de Jaccard entre dos grafs (edge overlap)
+        """Calcular el coeficient de Jaccard entre dos grafs (intersection over union)
 
         Args:
             g1, g2 (nx.Graph): Grafs a calcular el coeficient de Jaccard
@@ -89,8 +87,6 @@ class Metrics:
         intersection = self.edgeIntersection(edgesG1, edgesG2)
         union = self.edgeUnion(edgesG1, edgesG2)
  
-        # print()
-
         # Quan un dels dos grafs són buits o els dos són buits
         if union == 0:
             return 1.0 if intersection == 0 else 0.0  
@@ -310,9 +306,6 @@ class Metrics:
         """Calcula les mètriques de tots els fitxers protegits i els guarda en JSON."""
         originalFiles, protectedDict = self.readMetrics()
 
-        if not FILE:
-            raise ValueError("No file selected. Please select a file to compute metrics.")
-
         with open(os.path.join(originalFiles[FILE][0], originalFiles[FILE][1]), 'rb') as f:
             originalGraphs = pickle.load(f)
 
@@ -446,6 +439,12 @@ class Metrics:
         plt.show()
 
     def viewMeanSimilaritiesGrouped(self, files, name):
+        """Visualitzar les mètriques de similaritat pels datasets amb agrupacions temporals
+
+        Args:
+            files (List): Fitxers a visualitzar
+            name (str): Nom en comú dels fitxers
+        """
         folders = dp.METRICS
         n_rows = len(files)
         n_cols = len(folders)
@@ -463,7 +462,7 @@ class Metrics:
                 ax = axes[row_idx, col_idx]
                 results = {}
 
-                # Recolectar todos los archivos que empiezan con el prefijo
+                # Buscar recursivament arxius JSON amb el prefix del fitxer
                 for root, _, fs in os.walk(path):
                     for fname in fs:
                         if not fname.endswith(".json") or not fname.startswith(file_prefix):
@@ -528,10 +527,10 @@ class Metrics:
         plt.tight_layout(rect=[0, 0.08, 1, 0.95])
         plt.show()
 
-
-
     def viewIndividualSimilarities(self):
-        base_folders = dp.METRICS  # Ej. ['metrics/ELDP', 'metrics/KDA']
+        """Visualitzar mapes de calor per cada mètrica de similaritat del fitxer
+        """
+        base_folders = dp.METRICS  
         all_metrics = ["Jaccard", "DeltaConnectivity", "Jaccard Betweenness", "Jaccard Closeness", "Jaccard Degree"]
         num_methods = len(base_folders)
 
@@ -562,7 +561,6 @@ class Metrics:
                     if not os.path.isdir(subfolder_path):
                         continue
 
-                    # Buscar recursivamente archivos JSON cuyo nombre empiece por FILE
                     for root, _, files in os.walk(subfolder_path):
                         for file in files:
                             if file.endswith(".json") and file.startswith(FILE):
@@ -624,7 +622,11 @@ class Metrics:
         plt.show()
 
     def viewDensities(self, file):
-        """Visualitzar les densitats per cada paràmetre utilitzat de cada algorisme"""
+        """Visualitzar les densitats per cada paràmetre utilitzat de cada algorisme
+
+        Args:
+            file (str): Fitxer al veure les densitats
+        """
         folders = dp.METRICS  
 
         for path in folders:
@@ -716,13 +718,16 @@ class Metrics:
             plt.show()
 
     def viewDegrees(self, file):
-        """Visualitzar les densitats dels grafs originals i protegits"""
+        """Visualitzar els graus dels grafs originals i protegits
+
+        Args:
+            file (str): Fitxer al veure les densitats
+        """
         folders = dp.METRICS  
 
         for path in folders:
             all_results = []
 
-            # Buscar recursivamente archivos .json que empiecen por el nombre del fichero
             for subfolder in sorted(os.listdir(path)):
                 subfolder_path = os.path.join(path, subfolder)
                 if not os.path.isdir(subfolder_path):
@@ -742,10 +747,10 @@ class Metrics:
             if not all_results:
                 continue
 
-            # Agrupar por valor del parámetro (ε o k)
+            
             grouped_results = {}
             for result in all_results:
-                degrees = result[0]  # lista de pares (original, protegido)
+                degrees = result[0]  
                 parameter = result[1]
 
                 if parameter not in grouped_results:
@@ -756,7 +761,7 @@ class Metrics:
             sorted_keys = sorted(grouped_results.keys())
             num_plots = len(sorted_keys)
 
-            # Crear subplots
+            # Crear els subplots
             cols = 3
             rows = (num_plots + cols - 1) // cols
             fig, axes = plt.subplots(rows, cols, figsize=(6 * cols, 4 * rows), squeeze=False)
@@ -768,7 +773,6 @@ class Metrics:
                 ax = axes[row][col]
                 group = grouped_results[key]
 
-                # Transponer para obtener listas separadas de densitats originals i protegides
                 original_means = np.array([[x[0][0] for x in run] for run in group])
                 original_medians = np.array([[x[0][1] for x in run] for run in group])
                 protected_means = np.array([[x[1][0] for x in run] for run in group])

@@ -1,4 +1,3 @@
-### Classe per llegir el fitxer d'entrada. 
 import pandas as pd
 import json
 
@@ -81,7 +80,7 @@ def read_json(tp):
     return df
 
 class Reader:
-    """Mòdul lector de dades
+    """Mòdul lector de dades, converteix els fitxers en datasets de pandas
     """
     # Definició de slots per evitar la creació de noves instàncies de la classe i aprofitar memòria
     __slots__ = ('filename', 'df')

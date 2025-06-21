@@ -47,7 +47,7 @@ class TestMetrics(unittest.TestCase):
         """Testing DeltaCon: matrius de graus, scores, etc.
         """
         # Matriu de graus
-        degreeMatrix, maxDegree = self.metrics.degreeMatrices(self.g1)
+        degreeMatrix, maxDegree = self.metrics.degreeMatrix(self.g1)
         self.assertEqual(degreeMatrix.tolist(), [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]])
         self.assertEqual(maxDegree, 2)
 

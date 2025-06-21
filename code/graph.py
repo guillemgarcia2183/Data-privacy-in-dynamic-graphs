@@ -7,15 +7,6 @@ from tqdm import tqdm
 import pandas as pd
 import os
 
-# import cv2
-# import tkinter as tk
-
-# Obtenir resolució de la pantalla
-# root = tk.Tk()
-# WIDTH = root.winfo_screenwidth()
-# HEIGHT = root.winfo_screenheight()
-# root.destroy()
-
 class GraphProtection:  
     """Mòdul creador de grafs
     """
@@ -29,6 +20,7 @@ class GraphProtection:
             filename (str): Nom del arxiu
             input_tuple (tuple): Tuple amb la informació del dataset (path, weighted, directed, format)
             df (pd.DataFrame): Dataframe amb la informació del dataset
+            group_option (str, optional): Opció de agrupació del dataset. Per defecte és None.
         """
         self.path, self.weighted, self.directed, self.format = input_tuple
         self.filename = filename
@@ -139,13 +131,17 @@ class GraphProtection:
         return df_by_year
     
     def iterate_graph(self, group):
+        """Canviar de snapshot del graf temporal, treient les arestes del timestamp actual i afegint les del següent.
+
+        Args:
+            group (pd.DataFrame): Dataset que conté les arestes del timestamp actual
+        """
         self.graph.clear_edges() # Netejem les arestes del anterior plot
         if not self.weighted:
             self.graph.add_edges_from(zip(group["From"], group["To"])) # Afegim les arestes del timestamp o data actual
         else:
             edges = zip(group["From"], group["To"], group["Weight"])
             self.graph.add_weighted_edges_from(edges)
-
 
     def visualize_graph(self):
         """Visualitzar cada timestamp del graf temporal
@@ -182,62 +178,24 @@ class GraphProtection:
         with open(pg, "wb") as f:
             pickle.dump(protected_graphs, f)
             
-    # def create_animation(self, grouped_df):
-    #     output = "CollegeMsg.mp4"
-    #     frame_rate = 2  # Adjust speed
-
-    #     # Set high DPI and figure size
-    #     dpi = 200  # High DPI for better quality
-    #     fig_width = WIDTH / dpi
-    #     fig_height = HEIGHT / dpi
-
-    #     fig, ax = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi)
-    #     plt.subplots_adjust(left=0.05, right=0.95, top=0.90, bottom=0.05)  # Avoid title cutoff
-
-    #     # Get figure size in pixels
-    #     fig.canvas.draw()
-    #     width, height = fig.canvas.get_width_height()
-
-    #     # Define OpenCV video writer
-    #     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    #     video = cv2.VideoWriter(output, fourcc, frame_rate, (width, height))
-
-    #     for time, group in grouped_df:
-    #         print(f"Actual date time: {time}")
-    #         self.graph.clear_edges()
-    #         self.graph.add_edges_from(zip(group["From"], group["To"]))
-
-    #         ax.clear()
-    #         ax.set_title(f"Missatges enviats en la data: {time}", fontsize=12.5, fontweight='bold', pad=20)
-
-    #         # Draw graph with better sizing
-    #         nx.draw(self.graph, self.node_positions, with_labels=True, node_color='lightblue', edge_color='red', node_size=40, font_size=2, arrows=True, width=0.5)
-
-    #         # Convert Matplotlib figure to OpenCV frame
-    #         fig.canvas.draw()
-    #         frame = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-    #         frame = frame.reshape(height, width, 3)
-    #         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-    #         video.write(frame)
-            
-    #     video.release()
-    #     print("Video saved successfully!")
-
-    # def animate_graph(self):
-    #     self.df["Date"] = pd.to_datetime(self.df["Timestamp"], unit="s").dt.date
-    #     grouped_df = self.df.groupby("Date")
-    #     self.create_animation(grouped_df)
-
 class ELDP(GraphProtection):
     __slots__ = ('nodes', 'epsilon')
     def __init__(self, filename, input_tuple, df, group_option=None, epsilon=0.5):
+        """Inicialització del mòdul ELDP
+
+        Args:
+            filename (str): Nom del arxiu
+            input_tuple (tuple): Tuple amb la informació del dataset (path, weighted, directed, format)
+            df (pd.DataFrame): Dataframe amb la informació del dataset
+            group_option (str, optional): Opció de agrupació del dataset. Per defecte és None.
+            epsilon (float): Paràmetre epsilon utilitzat per l'algoritme ELDP. Per defecte és 0.5.
+        """
         super().__init__(filename, input_tuple, df, group_option)
         self.epsilon = epsilon
         self.nodes = self.graph.number_of_nodes()
 
     def compute_density(self):
-        """Calcular la densitat mitjana de tots els grafs que conforma un dataset
+        """Calcular la densitat del graf actual
 
         Returns:
             float: Densitat mitjana
@@ -249,7 +207,7 @@ class ELDP(GraphProtection):
         """Calcular les probabilitats que s'usaràn per fer els noise-graphs
 
         Args:
-            epsilon (float): Paràmetre Epsilon Local Edge Differential Privacy. Segons el seu valor, els grafs tindràn més o menys soroll.
+            density (float): Densitat del graf actual
 
         Returns:
             p0, p1: Probabilitats d'afegir o treure arestes pels noise-graphs
@@ -300,7 +258,7 @@ class ELDP(GraphProtection):
             g1, g2 (nx.graph): Grafs a sumar
 
         Returns:
-            nx.graph: Graf sumat
+            nx.graph: Graf resultant de la suma XOR
         """
         # Realitzem la suma XOR, fent la diferència simètrica
         graf = nx.symmetric_difference(g1, g2)
@@ -348,6 +306,15 @@ class ELDP(GraphProtection):
 class KDA(GraphProtection):
     __slots__ = ('k', 'm', 'T', 'degreeMatrix', 'indegreeMatrix', 'outdegreeMatrix')
     def __init__(self, filename, input_tuple, df, group_option=None, k=2):
+        """_summary_
+
+        Args:
+            filename (str): Nom del arxiu
+            input_tuple (tuple): Tuple amb la informació del dataset (path, weighted, directed, format)
+            df (pd.DataFrame): Dataframe amb la informació del dataset
+            group_option (str, optional): Opció de agrupació del dataset. Per defecte és None.
+            k (int): Paràmetre k que s'utilitza en k-anonymity. Per defecte és 2
+        """
         super().__init__(filename, input_tuple, df, group_option)
         self.k = k
         self.m = math.ceil(self.graph.number_of_nodes() / self.k)
@@ -736,7 +703,6 @@ class KDA(GraphProtection):
                 # Calculem el seu graf complementari
                 originalGraphs.append(self.graph.copy())
             
-            print()
             # Llista de grafs protegits
             PMatrix = self.compute_PMatrix(self.degreeMatrix, randomize)
             anonymizedDegrees= self.anonymizeDegrees(self.degreeMatrix, PMatrix)

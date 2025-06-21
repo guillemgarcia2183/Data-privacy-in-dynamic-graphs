@@ -19,19 +19,19 @@ class TestKDA(unittest.TestCase):
         """Crea una instància de KDA
         """
         # Per Testing !
-        # self.save = False # Canviar si es volen guardar els grafs resultants
-        # grouping = None
-        # self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
-        #                             '2': (dp.DATASET3, True, True, 'FILE')} 
-        # setK = [3, 5]
-        # self.numExperiments = 1
+        self.save = False # Canviar si es volen guardar els grafs resultants
+        grouping = None
+        self.dictionary_options = {'1': (dp.DATASET1, True, False, 'FILE'), 
+                                    '2': (dp.DATASET3, True, True, 'FILE')} 
+        setK = [3, 5]
+        self.numExperiments = 1
 
         
-        self.save = True
-        grouping = None
-        self.dictionary_options = {'1': (dp.DATASET3, True, False, 'FILE')}
-        setK = np.arange(2,8,1)
-        self.numExperiments = 5
+        # self.save = True
+        # grouping = None
+        # self.dictionary_options = {'1': (dp.DATASET3, True, False, 'FILE')}
+        # setK = np.arange(2,8,1)
+        # self.numExperiments = 5
 
         self.readers = [] # Llegim els fitxers i els col·loquem en una llista
         for key, value in self.dictionary_options.items():

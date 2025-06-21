@@ -47,9 +47,6 @@ class ModuleManager:
         Args:
             pretext (str): Text anterior a introduïr les opcions
             options (Dict): Diccionari on les claus determinen el número d'opció, i el valor quina opció es tracta
-
-        Returns:
-            _type_: _description_
         """
         print(pretext)
         for key,value in options.items():
@@ -106,7 +103,6 @@ class ModuleManager:
         self.options = list(selection)         
         return final_list
 
-
     def select_mode(self):
         """Menú d'opcions que pot fer el programa
 
@@ -116,8 +112,7 @@ class ModuleManager:
         pretext = "Menú d'opcions disponibles:"
         
         options = {"1": "Graph protection",
-                   "2":"Metric computation",
-                   "3": "Graph prediction"}
+                   "2":"Metric computation"}
         
         return self.select_option(pretext, options)
 
@@ -167,8 +162,7 @@ class ModuleManager:
                 graph.save_graphs(orignalGraphs, protectedGraphs, type_KDA, k)
         
         print("Protecció KDA aplicada amb èxit. Ves al directori code/output per veure els grafs guardats! \n")
-
-    
+ 
     def execute_ELDP(self):
         """Realitzar la protecció ELDP sobre els datasets seleccionats
         """
@@ -205,7 +199,7 @@ class ModuleManager:
             else:
                 self.execute_ELDP()
 
-        #! mode == '2' i mode == '3' no estan implementats, fer-ho quan toqui
+        #! mode == '2' no estan implementats, fer-ho quan toqui
 
                 
 if __name__ == "__main__":
