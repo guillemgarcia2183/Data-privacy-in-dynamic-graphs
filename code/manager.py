@@ -1,7 +1,7 @@
 from reader import Reader
-from graph import GraphProtection, KDA, ELDP
+from graph import KDA, ELDP
 import data_paths as dp
-from tqdm import tqdm
+from metrics import Metrics
 
 class ModuleManager:
     """Classe que connecta tots els mòduls de l'aplicació
@@ -39,7 +39,7 @@ class ModuleManager:
         print("################################################# \n")
         print("El següent programa es pot utilitzar com a eina per")
         print("fer anàlisi de grafs dinàmics. Permet protegir un dataset d'entrada,")
-        print("també calcular mètriques de grafs, i per últim fer predicció amb GLMs. \n")
+        print("i també calcular mètriques de grafs. \n")
 
     def select_option(self, pretext, options):
         """Seleccionador d'opcions dels menús
@@ -112,7 +112,7 @@ class ModuleManager:
         pretext = "Menú d'opcions disponibles:"
         
         options = {"1": "Graph protection",
-                   "2":"Metric computation"}
+                   "2":"Metrics"}
         
         return self.select_option(pretext, options)
 
@@ -127,23 +127,18 @@ class ModuleManager:
                    "2": "Edge-Local Differential Privacy"}
         return self.select_option(pretext, options)
 
+    def select_metric_mode(self):
+        """_summary_
+        """
+        pretext = "Tria una de les següents opcions:"
+        options = {"1": "Calcular mètriques",
+                   "2": "Visualitzar mètriques"}
+        return self.select_option(pretext, options)
+    
     def execute_KAnonimity(self):
         """Realitzar la protecció K-Anonimity sobre els datasets seleccionats
         """
         k = 1
-        random = None
-        type_KDA = None
-
-        # Preguntar per si es vol aletorietat en les particions
-        while random is None:
-            randomize = input("Vols que s'apliqui aletorietat al fer K-Anonimity? (S/N): ")
-            if randomize.upper() == 'S':
-                random = True
-                type_KDA = "KDA_RANDOM"
-            elif randomize.upper() == 'N':
-                random = False
-                type_KDA = "KDA"
-
         # Introduir una k vàlida
         while k < 2:
             try:  
@@ -157,11 +152,11 @@ class ModuleManager:
             # print(f"Options: {self.dictionary_options[idx]}")
 
             graph = KDA(reader.filename, self.dictionary_options[idx], reader.df, self.grouping_option, k)
-            orignalGraphs, protectedGraphs = graph.apply_protection(randomize=random)
+            orignalGraphs, protectedGraphs = graph.apply_protection()
             if len(orignalGraphs) > 0 and len(protectedGraphs) > 0:
-                graph.save_graphs(orignalGraphs, protectedGraphs, type_KDA, k)
+                graph.save_graphs(orignalGraphs, protectedGraphs, "KDA", 1, k)
         
-        print("Protecció KDA aplicada amb èxit. Ves al directori code/output per veure els grafs guardats! \n")
+        print("Protecció KDA aplicada amb èxit. Ves al directori code/output/KDA per veure els grafs guardats! \n")
  
     def execute_ELDP(self):
         """Realitzar la protecció ELDP sobre els datasets seleccionats
@@ -182,7 +177,7 @@ class ModuleManager:
             graph = ELDP(reader.filename, self.dictionary_options[idx], reader.df, self.grouping_option, epsilon)
             orignalGraphs, protectedGraphs = graph.apply_protection()
             if len(orignalGraphs) > 0 and len(protectedGraphs) > 0:
-                graph.save_graphs(orignalGraphs, protectedGraphs, "ELDP", epsilon)
+                graph.save_graphs(orignalGraphs, protectedGraphs, "ELDP", 1, epsilon)
 
         print("Protecció ELDP aplicada amb èxit. Ves al directori code/output per veure els grafs guardats! \n")
 
@@ -198,9 +193,22 @@ class ModuleManager:
                 self.execute_KAnonimity()
             else:
                 self.execute_ELDP()
+        elif mode == '2':
+            mode = self.select_metric_mode()
+            for reader, idx in zip(self.datasets, self.options):
+                filename = reader.filename.split(".")[0]
+                if self.grouping_option is not None:
+                    if self.grouping_option == '1':
+                        filename = "HOUR_"+ filename
+                    elif self.grouping_option == '2':
+                        filename = "DAY_" + filename 
+                    elif self.grouping_option == '3':
+                        filename = "WEEK_" + filename
+                    elif self.grouping_option == '4':
+                        filename = "MONTH_" + filename
+                    elif self.grouping_option == '5':
+                        filename = "YEAR_" + filename       
+                Metrics(int(mode), filename)
 
-        #! mode == '2' no estan implementats, fer-ho quan toqui
-
-                
 if __name__ == "__main__":
     ModuleManager()

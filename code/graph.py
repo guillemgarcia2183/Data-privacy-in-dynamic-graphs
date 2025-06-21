@@ -161,7 +161,18 @@ class GraphProtection:
         # Canvi de directori al repositori de l'aplicació
         directoryFiles = {"aves-sparrow-social.edges":"AVES-SPARROW",
                           "insecta-ant-colony5.edges": "INSECTA-ANT",
-                          "mammalia-voles-rob-trapping.edges": "MAMMALIA-VOLES"}
+                          "mammalia-voles-rob-trapping.edges": "MAMMALIA-VOLES",
+                          "HOUR_ia-enron-emplooyes.edges": "ENRON-EMPLOYEES",
+                          "DAY_ia-enron-emplooyes.edges": "ENRON-EMPLOYEES",
+                          "WEEK_ia-enron-emplooyes.edges": "ENRON-EMPLOYEES",
+                          "MONTH_ia-enron-employees.edges": "ENRON-EMPLOYEES",
+                          "YEAR_ia-enron-emplooyes.edges": "ENRON-EMPLOYEES",
+                          "HOUR_CollegeMsg.txt": "COLLEGEMSG",
+                          "DAY_CollegeMsg.txt": "COLLEGEMSG",
+                          "WEEK_CollegeMsg.txt": "COLLEGEMSG",
+                          "MONTH_CollegeMsg.txt": "COLLEGEMSG",
+                          "YEAR_CollegeMsg.txt": "COLLEGEMSG"}
+        
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         actualRepository = os.getcwd()
 

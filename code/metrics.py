@@ -23,22 +23,23 @@ files = ['DAY_CollegeMsg',
 FILE = files[1] # Posa el fitxer en que vols calcular/visualitzar les mètriques
 
 class Metrics:
-    __slots__ = ()
+    __slots__ = ('file')
     """Classe que computa i visualitza les mètriques entre dos grafs.
     """
-    def __init__(self, mode=None):
+    def __init__(self, mode, file):
         """Inicialitza la classe Metrics
 
         Args:
-            mode (int, optional): Mode a executar. Mode 1: Calcula les mètriques del fitxer FILE
+            mode (int): Mode a executar. Mode 1: Calcula les mètriques del fitxer self.file
                                                    Mode 2: Llegeix i visualitza les mètriques càlculades
-                                                  
-        """ 
+            file (str): Fitxer a calcular o visualitzar les mètriques                                       
+        """
+        self.file = file 
         if mode == 1:
             self.computeMetrics()
         elif mode == 2:
             self.visualizeMetrics()
-
+        
     def edgeIntersection(self, e1, e2):
         """Calcular la intersecció d'arestes de dos grafs
 
@@ -306,11 +307,11 @@ class Metrics:
         """Calcula les mètriques de tots els fitxers protegits i els guarda en JSON."""
         originalFiles, protectedDict = self.readMetrics()
 
-        with open(os.path.join(originalFiles[FILE][0], originalFiles[FILE][1]), 'rb') as f:
+        with open(os.path.join(originalFiles[self.file][0], originalFiles[self.file][1]), 'rb') as f:
             originalGraphs = pickle.load(f)
 
         for method in protectedDict:
-            if FILE not in protectedDict[method]:
+            if self.file not in protectedDict[method]:
                 continue
 
             results = {
@@ -318,7 +319,7 @@ class Metrics:
                 "Jaccard Closeness": [], "Jaccard Degree": [], "Densities": [], "Degrees": []
             }
 
-            for i in tqdm(protectedDict[method][FILE], desc="Calculant mètriques en: " + str(FILE) + " - " + method.split("/")[0] + method.split("/")[1][0]):
+            for i in tqdm(protectedDict[method][self.file], desc="Calculant mètriques en: " + str(self.file) + " - " + method.split("/")[0] + method.split("/")[1][0]):
                 listJaccard, listDeltaConnectivity = [], []
                 listBetweeness, listCloseness, listDegreeCentrality = [], [], []
                 listDensities, listDegrees = [], []
@@ -344,7 +345,7 @@ class Metrics:
                 results["Degrees"].append((listDegrees, i[2]))
 
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            output_path = os.path.join(current_dir, "metrics", method, FILE + ".json")
+            output_path = os.path.join(current_dir, "metrics", method, self.file + ".json")
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
             with open(output_path, 'w') as f:
@@ -363,7 +364,7 @@ class Metrics:
 
             for root, dirs, files in os.walk(path):
                 for file in files:
-                    if not file.endswith(".json") or not file.startswith(FILE):
+                    if not file.endswith(".json") or not file.startswith(self.file):
                         continue
 
                     with open(os.path.join(root, file), "r") as f:
@@ -385,7 +386,7 @@ class Metrics:
                             results[method][metric][param].append(values.mean())
 
         # En cas d'aquest fitxer que no s'ha fet ELDP, només mostrar KDA.
-        if FILE.startswith("insecta-ant"):
+        if self.file.startswith("insecta-ant"):
             results = {"KDA": results["KDA"]}
 
         # Pas 2: Graficar
@@ -410,7 +411,7 @@ class Metrics:
                                 np.array(means) + np.array(stds),
                                 alpha=0.2)
 
-            title = f'Mitjana de mètriques en {FILE}\nMètode: {method}, #Experiments = 5'
+            title = f'Mitjana de mètriques en {self.file}\nMètode: {method}, #Experiments = 5'
             xLabel = r'$\epsilon$' if method == "ELDP" else "k"
 
             ax.set_title(title)
@@ -535,13 +536,13 @@ class Metrics:
         num_methods = len(base_folders)
 
         cols = num_methods
-        if FILE.startswith("insecta-ant"):
+        if self.file.startswith("insecta-ant"):
             cols = 1
             
         rows = len(all_metrics) * int(np.ceil(num_methods / cols))
 
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 2.5), squeeze=False)
-        fig.suptitle(f"Mitjana de mètriques de similaritat per timestamp en {FILE} \n #Experiments = 5", fontsize=12)
+        fig.suptitle(f"Mitjana de mètriques de similaritat per timestamp en {self.file} \n #Experiments = 5", fontsize=12)
         fig.subplots_adjust(hspace=0.4, wspace=0.1, top=0.95, right=0.9)
 
         cbar_ax = fig.add_axes([0.91, 0.15, 0.015, 0.7])
@@ -563,7 +564,7 @@ class Metrics:
 
                     for root, _, files in os.walk(subfolder_path):
                         for file in files:
-                            if file.endswith(".json") and file.startswith(FILE):
+                            if file.endswith(".json") and file.startswith(self.file):
                                 json_path = os.path.join(root, file)
                                 try:
                                     with open(json_path, "r") as f:
@@ -826,14 +827,14 @@ class Metrics:
     def visualizeMetrics(self):
         """Visualitza totes les mètriques generades d'un fitxer.
         """
-        if FILE.endswith("CollegeMsg"):
+        if self.file.endswith("CollegeMsg"):
             files = ["DAY_CollegeMsg", "WEEK_CollegeMsg", "MONTH_CollegeMsg"]
             name = "CollegeMsg"
         else:
             files = ["DAY_ia-enron-employees", "WEEK_ia-enron-employees", "MONTH_ia-enron-employees"]
             name  = "ia-enron-employees"
 
-        if  FILE.endswith("CollegeMsg") or FILE.endswith("ia-enron-employees"):
+        if  self.file.endswith("CollegeMsg") or self.file.endswith("ia-enron-employees"):
             self.viewMeanSimilaritiesGrouped(files, name)
             for file in files:
                 self.viewDensities(file)
@@ -841,9 +842,9 @@ class Metrics:
         else:
             self.viewMeanSimilarities()
             self.viewIndividualSimilarities()
-            self.viewDensities(FILE)
-            self.viewDegrees(FILE)
+            self.viewDensities(self.file)
+            self.viewDegrees(self.file)
 
 
 if __name__ == "__main__":
-    metric = Metrics(mode = 2)
+    metric = Metrics(mode = 2, file = FILE)

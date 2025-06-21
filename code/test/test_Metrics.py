@@ -16,7 +16,7 @@ class TestMetrics(unittest.TestCase):
     def setUp(self):
         """Crea una instància de KDA
         """
-        self.metrics = Metrics()
+        self.metrics = Metrics(mode=None, file="test_graphs.txt")
         
         # Grafs de prova
         self.g1 = nx.Graph()
