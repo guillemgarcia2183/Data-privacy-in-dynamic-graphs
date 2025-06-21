@@ -13,9 +13,12 @@
 
 ## How to run  
 Follow the steps below to clone the repository, install the dependencies, and run the code:
-    git clone https://github.com/guillemgarcia2183/TFG-Dynamic-Graphs.git
-    pip install -r requirements.txt
-    python3 main.py
+
+```bash
+git clone https://github.com/guillemgarcia2183/TFG-Dynamic-Graphs.git
+pip install -r requirements.txt
+python3 main.py
+```
 
 ## Datasets
 Here you can find the datasets used to apply the privacy methods and evaluate their metrics.
