@@ -17,7 +17,7 @@ Follow the steps below to clone the repository, install the dependencies, and ru
 ```bash
 git clone https://github.com/guillemgarcia2183/TFG-Dynamic-Graphs.git
 pip install -r requirements.txt
-python3 main.py
+python3 code/main.py
 ```
 
 ## Datasets
