@@ -1,6 +1,6 @@
 # Privacy in dynamic graphs
 
-## Anonymization and community detection in temporal-varying graphs
+## Abstract
 >Data privacy is becoming increasingly relevant across all fields. In particular, it is a
 >growing concern in networks that generate large volumes of data and constant interactions, such
 >as transaction or communication networks. These networks are often modeled as graphs, which
